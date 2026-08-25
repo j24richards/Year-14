@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="page-title">Year 14 — Fantasy Football History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #fbf6ec;
@@ -16,6 +19,21 @@
     --red: #b31942;
     --gold: #b8860b;
     --silver: #6e6b5f;
+    --font-display: "Zilla Slab", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161c;
+      --panel: #1e212a;
+      --panel-2: #262a35;
+      --border: #333846;
+      --text: #eef0f5;
+      --muted: #a3a9b8;
+      --accent: #0a3161;
+      --red: #e0435f;
+      --gold: #d9a832;
+      --silver: #9aa3b5;
+    }
   }
   * { box-sizing: border-box; }
   body {
@@ -33,7 +51,8 @@
   }
   header h1 {
     margin: 0 0 6px;
-    font-size: 2rem;
+    font-family: var(--font-display);
+    font-size: 2.1rem;
     letter-spacing: 0.5px;
     color: #fff;
   }
@@ -60,6 +79,20 @@
     cursor: pointer;
     font-size: 0.95rem;
   }
+  @media (max-width: 640px) {
+    nav {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      flex: none;
+      white-space: nowrap;
+    }
+  }
   nav button.active {
     background: var(--red);
     border-color: var(--red);
@@ -73,6 +106,7 @@
   section { display: none; }
   section.active { display: block; }
   h2 {
+    font-family: var(--font-display);
     font-size: 1.3rem;
     margin-bottom: 14px;
     border-left: 4px solid var(--red);
@@ -121,7 +155,16 @@
     margin-bottom: 24px;
     text-align: center;
   }
+  .countdown-card .countdown-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
   .countdown-card .countdown-number {
+    font-family: var(--font-display);
     font-size: 2.2rem;
     font-weight: 700;
     color: var(--red);
@@ -143,6 +186,7 @@
     padding: 16px;
   }
   .team-card h3 {
+    font-family: var(--font-display);
     margin: 0 0 4px;
     font-size: 1.05rem;
     color: var(--text);
@@ -164,6 +208,16 @@
     padding: 5px 4px;
   }
   .kept-yes { color: var(--gold); font-weight: 600; }
+  .team-card .pos-group td {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--panel-2);
+    padding: 4px 4px;
+    border-bottom: 1px solid var(--border);
+  }
   .rules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -210,6 +264,7 @@
   <section id="home" class="active">
     <div class="commish-note" id="commish-note"></div>
     <div class="countdown-card" id="countdown-card" style="display:none;">
+      <div class="countdown-eyebrow">Draft Countdown</div>
       <div class="countdown-number" id="countdown-number"></div>
       <div class="countdown-label" id="countdown-label"></div>
     </div>
@@ -755,10 +810,33 @@ function render(LEAGUE_DATA) {
       "<div class=\"manager\">" + t.manager + "</div>" +
       "<div class=\"stat-line\">2025 keepers kept: " + t.keepers2025 + " of 4</div>";
     if (t.roster && t.roster.length) {
-      html += "<table><thead><tr><th>Player</th><th>Pos</th><th>NFL</th><th>Kept</th></tr></thead><tbody>";
+      const posOrder = ["QB", "RB", "WR", "TE", "K", "DEF"];
+      const groups = {};
+      const otherGroup = [];
       t.roster.forEach(p => {
-        html += "<tr><td>" + p.player + "</td><td>" + p.pos + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+        const pos = (p.pos || "").toUpperCase();
+        if (posOrder.includes(pos)) {
+          if (!groups[pos]) groups[pos] = [];
+          groups[pos].push(p);
+        } else {
+          otherGroup.push(p);
+        }
       });
+      html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Kept</th></tr></thead><tbody>";
+      posOrder.forEach(pos => {
+        if (groups[pos] && groups[pos].length) {
+          html += "<tr class=\"pos-group\"><td colspan=\"3\">" + pos + "</td></tr>";
+          groups[pos].forEach(p => {
+            html += "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+          });
+        }
+      });
+      if (otherGroup.length) {
+        html += "<tr class=\"pos-group\"><td colspan=\"3\">Other</td></tr>";
+        otherGroup.forEach(p => {
+          html += "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+        });
+      }
       html += "</tbody></table>";
     }
     card.innerHTML = html;
