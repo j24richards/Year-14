@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>League 14 — Fantasy Football History</title>
+<title id="page-title">Year 14 — Fantasy Football History</title>
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --panel-2: #1f232c;
-    --border: #2a2f3a;
-    --text: #e8eaed;
-    --muted: #9aa1ac;
-    --accent: #4f8cff;
-    --gold: #d4af37;
+    --bg: #ffffff;
+    --panel: #f4f6fa;
+    --panel-2: #e8edf5;
+    --border: #c9d3e2;
+    --text: #0a2240;
+    --muted: #4d5d78;
+    --accent: #0a3161;
+    --red: #b31942;
+    --gold: #b8860b;
+    --silver: #5a6b85;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,17 +27,21 @@
   header {
     padding: 40px 20px 20px;
     text-align: center;
-    border-bottom: 1px solid var(--border);
+    background: var(--accent);
+    color: #fff;
+    border-bottom: 4px solid var(--red);
   }
   header h1 {
     margin: 0 0 6px;
     font-size: 2rem;
     letter-spacing: 0.5px;
+    color: #fff;
   }
   header p {
     margin: 0;
-    color: var(--muted);
+    color: #cfe0f5;
   }
+  header a { color: #fff; text-decoration: underline; }
   nav {
     display: flex;
     justify-content: center;
@@ -43,20 +49,20 @@
     gap: 8px;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    background: var(--panel);
+    background: var(--accent);
   }
   nav button {
     background: none;
-    border: 1px solid var(--border);
-    color: var(--text);
+    border: 1px solid #ffffff55;
+    color: #fff;
     padding: 8px 18px;
     border-radius: 999px;
     cursor: pointer;
     font-size: 0.95rem;
   }
   nav button.active {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--red);
+    border-color: var(--red);
     color: #fff;
   }
   main {
@@ -69,7 +75,7 @@
   h2 {
     font-size: 1.3rem;
     margin-bottom: 14px;
-    border-left: 4px solid var(--accent);
+    border-left: 4px solid var(--red);
     padding-left: 10px;
   }
   h3 {
@@ -97,6 +103,7 @@
   th { color: var(--muted); font-weight: 600; }
   tr:last-child td { border-bottom: none; }
   .champion { color: var(--gold); font-weight: 600; }
+  .runner-up { color: var(--silver); font-weight: 600; }
   .commish-note {
     background: var(--panel-2);
     border: 1px solid var(--border);
@@ -106,9 +113,27 @@
     font-style: italic;
     margin-bottom: 24px;
   }
+  .countdown-card {
+    background: var(--panel);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .countdown-card .countdown-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .countdown-card .countdown-label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
   .teams-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
   }
   .team-card {
@@ -130,7 +155,15 @@
   .team-card .stat-line {
     font-size: 0.85rem;
     color: var(--muted);
+    margin-bottom: 10px;
   }
+  .team-card table {
+    font-size: 0.8rem;
+  }
+  .team-card th, .team-card td {
+    padding: 5px 4px;
+  }
+  .kept-yes { color: var(--gold); font-weight: 600; }
   .rules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -144,25 +177,28 @@
   }
   footer {
     text-align: center;
-    color: var(--muted);
+    color: #cfe0f5;
     font-size: 0.8rem;
     padding: 20px;
-    border-top: 1px solid var(--border);
+    background: var(--accent);
+    border-top: 4px solid var(--red);
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>League 14</h1>
+  <h1 id="page-heading">Year 14</h1>
   <p>Tracking our fantasy football league, year after year.</p>
-  <p><a href="Year 14.xlsx" download style="color: var(--accent);">Download full roster &amp; keeper tracker (.xlsx)</a></p>
+  <p><a href="Year 14.xlsx" download style="color: #fff;">Download full roster &amp; keeper tracker (.xlsx)</a></p>
 </header>
 
 <nav>
   <button data-tab="home" class="active">Home</button>
   <button data-tab="history">History</button>
   <button data-tab="teams">Teams</button>
+  <button data-tab="keepers">Keepers</button>
+  <button data-tab="draft">Draft</button>
   <button data-tab="trades">Trades</button>
   <button data-tab="rules">Rules</button>
 </nav>
@@ -173,6 +209,10 @@
 
   <section id="home" class="active">
     <div class="commish-note" id="commish-note"></div>
+    <div class="countdown-card" id="countdown-card" style="display:none;">
+      <div class="countdown-number" id="countdown-number"></div>
+      <div class="countdown-label" id="countdown-label"></div>
+    </div>
     <h2 id="season-heading">Current Season Standings</h2>
     <div class="card">
       <table>
@@ -189,7 +229,7 @@
     <div class="card">
       <table>
         <thead>
-          <tr><th>Year</th><th>Champion</th><th>Manager</th><th>Record</th></tr>
+          <tr><th>Year</th><th>Champion</th><th>Runner-up</th></tr>
         </thead>
         <tbody id="history-body"></tbody>
       </table>
@@ -199,6 +239,27 @@
   <section id="teams">
     <h2>Teams &amp; Managers</h2>
     <div class="teams-grid" id="teams-grid"></div>
+  </section>
+
+  <section id="keepers">
+    <h2 id="keepers-heading">Keeper Selections</h2>
+    <p style="color: var(--muted); margin-top: -6px;">Each manager's keeper picks for the upcoming season, entered by the commissioner once choices are in.</p>
+    <div class="teams-grid" id="keepers-grid"></div>
+  </section>
+
+  <section id="draft">
+    <h2 id="draft-heading">Draft Results</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Round</th><th>Pick</th><th>Team</th><th>Player</th></tr>
+        </thead>
+        <tbody id="draft-body"></tbody>
+      </table>
+      <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
+        Draft results will appear here once the commissioner enters them after the draft.
+      </p>
+    </div>
   </section>
 
   <section id="trades">
@@ -220,7 +281,7 @@
 
 </main>
 
-<footer>League 14 · site last updated <span id="updated-date"></span></footer>
+<footer><span id="footer-league-name">Year 14</span> · site last updated <span id="updated-date"></span></footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -244,9 +305,20 @@ const firebaseConfig = {
    Console: console.firebase.google.com -> year-league project
    -> Firestore Database -> "site" collection -> "leagueData"
    document. Every visitor sees whatever is saved there.
+
+   Fields the commissioner will most likely want to change each
+   year:
+     - leagueName        e.g. "Year 15"
+     - draftDate         ISO date/time string for the countdown,
+                          e.g. "2027-08-29T19:00:00"
+     - draftResults       fill in after the current year's draft
+     - currentSeason      standings for the year in progress
+     - history            add a new entry once a season ends
    ============================================================ */
 const DEFAULT_LEAGUE_DATA = {
-  lastUpdated: "2026-08-24",
+  leagueName: "Year 14",
+  lastUpdated: "2026-08-25",
+  draftDate: "2026-08-30T19:00:00",
 
   commissionerNote: "Welcome to League 14's home on the web! Replace this note each season — draft reminders, trade deadlines, playoff news, whatever you want everyone to see first.",
 
@@ -257,7 +329,7 @@ const DEFAULT_LEAGUE_DATA = {
       { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", record: "0-0", pointsFor: 0 },
       { team: "Terry Glenn", manager: "Rick", record: "0-0", pointsFor: 0 },
       { team: "Huge Ditka", manager: "Nick", record: "0-0", pointsFor: 0 },
-      { team: "Dumpster Fire", manager: "Jon", record: "0-0", pointsFor: 0 },
+      { team: "Dumpster Fire", manager: "Joe", record: "0-0", pointsFor: 0 },
       { team: "My Ball Zach Ertz", manager: "Eric", record: "0-0", pointsFor: 0 },
       { team: "Allen's Wayside Furniture", manager: "Steve", record: "0-0", pointsFor: 0 },
       { team: "Leeroy Judkins", manager: "Jordan", record: "0-0", pointsFor: 0 },
@@ -267,21 +339,258 @@ const DEFAULT_LEAGUE_DATA = {
   },
 
   history: [
-    { year: 2025, champion: "TBD", manager: "TBD", record: "TBD" },
-    { year: 2024, champion: "TBD", manager: "TBD", record: "TBD" }
+    { year: 2025, champion: "Prestige Worldwide", championManager: "Ben", runnerUp: "Run CMC", runnerUpManager: "Mike" },
+    { year: 2024, champion: "TBD", championManager: "TBD", runnerUp: "TBD", runnerUpManager: "TBD" }
   ],
 
   teams: [
-    { team: "White Pool Covers", manager: "Tom", keepers2025: 2 },
-    { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", keepers2025: 4 },
-    { team: "Terry Glenn", manager: "Rick", keepers2025: 4 },
-    { team: "Huge Ditka", manager: "Nick", keepers2025: 3 },
-    { team: "Dumpster Fire", manager: "Jon", keepers2025: 3 },
-    { team: "My Ball Zach Ertz", manager: "Eric", keepers2025: 4 },
-    { team: "Allen's Wayside Furniture", manager: "Steve", keepers2025: 4 },
-    { team: "Leeroy Judkins", manager: "Jordan", keepers2025: 4 },
-    { team: "Run CMC", manager: "Mike", keepers2025: 4 },
-    { team: "Prestige Worldwide", manager: "Ben", keepers2025: 2 }
+    {
+      team: "White Pool Covers",
+      manager: "Tom",
+      keepers2025: 2,
+      roster: [
+        { player: "Joe Burrow", pos: "QB", nfl: "CIN", kept: false },
+        { player: "Drake Maye", pos: "QB", nfl: "NE", kept: false },
+        { player: "Ashton Jeanty", pos: "RB", nfl: "LV", kept: false },
+        { player: "Javonte Williams", pos: "RB", nfl: "DAL", kept: false },
+        { player: "Woody Marks", pos: "RB", nfl: "HOU", kept: false },
+        { player: "Justin Jefferson", pos: "WR", nfl: "MIN", kept: true },
+        { player: "Jaylen Waddle", pos: "WR", nfl: "DEN", kept: false },
+        { player: "Christian Watson", pos: "WR", nfl: "GB", kept: false },
+        { player: "Marvin Harrison Jr.", pos: "WR", nfl: "ARI", kept: false },
+        { player: "Quentin Johnston", pos: "WR", nfl: "LAC", kept: false },
+        { player: "Deebo Samuel", pos: "WR", nfl: "WAS", kept: false },
+        { player: "Sam LaPorta", pos: "TE", nfl: "DET", kept: true },
+        { player: "Hunter Henry", pos: "TE", nfl: "NE", kept: false },
+        { player: "Zach Ertz", pos: "TE", nfl: "WAS", kept: false },
+        { player: "Chris Boswell", pos: "K", nfl: "PIT", kept: false },
+        { player: "Jaguars", pos: "DEF", nfl: "JAX", kept: false }
+      ]
+    },
+    {
+      team: "Jimmy Jones Cutlets",
+      manager: "Cory/Kevin",
+      keepers2025: 4,
+      roster: [
+        { player: "Lamar Jackson", pos: "QB", nfl: "BAL", kept: true },
+        { player: "Dak Prescott", pos: "QB", nfl: "DAL", kept: false },
+        { player: "Breece Hall", pos: "RB", nfl: "NYJ", kept: true },
+        { player: "Travis Etienne Jr.", pos: "RB", nfl: "NO", kept: false },
+        { player: "Jordan Mason", pos: "RB", nfl: "MIN", kept: false },
+        { player: "Alvin Kamara", pos: "RB", nfl: "NO", kept: false },
+        { player: "Puka Nacua", pos: "WR", nfl: "LAR", kept: true },
+        { player: "Amon-Ra St. Brown", pos: "WR", nfl: "DET", kept: true },
+        { player: "Ladd McConkey", pos: "WR", nfl: "LAC", kept: false },
+        { player: "Khalil Shakir", pos: "WR", nfl: "BUF", kept: false },
+        { player: "Jauan Jennings", pos: "WR", nfl: "MIN", kept: false },
+        { player: "Jake Ferguson", pos: "TE", nfl: "DAL", kept: false },
+        { player: "T.J. Hockenson", pos: "TE", nfl: "MIN", kept: false },
+        { player: "Jake Elliott", pos: "K", nfl: "PHI", kept: false }
+      ]
+    },
+    {
+      team: "Terry Glenn",
+      manager: "Rick",
+      keepers2025: 4,
+      roster: [
+        { player: "Jared Goff", pos: "QB", nfl: "DET", kept: false },
+        { player: "Derrick Henry", pos: "RB", nfl: "BAL", kept: true },
+        { player: "D'Andre Swift", pos: "RB", nfl: "CHI", kept: false },
+        { player: "Rachaad White", pos: "RB", nfl: "WAS", kept: false },
+        { player: "James Conner", pos: "RB", nfl: "ARI", kept: false },
+        { player: "Devin Neal", pos: "RB", nfl: "NO", kept: false },
+        { player: "Nico Collins", pos: "WR", nfl: "HOU", kept: true },
+        { player: "Terry McLaurin", pos: "WR", nfl: "WAS", kept: false },
+        { player: "Chris Godwin Jr.", pos: "WR", nfl: "TB", kept: false },
+        { player: "Tyreek Hill", pos: "WR", nfl: "MIA", kept: true },
+        { player: "Keenan Allen", pos: "WR", nfl: "LAC", kept: false },
+        { player: "Darnell Mooney", pos: "WR", nfl: "NYG", kept: false },
+        { player: "Keon Coleman", pos: "WR", nfl: "BUF", kept: false },
+        { player: "George Kittle", pos: "TE", nfl: "SF", kept: true },
+        { player: "Brenton Strange", pos: "TE", nfl: "JAX", kept: false },
+        { player: "Tyler Loop", pos: "K", nfl: "BAL", kept: false },
+        { player: "Texans", pos: "DEF", nfl: "HOU", kept: false }
+      ]
+    },
+    {
+      team: "Huge Ditka",
+      manager: "Nick",
+      keepers2025: 3,
+      roster: [
+        { player: "Patrick Mahomes", pos: "QB", nfl: "KC", kept: false },
+        { player: "Trevor Lawrence", pos: "QB", nfl: "JAX", kept: false },
+        { player: "TreVeyon Henderson", pos: "RB", nfl: "NE", kept: false },
+        { player: "Jaylen Warren", pos: "RB", nfl: "PIT", kept: false },
+        { player: "Rico Dowdle", pos: "RB", nfl: "PIT", kept: false },
+        { player: "Kimani Vidal", pos: "RB", nfl: "LAC", kept: false },
+        { player: "CeeDee Lamb", pos: "WR", nfl: "DAL", kept: true },
+        { player: "Malik Nabers", pos: "WR", nfl: "NYG", kept: true },
+        { player: "Mike Evans", pos: "WR", nfl: "SF", kept: false },
+        { player: "DK Metcalf", pos: "WR", nfl: "PIT", kept: false },
+        { player: "Jordan Addison", pos: "WR", nfl: "MIN", kept: false },
+        { player: "Troy Franklin", pos: "WR", nfl: "DEN", kept: false },
+        { player: "Stefon Diggs", pos: "WR", nfl: "NE", kept: false },
+        { player: "Travis Kelce", pos: "TE", nfl: "KC", kept: true },
+        { player: "Harrison Butker", pos: "K", nfl: "KC", kept: false },
+        { player: "Patriots", pos: "DEF", nfl: "NE", kept: false }
+      ]
+    },
+    {
+      team: "Dumpster Fire",
+      manager: "Joe",
+      keepers2025: 3,
+      roster: [
+        { player: "Justin Herbert", pos: "QB", nfl: "LAC", kept: false },
+        { player: "Caleb Williams", pos: "QB", nfl: "CHI", kept: false },
+        { player: "Jahmyr Gibbs", pos: "RB", nfl: "DET", kept: true },
+        { player: "Kenneth Walker III", pos: "RB", nfl: "KC", kept: false },
+        { player: "Tony Pollard", pos: "RB", nfl: "TEN", kept: false },
+        { player: "Kenny Gainwell", pos: "RB", nfl: "TB", kept: false },
+        { player: "Drake London", pos: "WR", nfl: "ATL", kept: true },
+        { player: "DeVonta Smith", pos: "WR", nfl: "PHI", kept: true },
+        { player: "Rome Odunze", pos: "WR", nfl: "CHI", kept: false },
+        { player: "Wan'Dale Robinson", pos: "WR", nfl: "TEN", kept: false },
+        { player: "Rashid Shaheed", pos: "WR", nfl: "SEA", kept: false },
+        { player: "Dallas Goedert", pos: "TE", nfl: "PHI", kept: false },
+        { player: "Andy Borregales", pos: "K", nfl: "NE", kept: false },
+        { player: "Lions", pos: "DEF", nfl: "DET", kept: false },
+        { player: "Chargers", pos: "DEF", nfl: "LAC", kept: false }
+      ]
+    },
+    {
+      team: "My Ball Zach Ertz",
+      manager: "Eric",
+      keepers2025: 4,
+      roster: [
+        { player: "Bo Nix", pos: "QB", nfl: "DEN", kept: false },
+        { player: "Baker Mayfield", pos: "QB", nfl: "TB", kept: false },
+        { player: "Saquon Barkley", pos: "RB", nfl: "PHI", kept: true },
+        { player: "Josh Jacobs", pos: "RB", nfl: "GB", kept: true },
+        { player: "Bucky Irving", pos: "RB", nfl: "TB", kept: true },
+        { player: "Tyrone Tracy Jr.", pos: "RB", nfl: "NYG", kept: false },
+        { player: "George Pickens", pos: "WR", nfl: "DAL", kept: false },
+        { player: "Rashee Rice", pos: "WR", nfl: "KC", kept: false },
+        { player: "Garrett Wilson", pos: "WR", nfl: "NYJ", kept: true },
+        { player: "DJ Moore", pos: "WR", nfl: "BUF", kept: false },
+        { player: "Jakobi Meyers", pos: "WR", nfl: "JAX", kept: false },
+        { player: "Jayden Higgins", pos: "WR", nfl: "HOU", kept: false },
+        { player: "Travis Hunter", pos: "WR", nfl: "JAX", kept: false },
+        { player: "Kyle Pitts Sr.", pos: "TE", nfl: "ATL", kept: false },
+        { player: "Chase McLaughlin", pos: "K", nfl: "TB", kept: false },
+        { player: "Cowboys", pos: "DEF", nfl: "DAL", kept: false }
+      ]
+    },
+    {
+      team: "Allen's Wayside Furniture",
+      manager: "Steve",
+      keepers2025: 4,
+      roster: [
+        { player: "Josh Allen", pos: "QB", nfl: "BUF", kept: false },
+        { player: "Bijan Robinson", pos: "RB", nfl: "ATL", kept: true },
+        { player: "Kyren Williams", pos: "RB", nfl: "LAR", kept: true },
+        { player: "David Montgomery", pos: "RB", nfl: "HOU", kept: true },
+        { player: "Kareem Hunt", pos: "RB", nfl: "KC", kept: false },
+        { player: "Zay Flowers", pos: "WR", nfl: "BAL", kept: false },
+        { player: "Davante Adams", pos: "WR", nfl: "LAR", kept: false },
+        { player: "Jameson Williams", pos: "WR", nfl: "DET", kept: true },
+        { player: "Michael Pittman Jr.", pos: "WR", nfl: "PIT", kept: false },
+        { player: "Xavier Worthy", pos: "WR", nfl: "KC", kept: false },
+        { player: "Tucker Kraft", pos: "TE", nfl: "GB", kept: false },
+        { player: "Mark Andrews", pos: "TE", nfl: "BAL", kept: false },
+        { player: "Dalton Kincaid", pos: "TE", nfl: "BUF", kept: false },
+        { player: "Jake Bates", pos: "K", nfl: "DET", kept: false },
+        { player: "Seahawks", pos: "DEF", nfl: "SEA", kept: false },
+        { player: "Saints", pos: "DEF", nfl: "NO", kept: false }
+      ]
+    },
+    {
+      team: "Leeroy Judkins",
+      manager: "Jordan",
+      keepers2025: 4,
+      roster: [
+        { player: "Jayden Daniels", pos: "QB", nfl: "WAS", kept: false },
+        { player: "Jalen Hurts", pos: "QB", nfl: "PHI", kept: true },
+        { player: "Jaxson Dart", pos: "QB", nfl: "NYG", kept: false },
+        { player: "James Cook III", pos: "RB", nfl: "BUF", kept: false },
+        { player: "Chase Brown", pos: "RB", nfl: "CIN", kept: true },
+        { player: "Quinshon Judkins", pos: "RB", nfl: "CLE", kept: false },
+        { player: "Bhayshul Tuten", pos: "RB", nfl: "JAX", kept: false },
+        { player: "RJ Harvey", pos: "RB", nfl: "DEN", kept: false },
+        { player: "Kyle Monangai", pos: "RB", nfl: "CHI", kept: false },
+        { player: "Braelon Allen", pos: "RB", nfl: "NYJ", kept: false },
+        { player: "Jaxon Smith-Njigba", pos: "WR", nfl: "SEA", kept: false },
+        { player: "Emeka Egbuka", pos: "WR", nfl: "TB", kept: false },
+        { player: "Brian Thomas Jr.", pos: "WR", nfl: "JAX", kept: true },
+        { player: "Ricky Pearsall", pos: "WR", nfl: "SF", kept: false },
+        { player: "Isaac TeSlaa", pos: "WR", nfl: "DET", kept: false },
+        { player: "Trey McBride", pos: "TE", nfl: "ARI", kept: true },
+        { player: "Harold Fannin Jr.", pos: "TE", nfl: "CLE", kept: false }
+      ]
+    },
+    {
+      team: "Run CMC",
+      manager: "Mike",
+      keepers2025: 4,
+      roster: [
+        { player: "Jacoby Brissett", pos: "QB", nfl: "ARI", kept: false },
+        { player: "Christian McCaffrey", pos: "RB", nfl: "SF", kept: true },
+        { player: "De'Von Achane", pos: "RB", nfl: "MIA", kept: true },
+        { player: "Cam Skattebo", pos: "RB", nfl: "NYG", kept: false },
+        { player: "Chuba Hubbard", pos: "RB", nfl: "CAR", kept: false },
+        { player: "Blake Corum", pos: "RB", nfl: "LAR", kept: false },
+        { player: "Michael Carter", pos: "RB", nfl: "TEN", kept: false },
+        { player: "A.J. Brown", pos: "WR", nfl: "NE", kept: true },
+        { player: "Courtland Sutton", pos: "WR", nfl: "DEN", kept: false },
+        { player: "Michael Wilson", pos: "WR", nfl: "ARI", kept: false },
+        { player: "Jayden Reed", pos: "WR", nfl: "GB", kept: false },
+        { player: "Jerry Jeudy", pos: "WR", nfl: "CLE", kept: false },
+        { player: "Brock Bowers", pos: "TE", nfl: "LV", kept: true },
+        { player: "Colston Loveland", pos: "TE", nfl: "CHI", kept: false },
+        { player: "Juwan Johnson", pos: "TE", nfl: "NO", kept: false },
+        { player: "Cameron Dicker", pos: "K", nfl: "LAC", kept: false },
+        { player: "Broncos", pos: "DEF", nfl: "DEN", kept: false }
+      ]
+    },
+    {
+      team: "Prestige Worldwide",
+      manager: "Ben",
+      keepers2025: 2,
+      roster: [
+        { player: "Brock Purdy", pos: "QB", nfl: "SF", kept: false },
+        { player: "Matthew Stafford", pos: "QB", nfl: "LAR", kept: false },
+        { player: "Jonathan Taylor", pos: "RB", nfl: "IND", kept: true },
+        { player: "Omarion Hampton", pos: "RB", nfl: "LAC", kept: false },
+        { player: "Rhamondre Stevenson", pos: "RB", nfl: "NE", kept: false },
+        { player: "Zach Charbonnet", pos: "RB", nfl: "SEA", kept: false },
+        { player: "Ja'Marr Chase", pos: "WR", nfl: "CIN", kept: true },
+        { player: "Chris Olave", pos: "WR", nfl: "NO", kept: false },
+        { player: "Tee Higgins", pos: "WR", nfl: "CIN", kept: false },
+        { player: "Tetairoa McMillan", pos: "WR", nfl: "CAR", kept: false },
+        { player: "Alec Pierce", pos: "WR", nfl: "IND", kept: false },
+        { player: "Darius Slayton", pos: "WR", nfl: "NYG", kept: false },
+        { player: "Tyler Warren", pos: "TE", nfl: "IND", kept: false },
+        { player: "Brandon Aubrey", pos: "K", nfl: "DAL", kept: false },
+        { player: "Steelers", pos: "DEF", nfl: "PIT", kept: false }
+      ]
+    }
+  ],
+
+  draftResults: [],
+
+  /* One entry per team: fill in "players" with the names each manager
+     chooses to keep for the upcoming season once picks are in. Leave
+     a team's "players" array empty until their choice is finalized. */
+  keeperSelections: [
+    { team: "White Pool Covers", manager: "Tom", players: [] },
+    { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", players: [] },
+    { team: "Terry Glenn", manager: "Rick", players: [] },
+    { team: "Huge Ditka", manager: "Nick", players: [] },
+    { team: "Dumpster Fire", manager: "Joe", players: [] },
+    { team: "My Ball Zach Ertz", manager: "Eric", players: [] },
+    { team: "Allen's Wayside Furniture", manager: "Steve", players: [] },
+    { team: "Leeroy Judkins", manager: "Jordan", players: [] },
+    { team: "Run CMC", manager: "Mike", players: [] },
+    { team: "Prestige Worldwide", manager: "Ben", players: [] }
   ],
 
   trades: [
@@ -387,10 +696,40 @@ const DEFAULT_LEAGUE_DATA = {
   ]
 };
 
+function formatCountdown(draftDateStr) {
+  if (!draftDateStr) return null;
+  const target = new Date(draftDateStr);
+  if (isNaN(target.getTime())) return null;
+  const now = new Date();
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) {
+    return { number: "Drafted!", label: "The draft has arrived (or already happened)." };
+  }
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const dateLabel = target.toLocaleString(undefined, { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return {
+    number: days + "d " + hours + "h",
+    label: "until the draft — " + dateLabel
+  };
+}
+
 function render(LEAGUE_DATA) {
+  const leagueName = LEAGUE_DATA.leagueName || "League";
+  document.getElementById("page-title").textContent = leagueName + " — Fantasy Football History";
+  document.getElementById("page-heading").textContent = leagueName;
+  document.getElementById("footer-league-name").textContent = leagueName;
   document.getElementById("commish-note").textContent = LEAGUE_DATA.commissionerNote;
   document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
   document.getElementById("updated-date").textContent = LEAGUE_DATA.lastUpdated;
+
+  const countdown = formatCountdown(LEAGUE_DATA.draftDate);
+  if (countdown) {
+    document.getElementById("countdown-card").style.display = "block";
+    document.getElementById("countdown-number").textContent = countdown.number;
+    document.getElementById("countdown-label").textContent = countdown.label;
+  }
 
   const standingsBody = document.getElementById("standings-body");
   LEAGUE_DATA.currentSeason.standings.forEach((row, i) => {
@@ -402,7 +741,9 @@ function render(LEAGUE_DATA) {
   const historyBody = document.getElementById("history-body");
   LEAGUE_DATA.history.forEach(row => {
     const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + row.champion + "</td><td>" + row.manager + "</td><td>" + row.record + "</td>";
+    const champCell = row.champion + (row.championManager ? " (" + row.championManager + ")" : "");
+    const runnerCell = row.runnerUp ? (row.runnerUp + (row.runnerUpManager ? " (" + row.runnerUpManager + ")" : "")) : "TBD";
+    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + champCell + "</td><td class=\"runner-up\">" + runnerCell + "</td>";
     historyBody.appendChild(tr);
   });
 
@@ -410,11 +751,54 @@ function render(LEAGUE_DATA) {
   LEAGUE_DATA.teams.forEach(t => {
     const card = document.createElement("div");
     card.className = "team-card";
-    card.innerHTML = "<h3>" + t.team + "</h3>" +
+    let html = "<h3>" + t.team + "</h3>" +
       "<div class=\"manager\">" + t.manager + "</div>" +
       "<div class=\"stat-line\">2025 keepers kept: " + t.keepers2025 + " of 4</div>";
+    if (t.roster && t.roster.length) {
+      html += "<table><thead><tr><th>Player</th><th>Pos</th><th>NFL</th><th>Kept</th></tr></thead><tbody>";
+      t.roster.forEach(p => {
+        html += "<tr><td>" + p.player + "</td><td>" + p.pos + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+      });
+      html += "</tbody></table>";
+    }
+    card.innerHTML = html;
     teamsGrid.appendChild(card);
   });
+
+  document.getElementById("keepers-heading").textContent = LEAGUE_DATA.currentSeason.year + " Keeper Selections";
+  const keepersGrid = document.getElementById("keepers-grid");
+  if (LEAGUE_DATA.keeperSelections) {
+    LEAGUE_DATA.keeperSelections.forEach(k => {
+      const card = document.createElement("div");
+      card.className = "team-card";
+      let html = "<h3>" + k.team + "</h3><div class=\"manager\">" + k.manager + "</div>";
+      if (k.players && k.players.length) {
+        html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
+        k.players.forEach(p => {
+          html += "<li>" + p + "</li>";
+        });
+        html += "</ul>";
+      } else {
+        html += "<div class=\"stat-line\">Not yet selected</div>";
+      }
+      card.innerHTML = html;
+      keepersGrid.appendChild(card);
+    });
+  }
+
+  document.getElementById("draft-heading").textContent = LEAGUE_DATA.currentSeason.year + " Draft Results";
+  const draftBody = document.getElementById("draft-body");
+  const draftEmptyNote = document.getElementById("draft-empty-note");
+  if (LEAGUE_DATA.draftResults && LEAGUE_DATA.draftResults.length) {
+    draftEmptyNote.style.display = "none";
+    LEAGUE_DATA.draftResults.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + row.round + "</td><td>" + row.pick + "</td><td>" + row.team + "</td><td>" + row.player + "</td>";
+      draftBody.appendChild(tr);
+    });
+  } else {
+    draftEmptyNote.style.display = "block";
+  }
 
   const tradesBody = document.getElementById("trades-body");
   LEAGUE_DATA.trades.forEach(row => {
