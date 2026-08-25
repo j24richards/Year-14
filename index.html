@@ -708,7 +708,7 @@ function formatCountdown(draftDateStr) {
   const totalMinutes = Math.floor(diffMs / 60000);
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
-  const dateLabel = target.toLocaleString(undefined, { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const dateLabel = target.toLocaleString(undefined, { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
   return {
     number: days + "d " + hours + "h",
     label: "until the draft — " + dateLabel
