@@ -166,6 +166,7 @@
   }
   .countdown-stats {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 14px;
     margin-bottom: 12px;
@@ -369,6 +370,14 @@
         <div class="countdown-stat">
           <div class="countdown-stat-number" id="countdown-hours"></div>
           <div class="countdown-stat-label">Hours</div>
+        </div>
+        <div class="countdown-stat">
+          <div class="countdown-stat-number" id="countdown-minutes"></div>
+          <div class="countdown-stat-label">Minutes</div>
+        </div>
+        <div class="countdown-stat">
+          <div class="countdown-stat-number" id="countdown-seconds"></div>
+          <div class="countdown-stat-label">Seconds</div>
         </div>
       </div>
       <div class="countdown-label" id="countdown-label"></div>
@@ -2146,15 +2155,36 @@ function formatCountdown(draftDateStr) {
   if (diffMs <= 0) {
     return { drafted: true, label: "The draft has arrived (or already happened) — " + dateLabel };
   }
-  const totalMinutes = Math.floor(diffMs / 60000);
-  const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
   return {
     drafted: false,
     days: days,
     hours: hours,
+    minutes: minutes,
+    seconds: seconds,
     label: "until the draft — " + dateLabel
   };
+}
+
+function renderCountdown() {
+  const countdown = formatCountdown(CURRENT_DATA ? CURRENT_DATA.draftDate : null);
+  if (!countdown) return;
+  document.getElementById("countdown-card").style.display = "block";
+  const statsEl = document.getElementById("countdown-stats");
+  if (countdown.drafted) {
+    statsEl.style.display = "none";
+  } else {
+    statsEl.style.display = "flex";
+    document.getElementById("countdown-days").textContent = countdown.days;
+    document.getElementById("countdown-hours").textContent = String(countdown.hours).padStart(2, "0");
+    document.getElementById("countdown-minutes").textContent = String(countdown.minutes).padStart(2, "0");
+    document.getElementById("countdown-seconds").textContent = String(countdown.seconds).padStart(2, "0");
+  }
+  document.getElementById("countdown-label").textContent = countdown.label;
 }
 
 function ordinal(n) {
@@ -2247,19 +2277,8 @@ function render(LEAGUE_DATA) {
   document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
   document.getElementById("updated-date").textContent = LEAGUE_DATA.lastUpdated;
 
-  const countdown = formatCountdown(LEAGUE_DATA.draftDate);
-  if (countdown) {
-    document.getElementById("countdown-card").style.display = "block";
-    const statsEl = document.getElementById("countdown-stats");
-    if (countdown.drafted) {
-      statsEl.style.display = "none";
-    } else {
-      statsEl.style.display = "flex";
-      document.getElementById("countdown-days").textContent = countdown.days;
-      document.getElementById("countdown-hours").textContent = String(countdown.hours).padStart(2, "0");
-    }
-    document.getElementById("countdown-label").textContent = countdown.label;
-  }
+  renderCountdown();
+  setInterval(renderCountdown, 1000);
 
   renderStandingsBody(LEAGUE_DATA);
 
