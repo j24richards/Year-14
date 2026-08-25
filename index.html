@@ -231,6 +231,16 @@
     padding: 5px 4px;
   }
   .kept-yes { color: var(--gold); font-weight: 600; }
+  .cost-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
   .team-card .pos-group td {
     font-size: 0.7rem;
     font-weight: 700;
@@ -251,6 +261,68 @@
     font-size: 0.75rem;
     color: var(--muted);
     margin: -10px 0 20px;
+  }
+  input[type="text"], input[type="number"], input[type="password"], input[type="datetime-local"], textarea, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  .admin-field { margin-bottom: 14px; }
+  .admin-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .admin-row {
+    display: grid;
+    grid-template-columns: 1fr 110px 100px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .admin-keeper-block {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-keeper-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .admin-keeper-block .admin-team-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; display: block; }
+  .admin-keeper-selects {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .admin-btn {
+    background: var(--red);
+    border: none;
+    color: #ffffff;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .admin-btn:hover { opacity: 0.88; }
+  #admin-status {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  #admin-error {
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-top: 10px;
   }
   footer {
     text-align: center;
@@ -278,6 +350,7 @@
   <button data-tab="trades">Trades</button>
   <button data-tab="history">History</button>
   <button data-tab="rules">Rules</button>
+  <button data-tab="admin">Admin</button>
 </nav>
 
 <main>
@@ -366,6 +439,43 @@
     <div class="rules-grid" id="rules-grid"></div>
   </section>
 
+  <section id="admin">
+    <h2>Commissioner Admin</h2>
+    <div class="card" id="admin-locked">
+      <p style="color: var(--muted); margin-top: 0;">Enter the commissioner password to edit the note, standings, and keeper picks below. Changes save straight to the live site.</p>
+      <div class="admin-field">
+        <label for="admin-password">Password</label>
+        <input type="password" id="admin-password" autocomplete="off">
+      </div>
+      <button class="admin-btn" id="admin-unlock-btn">Unlock</button>
+      <p id="admin-error" style="display:none;">Incorrect password.</p>
+    </div>
+    <div id="admin-panel" style="display:none;">
+      <div class="card">
+        <h3 style="margin-top:0;">Commissioner's Note</h3>
+        <div class="admin-field">
+          <textarea id="admin-note"></textarea>
+        </div>
+        <h3>Draft Date &amp; Time</h3>
+        <div class="admin-field">
+          <input type="datetime-local" id="admin-draftdate">
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Current Season Standings</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Record and points for, per team.</p>
+        <div id="admin-standings"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Keeper Selections</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Pick up to four kept players per team.</p>
+        <div id="admin-keepers"></div>
+      </div>
+      <button class="admin-btn" id="admin-save-btn">Save Changes</button>
+      <p id="admin-status"></p>
+    </div>
+  </section>
+
 </main>
 
 <footer><span id="footer-league-name">Year 14</span> · site last updated <span id="updated-date"></span></footer>
@@ -383,6 +493,11 @@ const firebaseConfig = {
   appId: "1:187385465507:web:ab6b7135acc49077188d16",
   measurementId: "G-K5FTVHNG9P"
 };
+
+const ADMIN_PASSWORD = "Year14Keepers2026";
+let CURRENT_DATA = null;
+let FIRESTORE_DB = null;
+let FIRESTORE_REF = null;
 
 /* ============================================================
    DEFAULT DATA — used the very first time the site loads (it
@@ -403,381 +518,1610 @@ const firebaseConfig = {
      - history            add a new entry once a season ends
    ============================================================ */
 const DEFAULT_LEAGUE_DATA = {
-  leagueName: "Year 14",
-  lastUpdated: "2026-08-25",
-  draftDate: "2026-08-30T19:00:00",
-
-  commissionerNote: "Welcome to League 14's home on the web! Replace this note each season — draft reminders, trade deadlines, playoff news, whatever you want everyone to see first.",
-
-  currentSeason: {
-    year: 2026,
-    standings: [
-      { team: "White Pool Covers", manager: "Tom", record: "0-0", pointsFor: 0 },
-      { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", record: "0-0", pointsFor: 0 },
-      { team: "Terry Glenn", manager: "Rick", record: "0-0", pointsFor: 0 },
-      { team: "Huge Ditka", manager: "Nick", record: "0-0", pointsFor: 0 },
-      { team: "Dumpster Fire", manager: "Joe", record: "0-0", pointsFor: 0 },
-      { team: "My Ball Zach Ertz", manager: "Eric", record: "0-0", pointsFor: 0 },
-      { team: "Allen's Wayside Furniture", manager: "Steve", record: "0-0", pointsFor: 0 },
-      { team: "Leeroy Judkins", manager: "Jordan", record: "0-0", pointsFor: 0 },
-      { team: "Run CMC", manager: "Mike", record: "0-0", pointsFor: 0 },
-      { team: "Prestige Worldwide", manager: "Ben", record: "0-0", pointsFor: 0 }
+  "leagueName": "Year 14",
+  "lastUpdated": "2026-08-25",
+  "draftDate": "2026-08-30T19:00:00",
+  "commissionerNote": "Welcome to League 14's home on the web! Replace this note each season \u2014 draft reminders, trade deadlines, playoff news, whatever you want everyone to see first.",
+  "currentSeason": {
+    "year": 2026,
+    "standings": [
+      {
+        "team": "White Pool Covers",
+        "manager": "Tom",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Jimmy Jones Cutlets",
+        "manager": "Cory/Kevin",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Terry Glenn",
+        "manager": "Rick",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Huge Ditka",
+        "manager": "Nick",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Dumpster Fire",
+        "manager": "Joe",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "My Ball Zach Ertz",
+        "manager": "Eric",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Allen's Wayside Furniture",
+        "manager": "Steve",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Leeroy Judkins",
+        "manager": "Jordan",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Run CMC",
+        "manager": "Mike",
+        "record": "0-0",
+        "pointsFor": 0
+      },
+      {
+        "team": "Prestige Worldwide",
+        "manager": "Ben",
+        "record": "0-0",
+        "pointsFor": 0
+      }
     ]
   },
-
-  history: [
-    { year: 2025, champion: "Prestige Worldwide", championManager: "Ben", runnerUp: "Run CMC", runnerUpManager: "Mike" },
-    { year: 2024, champion: "TBD", championManager: "TBD", runnerUp: "TBD", runnerUpManager: "TBD" }
+  "history": [
+    {
+      "year": 2025,
+      "champion": "Prestige Worldwide",
+      "championManager": "Ben",
+      "runnerUp": "Run CMC",
+      "runnerUpManager": "Mike"
+    },
+    {
+      "year": 2024,
+      "champion": "TBD",
+      "championManager": "TBD",
+      "runnerUp": "TBD",
+      "runnerUpManager": "TBD"
+    }
   ],
-
-  teams: [
+  "teams": [
     {
-      team: "White Pool Covers",
-      manager: "Tom",
-      keepers2025: 2,
-      roster: [
-        { player: "Joe Burrow", pos: "QB", nfl: "CIN", kept: false },
-        { player: "Drake Maye", pos: "QB", nfl: "NE", kept: false },
-        { player: "Ashton Jeanty", pos: "RB", nfl: "LV", kept: false },
-        { player: "Javonte Williams", pos: "RB", nfl: "DAL", kept: false },
-        { player: "Woody Marks", pos: "RB", nfl: "HOU", kept: false },
-        { player: "Justin Jefferson", pos: "WR", nfl: "MIN", kept: true },
-        { player: "Jaylen Waddle", pos: "WR", nfl: "DEN", kept: false },
-        { player: "Christian Watson", pos: "WR", nfl: "GB", kept: false },
-        { player: "Marvin Harrison Jr.", pos: "WR", nfl: "ARI", kept: false },
-        { player: "Quentin Johnston", pos: "WR", nfl: "LAC", kept: false },
-        { player: "Deebo Samuel", pos: "WR", nfl: "WAS", kept: false },
-        { player: "Sam LaPorta", pos: "TE", nfl: "DET", kept: true },
-        { player: "Hunter Henry", pos: "TE", nfl: "NE", kept: false },
-        { player: "Zach Ertz", pos: "TE", nfl: "WAS", kept: false },
-        { player: "Chris Boswell", pos: "K", nfl: "PIT", kept: false },
-        { player: "Jaguars", pos: "DEF", nfl: "JAX", kept: false }
+      "team": "White Pool Covers",
+      "manager": "Tom",
+      "keepers2025": 2,
+      "roster": [
+        {
+          "player": "Joe Burrow",
+          "pos": "QB",
+          "nfl": "CIN",
+          "keeperCost": 5,
+          "kept": false
+        },
+        {
+          "player": "Drake Maye",
+          "pos": "QB",
+          "nfl": "NE",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Ashton Jeanty",
+          "pos": "RB",
+          "nfl": "LV",
+          "keeperCost": 1,
+          "kept": false
+        },
+        {
+          "player": "Javonte Williams",
+          "pos": "RB",
+          "nfl": "DAL",
+          "keeperCost": 10,
+          "kept": false
+        },
+        {
+          "player": "Woody Marks",
+          "pos": "RB",
+          "nfl": "HOU",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Justin Jefferson",
+          "pos": "WR",
+          "nfl": "MIN",
+          "keeperCost": 9,
+          "kept": true
+        },
+        {
+          "player": "Jaylen Waddle",
+          "pos": "WR",
+          "nfl": "DEN",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Christian Watson",
+          "pos": "WR",
+          "nfl": "GB",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Marvin Harrison Jr.",
+          "pos": "WR",
+          "nfl": "ARI",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Quentin Johnston",
+          "pos": "WR",
+          "nfl": "LAC",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Deebo Samuel",
+          "pos": "WR",
+          "nfl": "WAS",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Sam LaPorta",
+          "pos": "TE",
+          "nfl": "DET",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Hunter Henry",
+          "pos": "TE",
+          "nfl": "NE",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Zach Ertz",
+          "pos": "TE",
+          "nfl": "WAS",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Chris Boswell",
+          "pos": "K",
+          "nfl": "PIT",
+          "keeperCost": 14,
+          "kept": false
+        },
+        {
+          "player": "Jaguars",
+          "pos": "DEF",
+          "nfl": "JAX",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Jimmy Jones Cutlets",
-      manager: "Cory/Kevin",
-      keepers2025: 4,
-      roster: [
-        { player: "Lamar Jackson", pos: "QB", nfl: "BAL", kept: true },
-        { player: "Dak Prescott", pos: "QB", nfl: "DAL", kept: false },
-        { player: "Breece Hall", pos: "RB", nfl: "NYJ", kept: true },
-        { player: "Travis Etienne Jr.", pos: "RB", nfl: "NO", kept: false },
-        { player: "Jordan Mason", pos: "RB", nfl: "MIN", kept: false },
-        { player: "Alvin Kamara", pos: "RB", nfl: "NO", kept: false },
-        { player: "Puka Nacua", pos: "WR", nfl: "LAR", kept: true },
-        { player: "Amon-Ra St. Brown", pos: "WR", nfl: "DET", kept: true },
-        { player: "Ladd McConkey", pos: "WR", nfl: "LAC", kept: false },
-        { player: "Khalil Shakir", pos: "WR", nfl: "BUF", kept: false },
-        { player: "Jauan Jennings", pos: "WR", nfl: "MIN", kept: false },
-        { player: "Jake Ferguson", pos: "TE", nfl: "DAL", kept: false },
-        { player: "T.J. Hockenson", pos: "TE", nfl: "MIN", kept: false },
-        { player: "Jake Elliott", pos: "K", nfl: "PHI", kept: false }
+      "team": "Jimmy Jones Cutlets",
+      "manager": "Cory/Kevin",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Lamar Jackson",
+          "pos": "QB",
+          "nfl": "BAL",
+          "keeperCost": 14,
+          "kept": true
+        },
+        {
+          "player": "Dak Prescott",
+          "pos": "QB",
+          "nfl": "DAL",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Breece Hall",
+          "pos": "RB",
+          "nfl": "NYJ",
+          "keeperCost": 2,
+          "kept": true
+        },
+        {
+          "player": "Travis Etienne Jr.",
+          "pos": "RB",
+          "nfl": "NO",
+          "keeperCost": 7,
+          "kept": false
+        },
+        {
+          "player": "Jordan Mason",
+          "pos": "RB",
+          "nfl": "MIN",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Alvin Kamara",
+          "pos": "RB",
+          "nfl": "NO",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Puka Nacua",
+          "pos": "WR",
+          "nfl": "LAR",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Amon-Ra St. Brown",
+          "pos": "WR",
+          "nfl": "DET",
+          "keeperCost": 5,
+          "kept": true
+        },
+        {
+          "player": "Ladd McConkey",
+          "pos": "WR",
+          "nfl": "LAC",
+          "keeperCost": 1,
+          "kept": false
+        },
+        {
+          "player": "Khalil Shakir",
+          "pos": "WR",
+          "nfl": "BUF",
+          "keeperCost": 10,
+          "kept": false
+        },
+        {
+          "player": "Jauan Jennings",
+          "pos": "WR",
+          "nfl": "MIN",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Jake Ferguson",
+          "pos": "TE",
+          "nfl": "DAL",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "T.J. Hockenson",
+          "pos": "TE",
+          "nfl": "MIN",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Jake Elliott",
+          "pos": "K",
+          "nfl": "PHI",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Terry Glenn",
-      manager: "Rick",
-      keepers2025: 4,
-      roster: [
-        { player: "Jared Goff", pos: "QB", nfl: "DET", kept: false },
-        { player: "Derrick Henry", pos: "RB", nfl: "BAL", kept: true },
-        { player: "D'Andre Swift", pos: "RB", nfl: "CHI", kept: false },
-        { player: "Rachaad White", pos: "RB", nfl: "WAS", kept: false },
-        { player: "James Conner", pos: "RB", nfl: "ARI", kept: false },
-        { player: "Devin Neal", pos: "RB", nfl: "NO", kept: false },
-        { player: "Nico Collins", pos: "WR", nfl: "HOU", kept: true },
-        { player: "Terry McLaurin", pos: "WR", nfl: "WAS", kept: false },
-        { player: "Chris Godwin Jr.", pos: "WR", nfl: "TB", kept: false },
-        { player: "Tyreek Hill", pos: "WR", nfl: "MIA", kept: true },
-        { player: "Keenan Allen", pos: "WR", nfl: "LAC", kept: false },
-        { player: "Darnell Mooney", pos: "WR", nfl: "NYG", kept: false },
-        { player: "Keon Coleman", pos: "WR", nfl: "BUF", kept: false },
-        { player: "George Kittle", pos: "TE", nfl: "SF", kept: true },
-        { player: "Brenton Strange", pos: "TE", nfl: "JAX", kept: false },
-        { player: "Tyler Loop", pos: "K", nfl: "BAL", kept: false },
-        { player: "Texans", pos: "DEF", nfl: "HOU", kept: false }
+      "team": "Terry Glenn",
+      "manager": "Rick",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Jared Goff",
+          "pos": "QB",
+          "nfl": "DET",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Derrick Henry",
+          "pos": "RB",
+          "nfl": "BAL",
+          "keeperCost": 3,
+          "kept": true
+        },
+        {
+          "player": "D'Andre Swift",
+          "pos": "RB",
+          "nfl": "CHI",
+          "keeperCost": 5,
+          "kept": false
+        },
+        {
+          "player": "Rachaad White",
+          "pos": "RB",
+          "nfl": "WAS",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "James Conner",
+          "pos": "RB",
+          "nfl": "ARI",
+          "keeperCost": 1,
+          "kept": false
+        },
+        {
+          "player": "Devin Neal",
+          "pos": "RB",
+          "nfl": "NO",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Nico Collins",
+          "pos": "WR",
+          "nfl": "HOU",
+          "keeperCost": 9,
+          "kept": true
+        },
+        {
+          "player": "Terry McLaurin",
+          "pos": "WR",
+          "nfl": "WAS",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Chris Godwin Jr.",
+          "pos": "WR",
+          "nfl": "TB",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Tyreek Hill",
+          "pos": "WR",
+          "nfl": "MIA",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Keenan Allen",
+          "pos": "WR",
+          "nfl": "LAC",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Darnell Mooney",
+          "pos": "WR",
+          "nfl": "NYG",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Keon Coleman",
+          "pos": "WR",
+          "nfl": "BUF",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "George Kittle",
+          "pos": "TE",
+          "nfl": "SF",
+          "keeperCost": 4,
+          "kept": true
+        },
+        {
+          "player": "Brenton Strange",
+          "pos": "TE",
+          "nfl": "JAX",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Tyler Loop",
+          "pos": "K",
+          "nfl": "BAL",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Texans",
+          "pos": "DEF",
+          "nfl": "HOU",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Huge Ditka",
-      manager: "Nick",
-      keepers2025: 3,
-      roster: [
-        { player: "Patrick Mahomes", pos: "QB", nfl: "KC", kept: false },
-        { player: "Trevor Lawrence", pos: "QB", nfl: "JAX", kept: false },
-        { player: "TreVeyon Henderson", pos: "RB", nfl: "NE", kept: false },
-        { player: "Jaylen Warren", pos: "RB", nfl: "PIT", kept: false },
-        { player: "Rico Dowdle", pos: "RB", nfl: "PIT", kept: false },
-        { player: "Kimani Vidal", pos: "RB", nfl: "LAC", kept: false },
-        { player: "CeeDee Lamb", pos: "WR", nfl: "DAL", kept: true },
-        { player: "Malik Nabers", pos: "WR", nfl: "NYG", kept: true },
-        { player: "Mike Evans", pos: "WR", nfl: "SF", kept: false },
-        { player: "DK Metcalf", pos: "WR", nfl: "PIT", kept: false },
-        { player: "Jordan Addison", pos: "WR", nfl: "MIN", kept: false },
-        { player: "Troy Franklin", pos: "WR", nfl: "DEN", kept: false },
-        { player: "Stefon Diggs", pos: "WR", nfl: "NE", kept: false },
-        { player: "Travis Kelce", pos: "TE", nfl: "KC", kept: true },
-        { player: "Harrison Butker", pos: "K", nfl: "KC", kept: false },
-        { player: "Patriots", pos: "DEF", nfl: "NE", kept: false }
+      "team": "Huge Ditka",
+      "manager": "Nick",
+      "keepers2025": 3,
+      "roster": [
+        {
+          "player": "Patrick Mahomes",
+          "pos": "QB",
+          "nfl": "KC",
+          "keeperCost": 5,
+          "kept": false
+        },
+        {
+          "player": "Trevor Lawrence",
+          "pos": "QB",
+          "nfl": "JAX",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "TreVeyon Henderson",
+          "pos": "RB",
+          "nfl": "NE",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Jaylen Warren",
+          "pos": "RB",
+          "nfl": "PIT",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Rico Dowdle",
+          "pos": "RB",
+          "nfl": "PIT",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Kimani Vidal",
+          "pos": "RB",
+          "nfl": "LAC",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "CeeDee Lamb",
+          "pos": "WR",
+          "nfl": "DAL",
+          "keeperCost": 1,
+          "kept": true
+        },
+        {
+          "player": "Malik Nabers",
+          "pos": "WR",
+          "nfl": "NYG",
+          "keeperCost": 2,
+          "kept": true
+        },
+        {
+          "player": "Mike Evans",
+          "pos": "WR",
+          "nfl": "SF",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "DK Metcalf",
+          "pos": "WR",
+          "nfl": "PIT",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jordan Addison",
+          "pos": "WR",
+          "nfl": "MIN",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Troy Franklin",
+          "pos": "WR",
+          "nfl": "DEN",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Stefon Diggs",
+          "pos": "WR",
+          "nfl": "NE",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Travis Kelce",
+          "pos": "TE",
+          "nfl": "KC",
+          "keeperCost": 13,
+          "kept": true
+        },
+        {
+          "player": "Harrison Butker",
+          "pos": "K",
+          "nfl": "KC",
+          "keeperCost": 11,
+          "kept": false
+        },
+        {
+          "player": "Patriots",
+          "pos": "DEF",
+          "nfl": "NE",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Dumpster Fire",
-      manager: "Joe",
-      keepers2025: 3,
-      roster: [
-        { player: "Justin Herbert", pos: "QB", nfl: "LAC", kept: false },
-        { player: "Caleb Williams", pos: "QB", nfl: "CHI", kept: false },
-        { player: "Jahmyr Gibbs", pos: "RB", nfl: "DET", kept: true },
-        { player: "Kenneth Walker III", pos: "RB", nfl: "KC", kept: false },
-        { player: "Tony Pollard", pos: "RB", nfl: "TEN", kept: false },
-        { player: "Kenny Gainwell", pos: "RB", nfl: "TB", kept: false },
-        { player: "Drake London", pos: "WR", nfl: "ATL", kept: true },
-        { player: "DeVonta Smith", pos: "WR", nfl: "PHI", kept: true },
-        { player: "Rome Odunze", pos: "WR", nfl: "CHI", kept: false },
-        { player: "Wan'Dale Robinson", pos: "WR", nfl: "TEN", kept: false },
-        { player: "Rashid Shaheed", pos: "WR", nfl: "SEA", kept: false },
-        { player: "Dallas Goedert", pos: "TE", nfl: "PHI", kept: false },
-        { player: "Andy Borregales", pos: "K", nfl: "NE", kept: false },
-        { player: "Lions", pos: "DEF", nfl: "DET", kept: false },
-        { player: "Chargers", pos: "DEF", nfl: "LAC", kept: false }
+      "team": "Dumpster Fire",
+      "manager": "Joe",
+      "keepers2025": 3,
+      "roster": [
+        {
+          "player": "Justin Herbert",
+          "pos": "QB",
+          "nfl": "LAC",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Caleb Williams",
+          "pos": "QB",
+          "nfl": "CHI",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jahmyr Gibbs",
+          "pos": "RB",
+          "nfl": "DET",
+          "keeperCost": 1,
+          "kept": true
+        },
+        {
+          "player": "Kenneth Walker III",
+          "pos": "RB",
+          "nfl": "KC",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Tony Pollard",
+          "pos": "RB",
+          "nfl": "TEN",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Kenny Gainwell",
+          "pos": "RB",
+          "nfl": "TB",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Drake London",
+          "pos": "WR",
+          "nfl": "ATL",
+          "keeperCost": 2,
+          "kept": true
+        },
+        {
+          "player": "DeVonta Smith",
+          "pos": "WR",
+          "nfl": "PHI",
+          "keeperCost": 7,
+          "kept": true
+        },
+        {
+          "player": "Rome Odunze",
+          "pos": "WR",
+          "nfl": "CHI",
+          "keeperCost": 5,
+          "kept": false
+        },
+        {
+          "player": "Wan'Dale Robinson",
+          "pos": "WR",
+          "nfl": "TEN",
+          "keeperCost": 14,
+          "kept": false
+        },
+        {
+          "player": "Rashid Shaheed",
+          "pos": "WR",
+          "nfl": "SEA",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Dallas Goedert",
+          "pos": "TE",
+          "nfl": "PHI",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Andy Borregales",
+          "pos": "K",
+          "nfl": "NE",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Lions",
+          "pos": "DEF",
+          "nfl": "DET",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Chargers",
+          "pos": "DEF",
+          "nfl": "LAC",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "My Ball Zach Ertz",
-      manager: "Eric",
-      keepers2025: 4,
-      roster: [
-        { player: "Bo Nix", pos: "QB", nfl: "DEN", kept: false },
-        { player: "Baker Mayfield", pos: "QB", nfl: "TB", kept: false },
-        { player: "Saquon Barkley", pos: "RB", nfl: "PHI", kept: true },
-        { player: "Josh Jacobs", pos: "RB", nfl: "GB", kept: true },
-        { player: "Bucky Irving", pos: "RB", nfl: "TB", kept: true },
-        { player: "Tyrone Tracy Jr.", pos: "RB", nfl: "NYG", kept: false },
-        { player: "George Pickens", pos: "WR", nfl: "DAL", kept: false },
-        { player: "Rashee Rice", pos: "WR", nfl: "KC", kept: false },
-        { player: "Garrett Wilson", pos: "WR", nfl: "NYJ", kept: true },
-        { player: "DJ Moore", pos: "WR", nfl: "BUF", kept: false },
-        { player: "Jakobi Meyers", pos: "WR", nfl: "JAX", kept: false },
-        { player: "Jayden Higgins", pos: "WR", nfl: "HOU", kept: false },
-        { player: "Travis Hunter", pos: "WR", nfl: "JAX", kept: false },
-        { player: "Kyle Pitts Sr.", pos: "TE", nfl: "ATL", kept: false },
-        { player: "Chase McLaughlin", pos: "K", nfl: "TB", kept: false },
-        { player: "Cowboys", pos: "DEF", nfl: "DAL", kept: false }
+      "team": "My Ball Zach Ertz",
+      "manager": "Eric",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Bo Nix",
+          "pos": "QB",
+          "nfl": "DEN",
+          "keeperCost": 7,
+          "kept": false
+        },
+        {
+          "player": "Baker Mayfield",
+          "pos": "QB",
+          "nfl": "TB",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Saquon Barkley",
+          "pos": "RB",
+          "nfl": "PHI",
+          "keeperCost": 1,
+          "kept": true
+        },
+        {
+          "player": "Josh Jacobs",
+          "pos": "RB",
+          "nfl": "GB",
+          "keeperCost": 5,
+          "kept": true
+        },
+        {
+          "player": "Bucky Irving",
+          "pos": "RB",
+          "nfl": "TB",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Tyrone Tracy Jr.",
+          "pos": "RB",
+          "nfl": "NYG",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "George Pickens",
+          "pos": "WR",
+          "nfl": "DAL",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Rashee Rice",
+          "pos": "WR",
+          "nfl": "KC",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Garrett Wilson",
+          "pos": "WR",
+          "nfl": "NYJ",
+          "keeperCost": 14,
+          "kept": true
+        },
+        {
+          "player": "DJ Moore",
+          "pos": "WR",
+          "nfl": "BUF",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Jakobi Meyers",
+          "pos": "WR",
+          "nfl": "JAX",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Jayden Higgins",
+          "pos": "WR",
+          "nfl": "HOU",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Travis Hunter",
+          "pos": "WR",
+          "nfl": "JAX",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Kyle Pitts Sr.",
+          "pos": "TE",
+          "nfl": "ATL",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Chase McLaughlin",
+          "pos": "K",
+          "nfl": "TB",
+          "keeperCost": 13,
+          "kept": false
+        },
+        {
+          "player": "Cowboys",
+          "pos": "DEF",
+          "nfl": "DAL",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Allen's Wayside Furniture",
-      manager: "Steve",
-      keepers2025: 4,
-      roster: [
-        { player: "Josh Allen", pos: "QB", nfl: "BUF", kept: false },
-        { player: "Bijan Robinson", pos: "RB", nfl: "ATL", kept: true },
-        { player: "Kyren Williams", pos: "RB", nfl: "LAR", kept: true },
-        { player: "David Montgomery", pos: "RB", nfl: "HOU", kept: true },
-        { player: "Kareem Hunt", pos: "RB", nfl: "KC", kept: false },
-        { player: "Zay Flowers", pos: "WR", nfl: "BAL", kept: false },
-        { player: "Davante Adams", pos: "WR", nfl: "LAR", kept: false },
-        { player: "Jameson Williams", pos: "WR", nfl: "DET", kept: true },
-        { player: "Michael Pittman Jr.", pos: "WR", nfl: "PIT", kept: false },
-        { player: "Xavier Worthy", pos: "WR", nfl: "KC", kept: false },
-        { player: "Tucker Kraft", pos: "TE", nfl: "GB", kept: false },
-        { player: "Mark Andrews", pos: "TE", nfl: "BAL", kept: false },
-        { player: "Dalton Kincaid", pos: "TE", nfl: "BUF", kept: false },
-        { player: "Jake Bates", pos: "K", nfl: "DET", kept: false },
-        { player: "Seahawks", pos: "DEF", nfl: "SEA", kept: false },
-        { player: "Saints", pos: "DEF", nfl: "NO", kept: false }
+      "team": "Allen's Wayside Furniture",
+      "manager": "Steve",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Josh Allen",
+          "pos": "QB",
+          "nfl": "BUF",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Bijan Robinson",
+          "pos": "RB",
+          "nfl": "ATL",
+          "keeperCost": 1,
+          "kept": true
+        },
+        {
+          "player": "Kyren Williams",
+          "pos": "RB",
+          "nfl": "LAR",
+          "keeperCost": 14,
+          "kept": true
+        },
+        {
+          "player": "David Montgomery",
+          "pos": "RB",
+          "nfl": "HOU",
+          "keeperCost": 13,
+          "kept": true
+        },
+        {
+          "player": "Kareem Hunt",
+          "pos": "RB",
+          "nfl": "KC",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Zay Flowers",
+          "pos": "WR",
+          "nfl": "BAL",
+          "keeperCost": 5,
+          "kept": false
+        },
+        {
+          "player": "Davante Adams",
+          "pos": "WR",
+          "nfl": "LAR",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Jameson Williams",
+          "pos": "WR",
+          "nfl": "DET",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Michael Pittman Jr.",
+          "pos": "WR",
+          "nfl": "PIT",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Xavier Worthy",
+          "pos": "WR",
+          "nfl": "KC",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Tucker Kraft",
+          "pos": "TE",
+          "nfl": "GB",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Mark Andrews",
+          "pos": "TE",
+          "nfl": "BAL",
+          "keeperCost": 7,
+          "kept": false
+        },
+        {
+          "player": "Dalton Kincaid",
+          "pos": "TE",
+          "nfl": "BUF",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jake Bates",
+          "pos": "K",
+          "nfl": "DET",
+          "keeperCost": 12,
+          "kept": false
+        },
+        {
+          "player": "Seahawks",
+          "pos": "DEF",
+          "nfl": "SEA",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Saints",
+          "pos": "DEF",
+          "nfl": "NO",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Leeroy Judkins",
-      manager: "Jordan",
-      keepers2025: 4,
-      roster: [
-        { player: "Jayden Daniels", pos: "QB", nfl: "WAS", kept: false },
-        { player: "Jalen Hurts", pos: "QB", nfl: "PHI", kept: true },
-        { player: "Jaxson Dart", pos: "QB", nfl: "NYG", kept: false },
-        { player: "James Cook III", pos: "RB", nfl: "BUF", kept: false },
-        { player: "Chase Brown", pos: "RB", nfl: "CIN", kept: true },
-        { player: "Quinshon Judkins", pos: "RB", nfl: "CLE", kept: false },
-        { player: "Bhayshul Tuten", pos: "RB", nfl: "JAX", kept: false },
-        { player: "RJ Harvey", pos: "RB", nfl: "DEN", kept: false },
-        { player: "Kyle Monangai", pos: "RB", nfl: "CHI", kept: false },
-        { player: "Braelon Allen", pos: "RB", nfl: "NYJ", kept: false },
-        { player: "Jaxon Smith-Njigba", pos: "WR", nfl: "SEA", kept: false },
-        { player: "Emeka Egbuka", pos: "WR", nfl: "TB", kept: false },
-        { player: "Brian Thomas Jr.", pos: "WR", nfl: "JAX", kept: true },
-        { player: "Ricky Pearsall", pos: "WR", nfl: "SF", kept: false },
-        { player: "Isaac TeSlaa", pos: "WR", nfl: "DET", kept: false },
-        { player: "Trey McBride", pos: "TE", nfl: "ARI", kept: true },
-        { player: "Harold Fannin Jr.", pos: "TE", nfl: "CLE", kept: false }
+      "team": "Leeroy Judkins",
+      "manager": "Jordan",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Jayden Daniels",
+          "pos": "QB",
+          "nfl": "WAS",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jalen Hurts",
+          "pos": "QB",
+          "nfl": "PHI",
+          "keeperCost": 8,
+          "kept": true
+        },
+        {
+          "player": "Jaxson Dart",
+          "pos": "QB",
+          "nfl": "NYG",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "James Cook III",
+          "pos": "RB",
+          "nfl": "BUF",
+          "keeperCost": 1,
+          "kept": false
+        },
+        {
+          "player": "Chase Brown",
+          "pos": "RB",
+          "nfl": "CIN",
+          "keeperCost": 15,
+          "kept": true
+        },
+        {
+          "player": "Quinshon Judkins",
+          "pos": "RB",
+          "nfl": "CLE",
+          "keeperCost": 13,
+          "kept": false
+        },
+        {
+          "player": "Bhayshul Tuten",
+          "pos": "RB",
+          "nfl": "JAX",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "RJ Harvey",
+          "pos": "RB",
+          "nfl": "DEN",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Kyle Monangai",
+          "pos": "RB",
+          "nfl": "CHI",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Braelon Allen",
+          "pos": "RB",
+          "nfl": "NYJ",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Jaxon Smith-Njigba",
+          "pos": "WR",
+          "nfl": "SEA",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Emeka Egbuka",
+          "pos": "WR",
+          "nfl": "TB",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Brian Thomas Jr.",
+          "pos": "WR",
+          "nfl": "JAX",
+          "keeperCost": 7,
+          "kept": true
+        },
+        {
+          "player": "Ricky Pearsall",
+          "pos": "WR",
+          "nfl": "SF",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Isaac TeSlaa",
+          "pos": "WR",
+          "nfl": "DET",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Trey McBride",
+          "pos": "TE",
+          "nfl": "ARI",
+          "keeperCost": 14,
+          "kept": true
+        },
+        {
+          "player": "Harold Fannin Jr.",
+          "pos": "TE",
+          "nfl": "CLE",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Run CMC",
-      manager: "Mike",
-      keepers2025: 4,
-      roster: [
-        { player: "Jacoby Brissett", pos: "QB", nfl: "ARI", kept: false },
-        { player: "Christian McCaffrey", pos: "RB", nfl: "SF", kept: true },
-        { player: "De'Von Achane", pos: "RB", nfl: "MIA", kept: true },
-        { player: "Cam Skattebo", pos: "RB", nfl: "NYG", kept: false },
-        { player: "Chuba Hubbard", pos: "RB", nfl: "CAR", kept: false },
-        { player: "Blake Corum", pos: "RB", nfl: "LAR", kept: false },
-        { player: "Michael Carter", pos: "RB", nfl: "TEN", kept: false },
-        { player: "A.J. Brown", pos: "WR", nfl: "NE", kept: true },
-        { player: "Courtland Sutton", pos: "WR", nfl: "DEN", kept: false },
-        { player: "Michael Wilson", pos: "WR", nfl: "ARI", kept: false },
-        { player: "Jayden Reed", pos: "WR", nfl: "GB", kept: false },
-        { player: "Jerry Jeudy", pos: "WR", nfl: "CLE", kept: false },
-        { player: "Brock Bowers", pos: "TE", nfl: "LV", kept: true },
-        { player: "Colston Loveland", pos: "TE", nfl: "CHI", kept: false },
-        { player: "Juwan Johnson", pos: "TE", nfl: "NO", kept: false },
-        { player: "Cameron Dicker", pos: "K", nfl: "LAC", kept: false },
-        { player: "Broncos", pos: "DEF", nfl: "DEN", kept: false }
+      "team": "Run CMC",
+      "manager": "Mike",
+      "keepers2025": 4,
+      "roster": [
+        {
+          "player": "Jacoby Brissett",
+          "pos": "QB",
+          "nfl": "ARI",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Christian McCaffrey",
+          "pos": "RB",
+          "nfl": "SF",
+          "keeperCost": 1,
+          "kept": true
+        },
+        {
+          "player": "De'Von Achane",
+          "pos": "RB",
+          "nfl": "MIA",
+          "keeperCost": 10,
+          "kept": true
+        },
+        {
+          "player": "Cam Skattebo",
+          "pos": "RB",
+          "nfl": "NYG",
+          "keeperCost": 8,
+          "kept": false
+        },
+        {
+          "player": "Chuba Hubbard",
+          "pos": "RB",
+          "nfl": "CAR",
+          "keeperCost": 3,
+          "kept": false
+        },
+        {
+          "player": "Blake Corum",
+          "pos": "RB",
+          "nfl": "LAR",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Michael Carter",
+          "pos": "RB",
+          "nfl": "TEN",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "A.J. Brown",
+          "pos": "WR",
+          "nfl": "NE",
+          "keeperCost": 14,
+          "kept": true
+        },
+        {
+          "player": "Courtland Sutton",
+          "pos": "WR",
+          "nfl": "DEN",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Michael Wilson",
+          "pos": "WR",
+          "nfl": "ARI",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jayden Reed",
+          "pos": "WR",
+          "nfl": "GB",
+          "keeperCost": 12,
+          "kept": false
+        },
+        {
+          "player": "Jerry Jeudy",
+          "pos": "WR",
+          "nfl": "CLE",
+          "keeperCost": 7,
+          "kept": false
+        },
+        {
+          "player": "Brock Bowers",
+          "pos": "TE",
+          "nfl": "LV",
+          "keeperCost": 5,
+          "kept": true
+        },
+        {
+          "player": "Colston Loveland",
+          "pos": "TE",
+          "nfl": "CHI",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Juwan Johnson",
+          "pos": "TE",
+          "nfl": "NO",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Cameron Dicker",
+          "pos": "K",
+          "nfl": "LAC",
+          "keeperCost": 11,
+          "kept": false
+        },
+        {
+          "player": "Broncos",
+          "pos": "DEF",
+          "nfl": "DEN",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     },
     {
-      team: "Prestige Worldwide",
-      manager: "Ben",
-      keepers2025: 2,
-      roster: [
-        { player: "Brock Purdy", pos: "QB", nfl: "SF", kept: false },
-        { player: "Matthew Stafford", pos: "QB", nfl: "LAR", kept: false },
-        { player: "Jonathan Taylor", pos: "RB", nfl: "IND", kept: true },
-        { player: "Omarion Hampton", pos: "RB", nfl: "LAC", kept: false },
-        { player: "Rhamondre Stevenson", pos: "RB", nfl: "NE", kept: false },
-        { player: "Zach Charbonnet", pos: "RB", nfl: "SEA", kept: false },
-        { player: "Ja'Marr Chase", pos: "WR", nfl: "CIN", kept: true },
-        { player: "Chris Olave", pos: "WR", nfl: "NO", kept: false },
-        { player: "Tee Higgins", pos: "WR", nfl: "CIN", kept: false },
-        { player: "Tetairoa McMillan", pos: "WR", nfl: "CAR", kept: false },
-        { player: "Alec Pierce", pos: "WR", nfl: "IND", kept: false },
-        { player: "Darius Slayton", pos: "WR", nfl: "NYG", kept: false },
-        { player: "Tyler Warren", pos: "TE", nfl: "IND", kept: false },
-        { player: "Brandon Aubrey", pos: "K", nfl: "DAL", kept: false },
-        { player: "Steelers", pos: "DEF", nfl: "PIT", kept: false }
+      "team": "Prestige Worldwide",
+      "manager": "Ben",
+      "keepers2025": 2,
+      "roster": [
+        {
+          "player": "Brock Purdy",
+          "pos": "QB",
+          "nfl": "SF",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Matthew Stafford",
+          "pos": "QB",
+          "nfl": "LAR",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Jonathan Taylor",
+          "pos": "RB",
+          "nfl": "IND",
+          "keeperCost": 3,
+          "kept": true
+        },
+        {
+          "player": "Omarion Hampton",
+          "pos": "RB",
+          "nfl": "LAC",
+          "keeperCost": 1,
+          "kept": false
+        },
+        {
+          "player": "Rhamondre Stevenson",
+          "pos": "RB",
+          "nfl": "NE",
+          "keeperCost": 13,
+          "kept": false
+        },
+        {
+          "player": "Zach Charbonnet",
+          "pos": "RB",
+          "nfl": "SEA",
+          "keeperCost": 9,
+          "kept": false
+        },
+        {
+          "player": "Ja'Marr Chase",
+          "pos": "WR",
+          "nfl": "CIN",
+          "keeperCost": 5,
+          "kept": true
+        },
+        {
+          "player": "Chris Olave",
+          "pos": "WR",
+          "nfl": "NO",
+          "keeperCost": 6,
+          "kept": false
+        },
+        {
+          "player": "Tee Higgins",
+          "pos": "WR",
+          "nfl": "CIN",
+          "keeperCost": 2,
+          "kept": false
+        },
+        {
+          "player": "Tetairoa McMillan",
+          "pos": "WR",
+          "nfl": "CAR",
+          "keeperCost": 4,
+          "kept": false
+        },
+        {
+          "player": "Alec Pierce",
+          "pos": "WR",
+          "nfl": "IND",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Darius Slayton",
+          "pos": "WR",
+          "nfl": "NYG",
+          "keeperCost": 15,
+          "kept": false
+        },
+        {
+          "player": "Tyler Warren",
+          "pos": "TE",
+          "nfl": "IND",
+          "keeperCost": 7,
+          "kept": false
+        },
+        {
+          "player": "Brandon Aubrey",
+          "pos": "K",
+          "nfl": "DAL",
+          "keeperCost": 10,
+          "kept": false
+        },
+        {
+          "player": "Steelers",
+          "pos": "DEF",
+          "nfl": "PIT",
+          "keeperCost": 15,
+          "kept": false
+        }
       ]
     }
   ],
-
-  draftResults: [],
-
-  /* One entry per team: fill in "players" with the names each manager
-     chooses to keep for the upcoming season once picks are in. Leave
-     a team's "players" array empty until their choice is finalized. */
-  keeperSelections: [
-    { team: "White Pool Covers", manager: "Tom", players: [] },
-    { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", players: [] },
-    { team: "Terry Glenn", manager: "Rick", players: [] },
-    { team: "Huge Ditka", manager: "Nick", players: [] },
-    { team: "Dumpster Fire", manager: "Joe", players: [] },
-    { team: "My Ball Zach Ertz", manager: "Eric", players: [] },
-    { team: "Allen's Wayside Furniture", manager: "Steve", players: [] },
-    { team: "Leeroy Judkins", manager: "Jordan", players: [] },
-    { team: "Run CMC", manager: "Mike", players: [] },
-    { team: "Prestige Worldwide", manager: "Ben", players: [] }
+  "draftResults": [],
+  "keeperSelections": [
+    {
+      "team": "White Pool Covers",
+      "manager": "Tom",
+      "players": []
+    },
+    {
+      "team": "Jimmy Jones Cutlets",
+      "manager": "Cory/Kevin",
+      "players": []
+    },
+    {
+      "team": "Terry Glenn",
+      "manager": "Rick",
+      "players": []
+    },
+    {
+      "team": "Huge Ditka",
+      "manager": "Nick",
+      "players": []
+    },
+    {
+      "team": "Dumpster Fire",
+      "manager": "Joe",
+      "players": []
+    },
+    {
+      "team": "My Ball Zach Ertz",
+      "manager": "Eric",
+      "players": []
+    },
+    {
+      "team": "Allen's Wayside Furniture",
+      "manager": "Steve",
+      "players": []
+    },
+    {
+      "team": "Leeroy Judkins",
+      "manager": "Jordan",
+      "players": []
+    },
+    {
+      "team": "Run CMC",
+      "manager": "Mike",
+      "players": []
+    },
+    {
+      "team": "Prestige Worldwide",
+      "manager": "Ben",
+      "players": []
+    }
   ],
-
-  trades: [
-    { date: "TBD", teams: "TBD", details: "No trades logged yet this season." }
+  "trades": [
+    {
+      "date": "TBD",
+      "teams": "TBD",
+      "details": "No trades logged yet this season."
+    }
   ],
-
-  rulesGroups: [
+  "rulesGroups": [
     {
-      title: "League Settings",
-      rows: [
-        { label: "Trade Review", value: "League Votes" },
-        { label: "Votes Required to Veto", value: "Default" },
-        { label: "Trade Reject Time", value: "1 day" },
-        { label: "Waiver Time", value: "2 days" },
-        { label: "Waiver Type", value: "Continual rolling list" },
-        { label: "Weekly Waivers Game Time", value: "Tuesday" },
-        { label: "Injured players added directly to injury slot from waivers/FA", value: "Yes" },
-        { label: "Playoffs", value: "6 teams — Weeks 15, 16 and 17 (ends Monday, Dec 29)" },
-        { label: "Playoff Tie-Breaker", value: "Best regular season record vs opponent wins" },
-        { label: "Playoff Reseeding", value: "Yes" },
-        { label: "Divisions", value: "No" },
-        { label: "Lock Eliminated Teams", value: "No" },
-        { label: "Play Against Median Score", value: "No" },
-        { label: "Play Against a Second Opponent", value: "No" },
-        { label: "Apply Injured Status For Postponed Games", value: "Yes" },
-        { label: "Fractional Points", value: "Yes" },
-        { label: "Negative Points", value: "Yes" }
+      "title": "League Settings",
+      "rows": [
+        {
+          "label": "Trade Review",
+          "value": "League Votes"
+        },
+        {
+          "label": "Votes Required to Veto",
+          "value": "Default"
+        },
+        {
+          "label": "Trade Reject Time",
+          "value": "1 day"
+        },
+        {
+          "label": "Waiver Time",
+          "value": "2 days"
+        },
+        {
+          "label": "Waiver Type",
+          "value": "Continual rolling list"
+        },
+        {
+          "label": "Weekly Waivers Game Time",
+          "value": "Tuesday"
+        },
+        {
+          "label": "Injured players added directly to injury slot from waivers/FA",
+          "value": "Yes"
+        },
+        {
+          "label": "Playoffs",
+          "value": "6 teams \u2014 Weeks 15, 16 and 17 (ends Monday, Dec 29)"
+        },
+        {
+          "label": "Playoff Tie-Breaker",
+          "value": "Best regular season record vs opponent wins"
+        },
+        {
+          "label": "Playoff Reseeding",
+          "value": "Yes"
+        },
+        {
+          "label": "Divisions",
+          "value": "No"
+        },
+        {
+          "label": "Lock Eliminated Teams",
+          "value": "No"
+        },
+        {
+          "label": "Play Against Median Score",
+          "value": "No"
+        },
+        {
+          "label": "Play Against a Second Opponent",
+          "value": "No"
+        },
+        {
+          "label": "Apply Injured Status For Postponed Games",
+          "value": "Yes"
+        },
+        {
+          "label": "Fractional Points",
+          "value": "Yes"
+        },
+        {
+          "label": "Negative Points",
+          "value": "Yes"
+        }
       ]
     },
     {
-      title: "Buy-In",
-      rows: [
-        { label: "League Entry Fee", value: "$50 per team" },
-        { label: "Keeper Cost", value: "Up to 4 keepers per team, $10 extra each" }
+      "title": "Buy-In",
+      "rows": [
+        {
+          "label": "League Entry Fee",
+          "value": "$50 per team"
+        },
+        {
+          "label": "Keeper Cost",
+          "value": "Up to 4 keepers per team, $10 extra each"
+        }
       ]
     },
     {
-      title: "Keeper Rules",
-      rows: [
-        { label: "Draft Position", value: "Kept players retain the draft position they were picked at the prior year" },
-        { label: "Waiver Pickups", value: "A player added off waivers counts as a last-round pick for keeper purposes" },
-        { label: "Last-Round Keeper Bump", value: "If a keeper was a last-round pick the prior year, they move up one draft spot" },
-        { label: "Trades", value: "Same rules apply after a trade — kept at original draft position, or last-round pick if they were a waiver add by the other team" },
-        { label: "Drop & Re-add (Same Team)", value: "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)" }
+      "title": "Keeper Rules",
+      "rows": [
+        {
+          "label": "Draft Position",
+          "value": "Kept players retain the draft position they were picked at the prior year"
+        },
+        {
+          "label": "Waiver Pickups",
+          "value": "A player added off waivers counts as a last-round pick for keeper purposes"
+        },
+        {
+          "label": "Last-Round Keeper Bump",
+          "value": "If a keeper was a last-round pick the prior year, they move up one draft spot"
+        },
+        {
+          "label": "Trades",
+          "value": "Same rules apply after a trade \u2014 kept at original draft position, or last-round pick if they were a waiver add by the other team"
+        },
+        {
+          "label": "Drop & Re-add (Same Team)",
+          "value": "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)"
+        }
       ]
     },
     {
-      title: "Roster Positions",
-      rows: [
-        { label: "Starters", value: "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF" },
-        { label: "Bench", value: "BN, BN, BN, BN, BN" },
-        { label: "Injured Reserve", value: "IR, IR" }
+      "title": "Roster Positions",
+      "rows": [
+        {
+          "label": "Starters",
+          "value": "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF"
+        },
+        {
+          "label": "Bench",
+          "value": "BN, BN, BN, BN, BN"
+        },
+        {
+          "label": "Injured Reserve",
+          "value": "IR, IR"
+        }
       ]
     },
     {
-      title: "Offense Scoring",
-      rows: [
-        { label: "Passing Yards", value: "25 yards per point" },
-        { label: "Passing Touchdowns", value: "4" },
-        { label: "Interceptions", value: "-1" },
-        { label: "Rushing Yards", value: "10 yards per point" },
-        { label: "Rushing Touchdowns", value: "6" },
-        { label: "Receptions", value: "0.5" },
-        { label: "Receiving Yards", value: "10 yards per point" },
-        { label: "Receiving Touchdowns", value: "6" },
-        { label: "Return Touchdowns", value: "6" },
-        { label: "2-Point Conversions", value: "2" },
-        { label: "Fumbles Lost", value: "-2" },
-        { label: "Offensive Fumble Return TD", value: "6" }
+      "title": "Offense Scoring",
+      "rows": [
+        {
+          "label": "Passing Yards",
+          "value": "25 yards per point"
+        },
+        {
+          "label": "Passing Touchdowns",
+          "value": "4"
+        },
+        {
+          "label": "Interceptions",
+          "value": "-1"
+        },
+        {
+          "label": "Rushing Yards",
+          "value": "10 yards per point"
+        },
+        {
+          "label": "Rushing Touchdowns",
+          "value": "6"
+        },
+        {
+          "label": "Receptions",
+          "value": "0.5"
+        },
+        {
+          "label": "Receiving Yards",
+          "value": "10 yards per point"
+        },
+        {
+          "label": "Receiving Touchdowns",
+          "value": "6"
+        },
+        {
+          "label": "Return Touchdowns",
+          "value": "6"
+        },
+        {
+          "label": "2-Point Conversions",
+          "value": "2"
+        },
+        {
+          "label": "Fumbles Lost",
+          "value": "-2"
+        },
+        {
+          "label": "Offensive Fumble Return TD",
+          "value": "6"
+        }
       ]
     },
     {
-      title: "Kicker Scoring",
-      rows: [
-        { label: "Field Goals 0-19 Yards", value: "3" },
-        { label: "Field Goals 20-29 Yards", value: "3" },
-        { label: "Field Goals 30-39 Yards", value: "3" },
-        { label: "Field Goals 40-49 Yards", value: "4" },
-        { label: "Field Goals 50+ Yards", value: "5" },
-        { label: "Point After Attempt Made", value: "1" }
+      "title": "Kicker Scoring",
+      "rows": [
+        {
+          "label": "Field Goals 0-19 Yards",
+          "value": "3"
+        },
+        {
+          "label": "Field Goals 20-29 Yards",
+          "value": "3"
+        },
+        {
+          "label": "Field Goals 30-39 Yards",
+          "value": "3"
+        },
+        {
+          "label": "Field Goals 40-49 Yards",
+          "value": "4"
+        },
+        {
+          "label": "Field Goals 50+ Yards",
+          "value": "5"
+        },
+        {
+          "label": "Point After Attempt Made",
+          "value": "1"
+        }
       ]
     },
     {
-      title: "Defense / Special Teams Scoring",
-      rows: [
-        { label: "Sack", value: "1" },
-        { label: "Interception", value: "2" },
-        { label: "Fumble Recovery", value: "2" },
-        { label: "Touchdown", value: "6" },
-        { label: "Safety", value: "2" },
-        { label: "Block Kick", value: "2" },
-        { label: "Kickoff and Punt Return Touchdowns", value: "6" },
-        { label: "Points Allowed 0 points", value: "10" },
-        { label: "Points Allowed 1-6 points", value: "7" },
-        { label: "Points Allowed 7-13 points", value: "4" },
-        { label: "Points Allowed 14-20 points", value: "1" },
-        { label: "Points Allowed 21-27 points", value: "0" },
-        { label: "Points Allowed 28-34 points", value: "-1" },
-        { label: "Points Allowed 35+ points", value: "-4" },
-        { label: "Extra Point Returned", value: "2" }
+      "title": "Defense / Special Teams Scoring",
+      "rows": [
+        {
+          "label": "Sack",
+          "value": "1"
+        },
+        {
+          "label": "Interception",
+          "value": "2"
+        },
+        {
+          "label": "Fumble Recovery",
+          "value": "2"
+        },
+        {
+          "label": "Touchdown",
+          "value": "6"
+        },
+        {
+          "label": "Safety",
+          "value": "2"
+        },
+        {
+          "label": "Block Kick",
+          "value": "2"
+        },
+        {
+          "label": "Kickoff and Punt Return Touchdowns",
+          "value": "6"
+        },
+        {
+          "label": "Points Allowed 0 points",
+          "value": "10"
+        },
+        {
+          "label": "Points Allowed 1-6 points",
+          "value": "7"
+        },
+        {
+          "label": "Points Allowed 7-13 points",
+          "value": "4"
+        },
+        {
+          "label": "Points Allowed 14-20 points",
+          "value": "1"
+        },
+        {
+          "label": "Points Allowed 21-27 points",
+          "value": "0"
+        },
+        {
+          "label": "Points Allowed 28-34 points",
+          "value": "-1"
+        },
+        {
+          "label": "Points Allowed 35+ points",
+          "value": "-4"
+        },
+        {
+          "label": "Extra Point Returned",
+          "value": "2"
+        }
       ]
     }
   ]
@@ -804,7 +2148,88 @@ function formatCountdown(draftDateStr) {
   };
 }
 
+function ordinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function renderStandingsBody(data) {
+  const standingsBody = document.getElementById("standings-body");
+  standingsBody.innerHTML = "";
+  data.currentSeason.standings.forEach((row, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + row.team + "</td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
+    standingsBody.appendChild(tr);
+  });
+}
+
+function renderKeepersGrid(data) {
+  document.getElementById("keepers-heading").textContent = data.currentSeason.year + " Keeper Selections";
+  const keepersGrid = document.getElementById("keepers-grid");
+  keepersGrid.innerHTML = "";
+  if (data.keeperSelections) {
+    data.keeperSelections.forEach(k => {
+      const card = document.createElement("div");
+      card.className = "team-card";
+      let html = "<h3>" + k.team + "</h3><div class=\"manager\">" + k.manager + "</div>";
+      if (k.players && k.players.length) {
+        html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
+        k.players.forEach(p => {
+          html += "<li>" + p + "</li>";
+        });
+        html += "</ul>";
+      } else {
+        html += "<div class=\"stat-line\">Not yet selected</div>";
+      }
+      card.innerHTML = html;
+      keepersGrid.appendChild(card);
+    });
+  }
+}
+
+function buildAdminForm(data) {
+  document.getElementById("admin-note").value = data.commissionerNote || "";
+  document.getElementById("admin-draftdate").value = data.draftDate || "";
+
+  const standingsEl = document.getElementById("admin-standings");
+  standingsEl.innerHTML = "";
+  data.currentSeason.standings.forEach((row, i) => {
+    const div = document.createElement("div");
+    div.className = "admin-row";
+    div.innerHTML = "<span class=\"admin-team-label\">" + row.team + "</span>" +
+      "<input type=\"text\" data-idx=\"" + i + "\" class=\"admin-record-input\" value=\"" + row.record + "\" placeholder=\"0-0\">" +
+      "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-input\" value=\"" + row.pointsFor + "\">";
+    standingsEl.appendChild(div);
+  });
+
+  const keepersEl = document.getElementById("admin-keepers");
+  keepersEl.innerHTML = "";
+  const KEEPER_SLOTS = 4;
+  data.teams.forEach(t => {
+    const existing = (data.keeperSelections || []).find(k => k.team === t.team);
+    const picks = (existing && existing.players) || [];
+    const options = ["<option value=\"\">— none —</option>"].concat(
+      t.roster.map(p => "<option value=\"" + p.player + "\">" + p.player + "</option>")
+    ).join("");
+    const block = document.createElement("div");
+    block.className = "admin-keeper-block";
+    let html = "<span class=\"admin-team-label\">" + t.team + "</span><div class=\"admin-keeper-selects\">";
+    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
+      html += "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>";
+    }
+    html += "</div>";
+    block.innerHTML = html;
+    keepersEl.appendChild(block);
+    const selects = block.querySelectorAll("select");
+    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
+      if (picks[slot]) selects[slot].value = picks[slot];
+    }
+  });
+}
+
 function render(LEAGUE_DATA) {
+  CURRENT_DATA = LEAGUE_DATA;
   const leagueName = LEAGUE_DATA.leagueName || "League";
   document.getElementById("page-title").textContent = leagueName + " — Fantasy Football History";
   document.getElementById("page-heading").textContent = leagueName;
@@ -827,12 +2252,7 @@ function render(LEAGUE_DATA) {
     document.getElementById("countdown-label").textContent = countdown.label;
   }
 
-  const standingsBody = document.getElementById("standings-body");
-  LEAGUE_DATA.currentSeason.standings.forEach((row, i) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + row.team + "</td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
-    standingsBody.appendChild(tr);
-  });
+  renderStandingsBody(LEAGUE_DATA);
 
   const historyBody = document.getElementById("history-body");
   LEAGUE_DATA.history.forEach(row => {
@@ -863,20 +2283,20 @@ function render(LEAGUE_DATA) {
           otherGroup.push(p);
         }
       });
-      html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Kept</th></tr></thead><tbody>";
+      html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th></tr></thead><tbody>";
+      const renderRow = p => {
+        const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
+        return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+      };
       posOrder.forEach(pos => {
         if (groups[pos] && groups[pos].length) {
-          html += "<tr class=\"pos-group\"><td colspan=\"3\">" + pos + "</td></tr>";
-          groups[pos].forEach(p => {
-            html += "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
-          });
+          html += "<tr class=\"pos-group\"><td colspan=\"4\">" + pos + "</td></tr>";
+          groups[pos].forEach(p => { html += renderRow(p); });
         }
       });
       if (otherGroup.length) {
-        html += "<tr class=\"pos-group\"><td colspan=\"3\">Other</td></tr>";
-        otherGroup.forEach(p => {
-          html += "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
-        });
+        html += "<tr class=\"pos-group\"><td colspan=\"4\">Other</td></tr>";
+        otherGroup.forEach(p => { html += renderRow(p); });
       }
       html += "</tbody></table>";
     }
@@ -884,26 +2304,7 @@ function render(LEAGUE_DATA) {
     teamsGrid.appendChild(card);
   });
 
-  document.getElementById("keepers-heading").textContent = LEAGUE_DATA.currentSeason.year + " Keeper Selections";
-  const keepersGrid = document.getElementById("keepers-grid");
-  if (LEAGUE_DATA.keeperSelections) {
-    LEAGUE_DATA.keeperSelections.forEach(k => {
-      const card = document.createElement("div");
-      card.className = "team-card";
-      let html = "<h3>" + k.team + "</h3><div class=\"manager\">" + k.manager + "</div>";
-      if (k.players && k.players.length) {
-        html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
-        k.players.forEach(p => {
-          html += "<li>" + p + "</li>";
-        });
-        html += "</ul>";
-      } else {
-        html += "<div class=\"stat-line\">Not yet selected</div>";
-      }
-      card.innerHTML = html;
-      keepersGrid.appendChild(card);
-    });
-  }
+  renderKeepersGrid(LEAGUE_DATA);
 
   document.getElementById("draft-heading").textContent = LEAGUE_DATA.currentSeason.year + " Draft Results";
   const draftBody = document.getElementById("draft-body");
@@ -938,6 +2339,8 @@ function render(LEAGUE_DATA) {
     card.innerHTML = html;
     rulesGrid.appendChild(card);
   });
+
+  buildAdminForm(LEAGUE_DATA);
 }
 
 document.querySelectorAll("nav button").forEach(btn => {
@@ -949,19 +2352,70 @@ document.querySelectorAll("nav button").forEach(btn => {
   });
 });
 
+document.getElementById("admin-unlock-btn").addEventListener("click", () => {
+  const val = document.getElementById("admin-password").value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById("admin-locked").style.display = "none";
+    document.getElementById("admin-panel").style.display = "block";
+    document.getElementById("admin-error").style.display = "none";
+  } else {
+    document.getElementById("admin-error").style.display = "block";
+  }
+});
+
+document.getElementById("admin-save-btn").addEventListener("click", async () => {
+  const statusEl = document.getElementById("admin-status");
+  if (!CURRENT_DATA || !FIRESTORE_REF) {
+    statusEl.textContent = "Not connected to Firebase yet — try again in a moment.";
+    return;
+  }
+  CURRENT_DATA.commissionerNote = document.getElementById("admin-note").value;
+  CURRENT_DATA.draftDate = document.getElementById("admin-draftdate").value;
+
+  document.querySelectorAll(".admin-record-input").forEach(input => {
+    CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].record = input.value;
+  });
+  document.querySelectorAll(".admin-points-input").forEach(input => {
+    CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].pointsFor = Number(input.value) || 0;
+  });
+
+  const keeperMap = {};
+  document.querySelectorAll(".admin-keeper-select").forEach(sel => {
+    const team = sel.dataset.team;
+    if (!keeperMap[team]) keeperMap[team] = [];
+    if (sel.value) keeperMap[team].push(sel.value);
+  });
+  CURRENT_DATA.keeperSelections = CURRENT_DATA.keeperSelections.map(k => ({
+    team: k.team,
+    manager: k.manager,
+    players: keeperMap[k.team] || []
+  }));
+
+  statusEl.textContent = "Saving…";
+  try {
+    await setDoc(FIRESTORE_REF, CURRENT_DATA);
+    statusEl.textContent = "Saved! The site is now showing your changes.";
+    document.getElementById("commish-note").textContent = CURRENT_DATA.commissionerNote;
+    renderStandingsBody(CURRENT_DATA);
+    renderKeepersGrid(CURRENT_DATA);
+  } catch (err) {
+    statusEl.textContent = "Save failed: " + err.message;
+  }
+});
+
 async function loadAndRender() {
   const syncNote = document.getElementById("sync-note");
   try {
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const ref = doc(db, "site", "leagueData");
-    const snap = await getDoc(ref);
+    FIRESTORE_DB = getFirestore(app);
+    FIRESTORE_REF = doc(FIRESTORE_DB, "site", "leagueData");
+    const snap = await getDoc(FIRESTORE_REF);
 
     if (snap.exists()) {
       render(snap.data());
       syncNote.textContent = "Live data — synced from Firebase.";
     } else {
-      await setDoc(ref, DEFAULT_LEAGUE_DATA);
+      await setDoc(FIRESTORE_REF, DEFAULT_LEAGUE_DATA);
       render(DEFAULT_LEAGUE_DATA);
       syncNote.textContent = "Live data — synced from Firebase (just initialized).";
     }
