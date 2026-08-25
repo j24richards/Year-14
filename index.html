@@ -149,9 +149,10 @@
   }
   .countdown-card {
     background: var(--panel);
-    border: 1px solid var(--red);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--red);
     border-radius: 10px;
-    padding: 18px 20px;
+    padding: 20px 24px;
     margin-bottom: 24px;
     text-align: center;
   }
@@ -161,13 +162,35 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 6px;
+    margin-bottom: 12px;
   }
-  .countdown-card .countdown-number {
+  .countdown-stats {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .countdown-stat {
+    background: var(--panel-2);
+    border-radius: 8px;
+    padding: 10px 22px;
+    min-width: 76px;
+  }
+  .countdown-stat .countdown-stat-number {
     font-family: var(--font-display);
-    font-size: 2.2rem;
+    font-size: 2.3rem;
     font-weight: 700;
     color: var(--red);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .countdown-stat .countdown-stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 5px;
   }
   .countdown-card .countdown-label {
     color: var(--muted);
@@ -265,7 +288,16 @@
     <div class="commish-note" id="commish-note"></div>
     <div class="countdown-card" id="countdown-card" style="display:none;">
       <div class="countdown-eyebrow">Draft Countdown</div>
-      <div class="countdown-number" id="countdown-number"></div>
+      <div class="countdown-stats" id="countdown-stats">
+        <div class="countdown-stat">
+          <div class="countdown-stat-number" id="countdown-days"></div>
+          <div class="countdown-stat-label">Days</div>
+        </div>
+        <div class="countdown-stat">
+          <div class="countdown-stat-number" id="countdown-hours"></div>
+          <div class="countdown-stat-label">Hours</div>
+        </div>
+      </div>
       <div class="countdown-label" id="countdown-label"></div>
     </div>
     <h2 id="season-heading">Current Season Standings</h2>
@@ -757,15 +789,17 @@ function formatCountdown(draftDateStr) {
   if (isNaN(target.getTime())) return null;
   const now = new Date();
   const diffMs = target.getTime() - now.getTime();
+  const dateLabel = target.toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
   if (diffMs <= 0) {
-    return { number: "Drafted!", label: "The draft has arrived (or already happened)." };
+    return { drafted: true, label: "The draft has arrived (or already happened) — " + dateLabel };
   }
   const totalMinutes = Math.floor(diffMs / 60000);
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
-  const dateLabel = target.toLocaleString(undefined, { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
   return {
-    number: days + "d " + hours + "h",
+    drafted: false,
+    days: days,
+    hours: hours,
     label: "until the draft — " + dateLabel
   };
 }
@@ -782,7 +816,14 @@ function render(LEAGUE_DATA) {
   const countdown = formatCountdown(LEAGUE_DATA.draftDate);
   if (countdown) {
     document.getElementById("countdown-card").style.display = "block";
-    document.getElementById("countdown-number").textContent = countdown.number;
+    const statsEl = document.getElementById("countdown-stats");
+    if (countdown.drafted) {
+      statsEl.style.display = "none";
+    } else {
+      statsEl.style.display = "flex";
+      document.getElementById("countdown-days").textContent = countdown.days;
+      document.getElementById("countdown-hours").textContent = String(countdown.hours).padStart(2, "0");
+    }
     document.getElementById("countdown-label").textContent = countdown.label;
   }
 
