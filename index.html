@@ -2127,13 +2127,22 @@ const DEFAULT_LEAGUE_DATA = {
   ]
 };
 
+function parseAsEastern(dateStr) {
+  if (/Z$|[+-]\d{2}:\d{2}$/.test(dateStr)) return new Date(dateStr);
+  const probe = new Date(dateStr + "Z");
+  const tzName = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", timeZoneName: "short" })
+    .formatToParts(probe).find(function(p) { return p.type === "timeZoneName"; }).value;
+  const offset = tzName === "EDT" ? "-04:00" : "-05:00";
+  return new Date(dateStr + offset);
+}
+
 function formatCountdown(draftDateStr) {
   if (!draftDateStr) return null;
-  const target = new Date(draftDateStr);
+  const target = parseAsEastern(draftDateStr);
   if (isNaN(target.getTime())) return null;
   const now = new Date();
   const diffMs = target.getTime() - now.getTime();
-  const dateLabel = target.toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
+  const dateLabel = target.toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/New_York" }) + " ET";
   if (diffMs <= 0) {
     return { drafted: true, label: "The draft has arrived (or already happened) — " + dateLabel };
   }
