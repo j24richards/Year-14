@@ -278,96 +278,96 @@ const DEFAULT_LEAGUE_DATA = {
     {
       title: "League Settings",
       rows: [
-        ["Trade Review", "League Votes"],
-        ["Votes Required to Veto", "Default"],
-        ["Trade Reject Time", "1 day"],
-        ["Waiver Time", "2 days"],
-        ["Waiver Type", "Continual rolling list"],
-        ["Weekly Waivers Game Time", "Tuesday"],
-        ["Injured players added directly to injury slot from waivers/FA", "Yes"],
-        ["Playoffs", "6 teams — Weeks 15, 16 and 17 (ends Monday, Dec 29)"],
-        ["Playoff Tie-Breaker", "Best regular season record vs opponent wins"],
-        ["Playoff Reseeding", "Yes"],
-        ["Divisions", "No"],
-        ["Lock Eliminated Teams", "No"],
-        ["Play Against Median Score", "No"],
-        ["Play Against a Second Opponent", "No"],
-        ["Apply Injured Status For Postponed Games", "Yes"],
-        ["Fractional Points", "Yes"],
-        ["Negative Points", "Yes"]
+        { label: "Trade Review", value: "League Votes" },
+        { label: "Votes Required to Veto", value: "Default" },
+        { label: "Trade Reject Time", value: "1 day" },
+        { label: "Waiver Time", value: "2 days" },
+        { label: "Waiver Type", value: "Continual rolling list" },
+        { label: "Weekly Waivers Game Time", value: "Tuesday" },
+        { label: "Injured players added directly to injury slot from waivers/FA", value: "Yes" },
+        { label: "Playoffs", value: "6 teams — Weeks 15, 16 and 17 (ends Monday, Dec 29)" },
+        { label: "Playoff Tie-Breaker", value: "Best regular season record vs opponent wins" },
+        { label: "Playoff Reseeding", value: "Yes" },
+        { label: "Divisions", value: "No" },
+        { label: "Lock Eliminated Teams", value: "No" },
+        { label: "Play Against Median Score", value: "No" },
+        { label: "Play Against a Second Opponent", value: "No" },
+        { label: "Apply Injured Status For Postponed Games", value: "Yes" },
+        { label: "Fractional Points", value: "Yes" },
+        { label: "Negative Points", value: "Yes" }
       ]
     },
     {
       title: "Buy-In",
       rows: [
-        ["League Entry Fee", "$50 per team"],
-        ["Keeper Cost", "Up to 4 keepers per team, $10 extra each"]
+        { label: "League Entry Fee", value: "$50 per team" },
+        { label: "Keeper Cost", value: "Up to 4 keepers per team, $10 extra each" }
       ]
     },
     {
       title: "Keeper Rules",
       rows: [
-        ["Draft Position", "Kept players retain the draft position they were picked at the prior year"],
-        ["Waiver Pickups", "A player added off waivers counts as a last-round pick for keeper purposes"],
-        ["Last-Round Keeper Bump", "If a keeper was a last-round pick the prior year, they move up one draft spot"],
-        ["Trades", "Same rules apply after a trade — kept at original draft position, or last-round pick if they were a waiver add by the other team"],
-        ["Drop & Re-add (Same Team)", "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)"]
+        { label: "Draft Position", value: "Kept players retain the draft position they were picked at the prior year" },
+        { label: "Waiver Pickups", value: "A player added off waivers counts as a last-round pick for keeper purposes" },
+        { label: "Last-Round Keeper Bump", value: "If a keeper was a last-round pick the prior year, they move up one draft spot" },
+        { label: "Trades", value: "Same rules apply after a trade — kept at original draft position, or last-round pick if they were a waiver add by the other team" },
+        { label: "Drop & Re-add (Same Team)", value: "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)" }
       ]
     },
     {
       title: "Roster Positions",
       rows: [
-        ["Starters", "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF"],
-        ["Bench", "BN, BN, BN, BN, BN"],
-        ["Injured Reserve", "IR, IR"]
+        { label: "Starters", value: "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF" },
+        { label: "Bench", value: "BN, BN, BN, BN, BN" },
+        { label: "Injured Reserve", value: "IR, IR" }
       ]
     },
     {
       title: "Offense Scoring",
       rows: [
-        ["Passing Yards", "25 yards per point"],
-        ["Passing Touchdowns", "4"],
-        ["Interceptions", "-1"],
-        ["Rushing Yards", "10 yards per point"],
-        ["Rushing Touchdowns", "6"],
-        ["Receptions", "0.5"],
-        ["Receiving Yards", "10 yards per point"],
-        ["Receiving Touchdowns", "6"],
-        ["Return Touchdowns", "6"],
-        ["2-Point Conversions", "2"],
-        ["Fumbles Lost", "-2"],
-        ["Offensive Fumble Return TD", "6"]
+        { label: "Passing Yards", value: "25 yards per point" },
+        { label: "Passing Touchdowns", value: "4" },
+        { label: "Interceptions", value: "-1" },
+        { label: "Rushing Yards", value: "10 yards per point" },
+        { label: "Rushing Touchdowns", value: "6" },
+        { label: "Receptions", value: "0.5" },
+        { label: "Receiving Yards", value: "10 yards per point" },
+        { label: "Receiving Touchdowns", value: "6" },
+        { label: "Return Touchdowns", value: "6" },
+        { label: "2-Point Conversions", value: "2" },
+        { label: "Fumbles Lost", value: "-2" },
+        { label: "Offensive Fumble Return TD", value: "6" }
       ]
     },
     {
       title: "Kicker Scoring",
       rows: [
-        ["Field Goals 0-19 Yards", "3"],
-        ["Field Goals 20-29 Yards", "3"],
-        ["Field Goals 30-39 Yards", "3"],
-        ["Field Goals 40-49 Yards", "4"],
-        ["Field Goals 50+ Yards", "5"],
-        ["Point After Attempt Made", "1"]
+        { label: "Field Goals 0-19 Yards", value: "3" },
+        { label: "Field Goals 20-29 Yards", value: "3" },
+        { label: "Field Goals 30-39 Yards", value: "3" },
+        { label: "Field Goals 40-49 Yards", value: "4" },
+        { label: "Field Goals 50+ Yards", value: "5" },
+        { label: "Point After Attempt Made", value: "1" }
       ]
     },
     {
       title: "Defense / Special Teams Scoring",
       rows: [
-        ["Sack", "1"],
-        ["Interception", "2"],
-        ["Fumble Recovery", "2"],
-        ["Touchdown", "6"],
-        ["Safety", "2"],
-        ["Block Kick", "2"],
-        ["Kickoff and Punt Return Touchdowns", "6"],
-        ["Points Allowed 0 points", "10"],
-        ["Points Allowed 1-6 points", "7"],
-        ["Points Allowed 7-13 points", "4"],
-        ["Points Allowed 14-20 points", "1"],
-        ["Points Allowed 21-27 points", "0"],
-        ["Points Allowed 28-34 points", "-1"],
-        ["Points Allowed 35+ points", "-4"],
-        ["Extra Point Returned", "2"]
+        { label: "Sack", value: "1" },
+        { label: "Interception", value: "2" },
+        { label: "Fumble Recovery", value: "2" },
+        { label: "Touchdown", value: "6" },
+        { label: "Safety", value: "2" },
+        { label: "Block Kick", value: "2" },
+        { label: "Kickoff and Punt Return Touchdowns", value: "6" },
+        { label: "Points Allowed 0 points", value: "10" },
+        { label: "Points Allowed 1-6 points", value: "7" },
+        { label: "Points Allowed 7-13 points", value: "4" },
+        { label: "Points Allowed 14-20 points", value: "1" },
+        { label: "Points Allowed 21-27 points", value: "0" },
+        { label: "Points Allowed 28-34 points", value: "-1" },
+        { label: "Points Allowed 35+ points", value: "-4" },
+        { label: "Extra Point Returned", value: "2" }
       ]
     }
   ]
@@ -417,7 +417,7 @@ function render(LEAGUE_DATA) {
     card.className = "card";
     let html = "<h3>" + group.title + "</h3><table>";
     group.rows.forEach(pair => {
-      html += "<tr><td>" + pair[0] + "</td><td>" + pair[1] + "</td></tr>";
+      html += "<tr><td>" + pair.label + "</td><td>" + pair.value + "</td></tr>";
     });
     html += "</table>";
     card.innerHTML = html;
