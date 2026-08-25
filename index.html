@@ -253,9 +253,16 @@ const DEFAULT_LEAGUE_DATA = {
   currentSeason: {
     year: 2026,
     standings: [
-      { team: "Team A", manager: "Manager A", record: "0-0", pointsFor: 0 },
-      { team: "Team B", manager: "Manager B", record: "0-0", pointsFor: 0 },
-      { team: "Team C", manager: "Manager C", record: "0-0", pointsFor: 0 }
+      { team: "White Pool Covers", manager: "Tom", record: "0-0", pointsFor: 0 },
+      { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", record: "0-0", pointsFor: 0 },
+      { team: "Terry Glenn", manager: "Rick", record: "0-0", pointsFor: 0 },
+      { team: "Huge Ditka", manager: "Nick", record: "0-0", pointsFor: 0 },
+      { team: "Dumpster Fire", manager: "Jon", record: "0-0", pointsFor: 0 },
+      { team: "My Ball Zach Ertz", manager: "Eric", record: "0-0", pointsFor: 0 },
+      { team: "Allen's Wayside Furniture", manager: "Steve", record: "0-0", pointsFor: 0 },
+      { team: "Leeroy Judkins", manager: "Jordan", record: "0-0", pointsFor: 0 },
+      { team: "Run CMC", manager: "Mike", record: "0-0", pointsFor: 0 },
+      { team: "Prestige Worldwide", manager: "Ben", record: "0-0", pointsFor: 0 }
     ]
   },
 
@@ -265,9 +272,16 @@ const DEFAULT_LEAGUE_DATA = {
   ],
 
   teams: [
-    { team: "Team A", manager: "Manager A", allTimeRecord: "0-0-0", titles: 0, joined: 2013 },
-    { team: "Team B", manager: "Manager B", allTimeRecord: "0-0-0", titles: 0, joined: 2013 },
-    { team: "Team C", manager: "Manager C", allTimeRecord: "0-0-0", titles: 0, joined: 2013 }
+    { team: "White Pool Covers", manager: "Tom", keepers2025: 2 },
+    { team: "Jimmy Jones Cutlets", manager: "Cory/Kevin", keepers2025: 4 },
+    { team: "Terry Glenn", manager: "Rick", keepers2025: 4 },
+    { team: "Huge Ditka", manager: "Nick", keepers2025: 3 },
+    { team: "Dumpster Fire", manager: "Jon", keepers2025: 3 },
+    { team: "My Ball Zach Ertz", manager: "Eric", keepers2025: 4 },
+    { team: "Allen's Wayside Furniture", manager: "Steve", keepers2025: 4 },
+    { team: "Leeroy Judkins", manager: "Jordan", keepers2025: 4 },
+    { team: "Run CMC", manager: "Mike", keepers2025: 4 },
+    { team: "Prestige Worldwide", manager: "Ben", keepers2025: 2 }
   ],
 
   trades: [
@@ -398,9 +412,7 @@ function render(LEAGUE_DATA) {
     card.className = "team-card";
     card.innerHTML = "<h3>" + t.team + "</h3>" +
       "<div class=\"manager\">" + t.manager + "</div>" +
-      "<div class=\"stat-line\">All-time: " + t.allTimeRecord + "</div>" +
-      "<div class=\"stat-line\">Titles: " + t.titles + "</div>" +
-      "<div class=\"stat-line\">In league since: " + t.joined + "</div>";
+      "<div class=\"stat-line\">2025 keepers kept: " + t.keepers2025 + " of 4</div>";
     teamsGrid.appendChild(card);
   });
 
