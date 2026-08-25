@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-  <html lang="en">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>League 14 — Fantasy Football History</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>League 14 — Fantasy Football History</title>
 <style>
   :root {
     --bg: #0f1115;
@@ -11,42 +11,42 @@
     --panel-2: #1f232c;
     --border: #2a2f3a;
     --text: #e8eaed;
-          --muted: #9aa1ac;
+    --muted: #9aa1ac;
     --accent: #4f8cff;
     --gold: #d4af37;
-      }
+  }
   * { box-sizing: border-box; }
   body {
-        margin: 0;
+    margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
-}
+  }
   header {
-        padding: 40px 20px 20px;
+    padding: 40px 20px 20px;
     text-align: center;
     border-bottom: 1px solid var(--border);
-}
+  }
   header h1 {
-        margin: 0 0 6px;
+    margin: 0 0 6px;
     font-size: 2rem;
     letter-spacing: 0.5px;
   }
   header p {
-        margin: 0;
+    margin: 0;
     color: var(--muted);
   }
   nav {
-        display: flex;
+    display: flex;
     justify-content: center;
     flex-wrap: wrap;
     gap: 8px;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
     background: var(--panel);
-}
+  }
   nav button {
-        background: none;
+    background: none;
     border: 1px solid var(--border);
     color: var(--text);
     padding: 8px 18px;
@@ -55,128 +55,137 @@
     font-size: 0.95rem;
   }
   nav button.active {
-        background: var(--accent);
+    background: var(--accent);
     border-color: var(--accent);
     color: #fff;
-    }
+  }
   main {
-        max-width: 900px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 30px 20px 60px;
-}
+  }
   section { display: none; }
   section.active { display: block; }
   h2 {
-        font-size: 1.3rem;
+    font-size: 1.3rem;
     margin-bottom: 14px;
     border-left: 4px solid var(--accent);
     padding-left: 10px;
-}
+  }
   h3 {
-        font-size: 1.05rem;
+    font-size: 1.05rem;
     color: var(--muted);
     margin: 0 0 10px;
-}
+  }
   .card {
-        background: var(--panel);
+    background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 24px;
   }
   table {
-        width: 100%;
+    width: 100%;
     border-collapse: collapse;
     font-size: 0.95rem;
-}
+  }
   th, td {
-        text-align: left;
+    text-align: left;
     padding: 10px 8px;
     border-bottom: 1px solid var(--border);
-}
+  }
   th { color: var(--muted); font-weight: 600; }
   tr:last-child td { border-bottom: none; }
   .champion { color: var(--gold); font-weight: 600; }
   .commish-note {
-        background: var(--panel-2);
+    background: var(--panel-2);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 20px;
     color: var(--muted);
     font-style: italic;
     margin-bottom: 24px;
-}
+  }
   .teams-grid {
-        display: grid;
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
-    }
+  }
   .team-card {
-        background: var(--panel);
+    background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px;
-}
+  }
   .team-card h3 {
-        margin: 0 0 4px;
+    margin: 0 0 4px;
     font-size: 1.05rem;
     color: var(--text);
-}
+  }
   .team-card .manager {
     color: var(--muted);
     font-size: 0.85rem;
     margin-bottom: 10px;
   }
   .team-card .stat-line {
-        font-size: 0.85rem;
+    font-size: 0.85rem;
     color: var(--muted);
-}
+  }
   .rules-grid {
-        display: grid;
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
-    }
+  }
+  .sync-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin: -10px 0 20px;
+  }
   footer {
-        text-align: center;
+    text-align: center;
     color: var(--muted);
     font-size: 0.8rem;
     padding: 20px;
     border-top: 1px solid var(--border);
-}
+  }
 </style>
-  </head>
-  <body>
+</head>
+<body>
 
-  <header>
-    <h1>League 14</h1>
-    <p>Tracking our fantasy football league, year after year.</p>
+<header>
+  <h1>League 14</h1>
+  <p>Tracking our fantasy football league, year after year.</p>
+  <p><a href="Year 14.xlsx" download style="color: var(--accent);">Download full roster &amp; keeper tracker (.xlsx)</a></p>
 </header>
 
 <nav>
-    <button data-tab="home" class="active">Home</button>
-    <button data-tab="history">History</button>
-    <button data-tab="teams">Teams</button>
-    <button data-tab="trades">Trades</button>
-    <button data-tab="rules">Rules</button>
-  </nav>
+  <button data-tab="home" class="active">Home</button>
+  <button data-tab="history">History</button>
+  <button data-tab="teams">Teams</button>
+  <button data-tab="trades">Trades</button>
+  <button data-tab="rules">Rules</button>
+</nav>
 
 <main>
 
-    <section id="home" class="active">
-      <div class="commish-note" id="commish-note">Commissioner's note goes here — edit LEAGUE_DATA.commissionerNote in the script below.</div>
-      <h2 id="season-heading">Current Season Standings</h2>
+  <p class="sync-note" id="sync-note">Loading league data…</p>
+
+  <section id="home" class="active">
+    <div class="commish-note" id="commish-note"></div>
+    <h2 id="season-heading">Current Season Standings</h2>
     <div class="card">
-          <table>
-            <thead>
+      <table>
+        <thead>
           <tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Points For</th></tr>
         </thead>
         <tbody id="standings-body"></tbody>
-        </table>
-      </div>
-    </section>
+      </table>
+    </div>
+  </section>
 
-    <section id="history">
-      <h2>Champions by Year</h2>
+  <section id="history">
+    <h2>Champions by Year</h2>
     <div class="card">
       <table>
         <thead>
@@ -188,228 +197,268 @@
   </section>
 
   <section id="teams">
-      <h2>Teams &amp; Managers</h2>
-      <div class="teams-grid" id="teams-grid"></div>
-    </section>
+    <h2>Teams &amp; Managers</h2>
+    <div class="teams-grid" id="teams-grid"></div>
+  </section>
 
-    <section id="trades">
-      <h2>Trades</h2>
-      <div class="card">
-        <table>
-          <thead>
-            <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
-          </thead>
-          <tbody id="trades-body"></tbody>
-        </table>
-      </div>
-    </section>
+  <section id="trades">
+    <h2>Trades</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
+        </thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </section>
 
-    <section id="rules">
-      <h2>League Rules</h2>
-      <div class="rules-grid" id="rules-grid"></div>
-    </section>
+  <section id="rules">
+    <h2>League Rules</h2>
+    <div class="rules-grid" id="rules-grid"></div>
+  </section>
 
-  </main>
+</main>
 
-  <footer>League 14 · site last updated <span id="updated-date"></span></footer>
+<footer>League 14 · site last updated <span id="updated-date"></span></footer>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyALB6LcLLzHTMfokqjWDrqzmfGBP6fyAFQ",
+  authDomain: "year-league.firebaseapp.com",
+  projectId: "year-league",
+  storageBucket: "year-league.firebasestorage.app",
+  messagingSenderId: "187385465507",
+  appId: "1:187385465507:web:ab6b7135acc49077188d16",
+  measurementId: "G-K5FTVHNG9P"
+};
+
 /* ============================================================
-   EDIT EVERYTHING BELOW THIS LINE to update the site.
-     No coding knowledge needed — just fill in the blanks between
-   the quotes, keeping commas between entries.
-     ============================================================ */
-  const LEAGUE_DATA = {
-    lastUpdated: "2026-08-24",
+   DEFAULT DATA — used the very first time the site loads (it
+   gets copied into Firestore automatically), and as a fallback
+   if Firestore can't be reached. After that first load, the
+   commissioner edits the live data directly in the Firebase
+   Console: console.firebase.google.com -> year-league project
+   -> Firestore Database -> "site" collection -> "leagueData"
+   document. Every visitor sees whatever is saved there.
+   ============================================================ */
+const DEFAULT_LEAGUE_DATA = {
+  lastUpdated: "2026-08-24",
 
-    commissionerNote: "Welcome to League 14's home on the web! Replace this note each season — draft reminders, trade deadlines, playoff news, whatever you want everyone to see first.",
+  commissionerNote: "Welcome to League 14's home on the web! Replace this note each season — draft reminders, trade deadlines, playoff news, whatever you want everyone to see first.",
 
-    currentSeason: {
+  currentSeason: {
     year: 2026,
-          standings: [
+    standings: [
       { team: "Team A", manager: "Manager A", record: "0-0", pointsFor: 0 },
       { team: "Team B", manager: "Manager B", record: "0-0", pointsFor: 0 },
       { team: "Team C", manager: "Manager C", record: "0-0", pointsFor: 0 }
     ]
-},
+  },
 
   history: [
-{ year: 2025, champion: "TBD", manager: "TBD", record: "TBD" },
+    { year: 2025, champion: "TBD", manager: "TBD", record: "TBD" },
     { year: 2024, champion: "TBD", manager: "TBD", record: "TBD" }
   ],
 
   teams: [
-{ team: "Team A", manager: "Manager A", allTimeRecord: "0-0-0", titles: 0, joined: 2013 },
+    { team: "Team A", manager: "Manager A", allTimeRecord: "0-0-0", titles: 0, joined: 2013 },
     { team: "Team B", manager: "Manager B", allTimeRecord: "0-0-0", titles: 0, joined: 2013 },
     { team: "Team C", manager: "Manager C", allTimeRecord: "0-0-0", titles: 0, joined: 2013 }
   ],
 
-      trades: [
+  trades: [
     { date: "TBD", teams: "TBD", details: "No trades logged yet this season." }
   ],
 
   rulesGroups: [
-{
-      title: "League Settings",
-              rows: [
-                ["Trade Review", "League Votes"],
-                ["Votes Required to Veto", "Default"],
-                ["Trade Reject Time", "1 day"],
-                ["Waiver Time", "2 days"],
-                ["Waiver Type", "Continual rolling list"],
-                ["Weekly Waivers Game Time", "Tuesday"],
-                ["Injured players added directly to injury slot from waivers/FA", "Yes"],
-                ["Playoffs", "6 teams — Weeks 15, 16 and 17 (ends Monday, Dec 29)"],
-                ["Playoff Tie-Breaker", "Best regular season record vs opponent wins"],
-                ["Playoff Reseeding", "Yes"],
-                ["Divisions", "No"],
-                ["Lock Eliminated Teams", "No"],
-                ["Play Against Median Score", "No"],
-                ["Play Against a Second Opponent", "No"],
-                ["Apply Injured Status For Postponed Games", "Yes"],
-                ["Fractional Points", "Yes"],
-                ["Negative Points", "Yes"]
-              ]
-        },
     {
-          title: "Buy-In",
-                  rows: [
-                    ["League Entry Fee", "$50 per team"],
-                    ["Keeper Cost", "Up to 4 keepers per team, $10 extra each"]
-                  ]
-            },
-{
+      title: "League Settings",
+      rows: [
+        ["Trade Review", "League Votes"],
+        ["Votes Required to Veto", "Default"],
+        ["Trade Reject Time", "1 day"],
+        ["Waiver Time", "2 days"],
+        ["Waiver Type", "Continual rolling list"],
+        ["Weekly Waivers Game Time", "Tuesday"],
+        ["Injured players added directly to injury slot from waivers/FA", "Yes"],
+        ["Playoffs", "6 teams — Weeks 15, 16 and 17 (ends Monday, Dec 29)"],
+        ["Playoff Tie-Breaker", "Best regular season record vs opponent wins"],
+        ["Playoff Reseeding", "Yes"],
+        ["Divisions", "No"],
+        ["Lock Eliminated Teams", "No"],
+        ["Play Against Median Score", "No"],
+        ["Play Against a Second Opponent", "No"],
+        ["Apply Injured Status For Postponed Games", "Yes"],
+        ["Fractional Points", "Yes"],
+        ["Negative Points", "Yes"]
+      ]
+    },
+    {
+      title: "Buy-In",
+      rows: [
+        ["League Entry Fee", "$50 per team"],
+        ["Keeper Cost", "Up to 4 keepers per team, $10 extra each"]
+      ]
+    },
+    {
       title: "Keeper Rules",
-              rows: [
-                ["Draft Position", "Kept players retain the draft position they were picked at the prior year"],
-                ["Waiver Pickups", "A player added off waivers counts as a last-round pick for keeper purposes"],
-                ["Last-Round Keeper Bump", "If a keeper was a last-round pick the prior year, they move up one draft spot"],
-                ["Trades", "Same rules apply after a trade — kept at original draft position, or last-round pick if they were a waiver add by the other team"],
-                ["Drop & Re-add (Same Team)", "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)"]
-              ]
-        },
-{
+      rows: [
+        ["Draft Position", "Kept players retain the draft position they were picked at the prior year"],
+        ["Waiver Pickups", "A player added off waivers counts as a last-round pick for keeper purposes"],
+        ["Last-Round Keeper Bump", "If a keeper was a last-round pick the prior year, they move up one draft spot"],
+        ["Trades", "Same rules apply after a trade — kept at original draft position, or last-round pick if they were a waiver add by the other team"],
+        ["Drop & Re-add (Same Team)", "If a team drafts, drops, and re-adds the same player, they keep their original drafted position (prevents gaming keeper value)"]
+      ]
+    },
+    {
       title: "Roster Positions",
-              rows: [
-                ["Starters", "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF"],
-                ["Bench", "BN, BN, BN, BN, BN"],
-                ["Injured Reserve", "IR, IR"]
-              ]
-        },
-{
+      rows: [
+        ["Starters", "QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF"],
+        ["Bench", "BN, BN, BN, BN, BN"],
+        ["Injured Reserve", "IR, IR"]
+      ]
+    },
+    {
       title: "Offense Scoring",
-              rows: [
-                ["Passing Yards", "25 yards per point"],
-                ["Passing Touchdowns", "4"],
-                ["Interceptions", "-1"],
-                ["Rushing Yards", "10 yards per point"],
-                ["Rushing Touchdowns", "6"],
-                ["Receptions", "0.5"],
-                ["Receiving Yards", "10 yards per point"],
-                ["Receiving Touchdowns", "6"],
-                ["Return Touchdowns", "6"],
-                ["2-Point Conversions", "2"],
-                ["Fumbles Lost", "-2"],
-                ["Offensive Fumble Return TD", "6"]
-              ]
-        },
-{
+      rows: [
+        ["Passing Yards", "25 yards per point"],
+        ["Passing Touchdowns", "4"],
+        ["Interceptions", "-1"],
+        ["Rushing Yards", "10 yards per point"],
+        ["Rushing Touchdowns", "6"],
+        ["Receptions", "0.5"],
+        ["Receiving Yards", "10 yards per point"],
+        ["Receiving Touchdowns", "6"],
+        ["Return Touchdowns", "6"],
+        ["2-Point Conversions", "2"],
+        ["Fumbles Lost", "-2"],
+        ["Offensive Fumble Return TD", "6"]
+      ]
+    },
+    {
       title: "Kicker Scoring",
-              rows: [
-                ["Field Goals 0-19 Yards", "3"],
-                ["Field Goals 20-29 Yards", "3"],
-                ["Field Goals 30-39 Yards", "3"],
-                ["Field Goals 40-49 Yards", "4"],
-                ["Field Goals 50+ Yards", "5"],
-                ["Point After Attempt Made", "1"]
-              ]
-        },
-{
+      rows: [
+        ["Field Goals 0-19 Yards", "3"],
+        ["Field Goals 20-29 Yards", "3"],
+        ["Field Goals 30-39 Yards", "3"],
+        ["Field Goals 40-49 Yards", "4"],
+        ["Field Goals 50+ Yards", "5"],
+        ["Point After Attempt Made", "1"]
+      ]
+    },
+    {
       title: "Defense / Special Teams Scoring",
-              rows: [
-                ["Sack", "1"],
-                ["Interception", "2"],
-                ["Fumble Recovery", "2"],
-                ["Touchdown", "6"],
-                ["Safety", "2"],
-                ["Block Kick", "2"],
-                ["Kickoff and Punt Return Touchdowns", "6"],
-                ["Points Allowed 0 points", "10"],
-                ["Points Allowed 1-6 points", "7"],
-                ["Points Allowed 7-13 points", "4"],
-                ["Points Allowed 14-20 points", "1"],
-                ["Points Allowed 21-27 points", "0"],
-                ["Points Allowed 28-34 points", "-1"],
-                ["Points Allowed 35+ points", "-4"],
-                ["Extra Point Returned", "2"]
-              ]
-        }
+      rows: [
+        ["Sack", "1"],
+        ["Interception", "2"],
+        ["Fumble Recovery", "2"],
+        ["Touchdown", "6"],
+        ["Safety", "2"],
+        ["Block Kick", "2"],
+        ["Kickoff and Punt Return Touchdowns", "6"],
+        ["Points Allowed 0 points", "10"],
+        ["Points Allowed 1-6 points", "7"],
+        ["Points Allowed 7-13 points", "4"],
+        ["Points Allowed 14-20 points", "1"],
+        ["Points Allowed 21-27 points", "0"],
+        ["Points Allowed 28-34 points", "-1"],
+        ["Points Allowed 35+ points", "-4"],
+        ["Extra Point Returned", "2"]
+      ]
+    }
   ]
 };
-/* ============================================================
-     Nothing below this line needs editing.
-     ============================================================ */
 
-document.getElementById("commish-note").textContent = LEAGUE_DATA.commissionerNote;
-document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
-document.getElementById("updated-date").textContent = LEAGUE_DATA.lastUpdated;
+function render(LEAGUE_DATA) {
+  document.getElementById("commish-note").textContent = LEAGUE_DATA.commissionerNote;
+  document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
+  document.getElementById("updated-date").textContent = LEAGUE_DATA.lastUpdated;
 
-const standingsBody = document.getElementById("standings-body");
-LEAGUE_DATA.currentSeason.standings.forEach((row, i) => {
+  const standingsBody = document.getElementById("standings-body");
+  LEAGUE_DATA.currentSeason.standings.forEach((row, i) => {
     const tr = document.createElement("tr");
-  tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + row.team + "</td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
-  standingsBody.appendChild(tr);
-});
+    tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + row.team + "</td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
+    standingsBody.appendChild(tr);
+  });
 
-const historyBody = document.getElementById("history-body");
-LEAGUE_DATA.history.forEach(row => {
+  const historyBody = document.getElementById("history-body");
+  LEAGUE_DATA.history.forEach(row => {
     const tr = document.createElement("tr");
-  tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + row.champion + "</td><td>" + row.manager + "</td><td>" + row.record + "</td>";
-  historyBody.appendChild(tr);
-});
+    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + row.champion + "</td><td>" + row.manager + "</td><td>" + row.record + "</td>";
+    historyBody.appendChild(tr);
+  });
 
-const teamsGrid = document.getElementById("teams-grid");
-LEAGUE_DATA.teams.forEach(t => {
+  const teamsGrid = document.getElementById("teams-grid");
+  LEAGUE_DATA.teams.forEach(t => {
     const card = document.createElement("div");
-  card.className = "team-card";
-  card.innerHTML = "<h3>" + t.team + "</h3>" +
-        "<div class=\"manager\">" + t.manager + "</div>" +
-        "<div class=\"stat-line\">All-time: " + t.allTimeRecord + "</div>" +
-        "<div class=\"stat-line\">Titles: " + t.titles + "</div>" +
-        "<div class=\"stat-line\">In league since: " + t.joined + "</div>";
-  teamsGrid.appendChild(card);
-});
+    card.className = "team-card";
+    card.innerHTML = "<h3>" + t.team + "</h3>" +
+      "<div class=\"manager\">" + t.manager + "</div>" +
+      "<div class=\"stat-line\">All-time: " + t.allTimeRecord + "</div>" +
+      "<div class=\"stat-line\">Titles: " + t.titles + "</div>" +
+      "<div class=\"stat-line\">In league since: " + t.joined + "</div>";
+    teamsGrid.appendChild(card);
+  });
 
-const tradesBody = document.getElementById("trades-body");
-LEAGUE_DATA.trades.forEach(row => {
+  const tradesBody = document.getElementById("trades-body");
+  LEAGUE_DATA.trades.forEach(row => {
     const tr = document.createElement("tr");
-  tr.innerHTML = "<td>" + row.date + "</td><td>" + row.teams + "</td><td>" + row.details + "</td>";
-  tradesBody.appendChild(tr);
-});
+    tr.innerHTML = "<td>" + row.date + "</td><td>" + row.teams + "</td><td>" + row.details + "</td>";
+    tradesBody.appendChild(tr);
+  });
 
-const rulesGrid = document.getElementById("rules-grid");
-LEAGUE_DATA.rulesGroups.forEach(group => {
+  const rulesGrid = document.getElementById("rules-grid");
+  LEAGUE_DATA.rulesGroups.forEach(group => {
     const card = document.createElement("div");
-  card.className = "card";
-  let html = "<h3>" + group.title + "</h3><table>";
-  group.rows.forEach(pair => {
-        html += "<tr><td>" + pair[0] + "</td><td>" + pair[1] + "</td></tr>";
-});
-  html += "</table>";
-  card.innerHTML = html;
-  rulesGrid.appendChild(card);
-});
+    card.className = "card";
+    let html = "<h3>" + group.title + "</h3><table>";
+    group.rows.forEach(pair => {
+      html += "<tr><td>" + pair[0] + "</td><td>" + pair[1] + "</td></tr>";
+    });
+    html += "</table>";
+    card.innerHTML = html;
+    rulesGrid.appendChild(card);
+  });
+}
 
 document.querySelectorAll("nav button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
     document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab).classList.add("active");
+  });
 });
-});
+
+async function loadAndRender() {
+  const syncNote = document.getElementById("sync-note");
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ref = doc(db, "site", "leagueData");
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      render(snap.data());
+      syncNote.textContent = "Live data — synced from Firebase.";
+    } else {
+      await setDoc(ref, DEFAULT_LEAGUE_DATA);
+      render(DEFAULT_LEAGUE_DATA);
+      syncNote.textContent = "Live data — synced from Firebase (just initialized).";
+    }
+  } catch (err) {
+    console.error("Firebase load failed, using built-in defaults:", err);
+    render(DEFAULT_LEAGUE_DATA);
+    syncNote.textContent = "Showing built-in defaults (couldn't reach Firebase).";
+  }
+}
+
+loadAndRender();
 </script>
 
-  </body>
-  </html>
-  
+</body>
+</html>
