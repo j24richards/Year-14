@@ -301,7 +301,7 @@
   .history-card tr.rank-bronze td { color: var(--bronze); font-weight: 600; }
   .champ-board {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     gap: 12px;
     margin-bottom: 24px;
   }
@@ -327,12 +327,26 @@
   }
   .champ-card .champ-row {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 10px;
+    flex-direction: column;
+    gap: 4px;
   }
-  .champ-card .champ-team { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-  .champ-card .champ-mgr { color: var(--muted); font-size: 0.85rem; text-align: right; }
+  .champ-card .champ-team {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
+  .champ-card .champ-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .champ-card .champ-mgr {
+    color: var(--muted);
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .trophy-icon { color: var(--gold); flex: none; }
   .trophy-icon-silver { color: var(--silver); }
   .trophy-icon-bronze { color: var(--bronze); }
@@ -2441,7 +2455,7 @@ function renderHistorySection(data) {
       champCard.className = "champ-card";
       champCard.innerHTML = "<div class=\"champ-year\">" + row.year + "</div>" +
         "<div class=\"champ-row\">" +
-        "<div class=\"champ-team\">" + trophyIconHtml() + (champ.manager || "Unknown") + "</div>" +
+        "<div class=\"champ-team\">" + trophyIconHtml() + "<span>" + (champ.manager || "Unknown") + "</span></div>" +
         "<div class=\"champ-mgr\">" + champ.team + "</div>" +
         "</div>";
       champBoard.appendChild(champCard);
