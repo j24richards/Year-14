@@ -266,6 +266,41 @@
   .history-card table { font-size: 0.85rem; }
   .history-card th, .history-card td { padding: 6px 4px; }
   .history-card td:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .champ-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .champ-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .champ-card .champ-year {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .champ-card .champ-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .champ-card .champ-team { font-weight: 600; }
+  .champ-card .champ-mgr { color: var(--muted); font-size: 0.85rem; text-align: right; }
+  .table-scroll { overflow-x: auto; }
+  #ledger-table { min-width: 640px; font-variant-numeric: tabular-nums; }
+  #ledger-table .lg-mgr { text-align: left; white-space: nowrap; }
+  #ledger-table .lg-num { text-align: center; }
+  #ledger-table .lg-year { text-align: center; color: var(--muted); }
+  #ledger-table .lg-year.is-title { color: var(--gold); font-weight: 700; }
+  #ledger-table .lg-year.is-top3 { color: var(--silver); font-weight: 600; }
+  #ledger-table .lg-title { color: var(--gold); font-weight: 700; }
   .sync-note {
     text-align: center;
     font-size: 0.75rem;
@@ -496,17 +531,17 @@
   </section>
 
   <section id="history">
-    <h2>Champions by Year</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Year</th><th>Champion</th><th>Runner-up</th></tr>
-        </thead>
-        <tbody id="history-body"></tbody>
-      </table>
-    </div>
+    <h2>Champions Board</h2>
+    <div class="champ-board" id="champ-board"></div>
     <h2>Full Standings by Year</h2>
     <div class="history-grid" id="history-grid"></div>
+    <h2>Manager Ledger</h2>
+    <div class="card">
+      <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Titles, top-3 finishes, and finish history by year. Teams without a recorded manager aren't counted.</p>
+      <div class="table-scroll">
+        <table id="ledger-table"></table>
+      </div>
+    </div>
   </section>
 
   <section id="rules">
@@ -2308,22 +2343,16 @@ function getRowStandings(row) {
 }
 
 function renderHistorySection(data) {
-  const historyBody = document.getElementById("history-body");
-  historyBody.innerHTML = "";
   const historyGrid = document.getElementById("history-grid");
   historyGrid.innerHTML = "";
+  const champBoard = document.getElementById("champ-board");
+  champBoard.innerHTML = "";
 
   const sorted = (data.history || []).slice().sort((a, b) => b.year - a.year);
 
   sorted.forEach(row => {
     const standings = getRowStandings(row);
     const champ = standings[0];
-    const runner = standings[1];
-    const champCell = champ ? (champ.team + (champ.manager ? " (" + champ.manager + ")" : "")) : "TBD";
-    const runnerCell = runner ? (runner.team + (runner.manager ? " (" + runner.manager + ")" : "")) : "TBD";
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + champCell + "</td><td class=\"runner-up\">" + runnerCell + "</td>";
-    historyBody.appendChild(tr);
 
     const card = document.createElement("div");
     card.className = "team-card history-card";
@@ -2339,7 +2368,63 @@ function renderHistorySection(data) {
     }
     card.innerHTML = html;
     historyGrid.appendChild(card);
+
+    if (champ) {
+      const champCard = document.createElement("div");
+      champCard.className = "champ-card";
+      champCard.innerHTML = "<div class=\"champ-year\">" + row.year + "</div>" +
+        "<div class=\"champ-row\">" +
+        "<div class=\"champ-team\">" + (champ.manager || "Unknown") + "</div>" +
+        "<div class=\"champ-mgr\">" + champ.team + "</div>" +
+        "</div>";
+      champBoard.appendChild(champCard);
+    }
   });
+
+  renderManagerLedger(sorted);
+}
+
+function renderManagerLedger(sortedHistory) {
+  const yearsAsc = sortedHistory.map(r => r.year).slice().reverse();
+  const managerMap = {};
+  sortedHistory.forEach(row => {
+    const standings = getRowStandings(row);
+    standings.forEach((s, i) => {
+      if (!s.manager) return;
+      if (!managerMap[s.manager]) managerMap[s.manager] = {};
+      managerMap[s.manager][row.year] = i + 1;
+    });
+  });
+
+  const ledgerRows = Object.keys(managerMap).map(mgr => {
+    const byYear = managerMap[mgr];
+    const played = yearsAsc.map(y => byYear[y]).filter(r => r !== undefined);
+    const titles = played.filter(r => r === 1).length;
+    const top3 = played.filter(r => r <= 3).length;
+    const avg = played.length ? played.reduce((a, b) => a + b, 0) / played.length : 0;
+    return { mgr, byYear, titles, top3, avg, appearances: played.length };
+  });
+
+  ledgerRows.sort((a, b) => b.titles - a.titles || b.top3 - a.top3 || a.avg - b.avg);
+
+  const yearHeaderCells = yearsAsc.map(y => "<th>" + String(y).slice(2) + "&#8217;</th>").join("");
+  const bodyRows = ledgerRows.map(row => {
+    const yearCells = yearsAsc.map(y => {
+      const rank = row.byYear[y];
+      if (rank === undefined) return "<td class=\"lg-year is-empty\">&ndash;</td>";
+      const cls = rank === 1 ? "is-title" : rank <= 3 ? "is-top3" : "";
+      return "<td class=\"lg-year " + cls + "\">" + rank + "</td>";
+    }).join("");
+    return "<tr><td class=\"lg-mgr\">" + row.mgr + "</td>" +
+      "<td class=\"lg-num lg-title\">" + (row.titles || "&ndash;") + "</td>" +
+      "<td class=\"lg-num\">" + row.top3 + "</td>" +
+      "<td class=\"lg-num\">" + row.avg.toFixed(1) + "</td>" +
+      yearCells + "</tr>";
+  }).join("");
+
+  document.getElementById("ledger-table").innerHTML =
+    "<thead><tr><th class=\"lg-mgr\">Manager</th><th>Titles</th><th>Top&nbsp;3s</th><th>Avg</th>" + yearHeaderCells + "</tr></thead>" +
+    "<tbody>" + bodyRows + "</tbody>";
 }
 
 function addHistoryRow(rowsWrap, team, manager) {
