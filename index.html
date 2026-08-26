@@ -19,6 +19,8 @@
     --red: #b31942;
     --gold: #b8860b;
     --silver: #6e6b5f;
+    --bronze: #a9702f;
+    --gold-wash: linear-gradient(135deg, #f7ecd2 0%, #f3ead9 65%);
     --font-display: "Zilla Slab", Georgia, "Times New Roman", serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -33,6 +35,8 @@
       --red: #e0435f;
       --gold: #d9a832;
       --silver: #9aa3b5;
+      --bronze: #c9905c;
+      --gold-wash: linear-gradient(135deg, #2b2414 0%, #1e212a 65%);
     }
   }
   * { box-sizing: border-box; }
@@ -104,7 +108,14 @@
     padding: 30px 20px 60px;
   }
   section { display: none; }
-  section.active { display: block; }
+  section.active { display: block; animation: sectionFadeIn 0.28s ease; }
+  @keyframes sectionFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    section.active { animation: none; }
+  }
   h2 {
     font-family: var(--font-display);
     font-size: 1.3rem;
@@ -266,6 +277,9 @@
   .history-card table { font-size: 0.85rem; }
   .history-card th, .history-card td { padding: 6px 4px; }
   .history-card td:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .history-card tr.rank-gold td { color: var(--gold); font-weight: 600; }
+  .history-card tr.rank-silver td { color: var(--silver); font-weight: 600; }
+  .history-card tr.rank-bronze td { color: var(--bronze); font-weight: 600; }
   .champ-board {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -273,11 +287,16 @@
     margin-bottom: 24px;
   }
   .champ-card {
-    background: var(--panel);
+    background: var(--gold-wash);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--gold);
+    border-top: 3px solid var(--gold);
     border-radius: 10px;
     padding: 14px 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .champ-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.35);
   }
   .champ-card .champ-year {
     font-family: var(--font-display);
@@ -291,16 +310,28 @@
     align-items: baseline;
     gap: 10px;
   }
-  .champ-card .champ-team { font-weight: 600; }
+  .champ-card .champ-team { font-weight: 600; display: flex; align-items: center; gap: 5px; }
   .champ-card .champ-mgr { color: var(--muted); font-size: 0.85rem; text-align: right; }
+  .trophy-icon { color: var(--gold); flex: none; }
   .table-scroll { overflow-x: auto; }
-  #ledger-table { min-width: 640px; font-variant-numeric: tabular-nums; }
-  #ledger-table .lg-mgr { text-align: left; white-space: nowrap; }
+  #ledger-table { min-width: 640px; font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
+  #ledger-table thead th { background: var(--panel); }
+  #ledger-table tbody tr:nth-child(even) { background: var(--panel-2); }
+  #ledger-table .lg-mgr {
+    text-align: left;
+    white-space: nowrap;
+    position: sticky;
+    left: 0;
+    background: var(--panel);
+    box-shadow: 2px 0 6px -3px rgba(0, 0, 0, 0.3);
+  }
+  #ledger-table tbody tr:nth-child(even) .lg-mgr { background: var(--panel-2); }
   #ledger-table .lg-num { text-align: center; }
+  #ledger-table .lg-title { color: var(--gold); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
   #ledger-table .lg-year { text-align: center; color: var(--muted); }
   #ledger-table .lg-year.is-title { color: var(--gold); font-weight: 700; }
-  #ledger-table .lg-year.is-top3 { color: var(--silver); font-weight: 600; }
-  #ledger-table .lg-title { color: var(--gold); font-weight: 700; }
+  #ledger-table .lg-year.is-second { color: var(--silver); font-weight: 600; }
+  #ledger-table .lg-year.is-third { color: var(--bronze); font-weight: 600; }
   .sync-note {
     text-align: center;
     font-size: 0.75rem;
@@ -2342,6 +2373,16 @@ function getRowStandings(row) {
   return arr;
 }
 
+function trophyIconHtml(extraClass) {
+  return "<svg class=\"trophy-icon" + (extraClass ? " " + extraClass : "") + "\" viewBox=\"0 0 16 16\" width=\"13\" height=\"13\" aria-hidden=\"true\">" +
+    "<path d=\"M4 2h8v3a4 4 0 0 1-8 0V2z\" fill=\"currentColor\"/>" +
+    "<path d=\"M4 3H2a1 1 0 0 0-1 1c0 1.5 1 2.6 2.4 2.9\" stroke=\"currentColor\" stroke-width=\"1\" fill=\"none\"/>" +
+    "<path d=\"M12 3h2a1 1 0 0 1 1 1c0 1.5-1 2.6-2.4 2.9\" stroke=\"currentColor\" stroke-width=\"1\" fill=\"none\"/>" +
+    "<rect x=\"7\" y=\"8.5\" width=\"2\" height=\"2.5\" fill=\"currentColor\"/>" +
+    "<path d=\"M5 13.5h6l-.5-1.5h-5z\" fill=\"currentColor\"/>" +
+    "</svg>";
+}
+
 function renderHistorySection(data) {
   const historyGrid = document.getElementById("history-grid");
   historyGrid.innerHTML = "";
@@ -2349,6 +2390,7 @@ function renderHistorySection(data) {
   champBoard.innerHTML = "";
 
   const sorted = (data.history || []).slice().sort((a, b) => b.year - a.year);
+  const rankClass = i => i === 0 ? "rank-gold" : i === 1 ? "rank-silver" : i === 2 ? "rank-bronze" : "";
 
   sorted.forEach(row => {
     const standings = getRowStandings(row);
@@ -2360,7 +2402,7 @@ function renderHistorySection(data) {
     if (standings.length) {
       html += "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th></tr></thead><tbody>";
       standings.forEach((s, i) => {
-        html += "<tr><td>" + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
+        html += "<tr class=\"" + rankClass(i) + "\"><td>" + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
       });
       html += "</tbody></table>";
     } else {
@@ -2374,7 +2416,7 @@ function renderHistorySection(data) {
       champCard.className = "champ-card";
       champCard.innerHTML = "<div class=\"champ-year\">" + row.year + "</div>" +
         "<div class=\"champ-row\">" +
-        "<div class=\"champ-team\">" + (champ.manager || "Unknown") + "</div>" +
+        "<div class=\"champ-team\">" + trophyIconHtml() + (champ.manager || "Unknown") + "</div>" +
         "<div class=\"champ-mgr\">" + champ.team + "</div>" +
         "</div>";
       champBoard.appendChild(champCard);
@@ -2412,11 +2454,12 @@ function renderManagerLedger(sortedHistory) {
     const yearCells = yearsAsc.map(y => {
       const rank = row.byYear[y];
       if (rank === undefined) return "<td class=\"lg-year is-empty\">&ndash;</td>";
-      const cls = rank === 1 ? "is-title" : rank <= 3 ? "is-top3" : "";
+      const cls = rank === 1 ? "is-title" : rank === 2 ? "is-second" : rank === 3 ? "is-third" : "";
       return "<td class=\"lg-year " + cls + "\">" + rank + "</td>";
     }).join("");
+    const titleCell = row.titles ? (trophyIconHtml() + row.titles) : "&ndash;";
     return "<tr><td class=\"lg-mgr\">" + row.mgr + "</td>" +
-      "<td class=\"lg-num lg-title\">" + (row.titles || "&ndash;") + "</td>" +
+      "<td class=\"lg-num lg-title\">" + titleCell + "</td>" +
       "<td class=\"lg-num\">" + row.top3 + "</td>" +
       "<td class=\"lg-num\">" + row.avg.toFixed(1) + "</td>" +
       yearCells + "</tr>";
