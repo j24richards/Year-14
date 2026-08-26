@@ -6,7 +6,7 @@
 <title id="page-title">Year 14 — Fantasy Football History</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #fbf6ec;
@@ -62,9 +62,14 @@
     font-family: var(--font-display);
     font-size: 2.6rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.75px;
     color: #fff;
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  }
+  header h1 .yr-accent {
+    color: var(--red);
+    font-weight: 800;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3), 0 0 26px rgba(179, 25, 66, 0.55);
   }
   header h1::after {
     content: "";
@@ -506,7 +511,7 @@
 <body>
 
 <header>
-  <h1 id="page-heading">Year 14</h1>
+  <h1 id="page-heading">Year <span class="yr-accent">14</span></h1>
   <p>Tracking our fantasy football league, year after year.</p>
   <p><a href="Year 14.xlsx" download style="color: #fff;">Download full roster &amp; keeper tracker (.xlsx)</a></p>
 </header>
@@ -2592,7 +2597,16 @@ function render(LEAGUE_DATA) {
   CURRENT_DATA = LEAGUE_DATA;
   const leagueName = LEAGUE_DATA.leagueName || "League";
   document.getElementById("page-title").textContent = leagueName + " — Fantasy Football History";
-  document.getElementById("page-heading").textContent = leagueName;
+  const pageHeadingEl = document.getElementById("page-heading");
+  const nameSplitIdx = leagueName.lastIndexOf(" ");
+  if (nameSplitIdx > -1) {
+    const escHtml = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const namePrefix = leagueName.slice(0, nameSplitIdx + 1);
+    const nameAccent = leagueName.slice(nameSplitIdx + 1);
+    pageHeadingEl.innerHTML = escHtml(namePrefix) + "<span class=\"yr-accent\">" + escHtml(nameAccent) + "</span>";
+  } else {
+    pageHeadingEl.textContent = leagueName;
+  }
   document.getElementById("footer-league-name").textContent = leagueName;
   document.getElementById("commish-note").textContent = LEAGUE_DATA.commissionerNote;
   document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
