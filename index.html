@@ -6,7 +6,7 @@
 <title id="page-title">Year 14 — Fantasy Football History</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #fbf6ec;
@@ -21,7 +21,7 @@
     --silver: #6e6b5f;
     --bronze: #a9702f;
     --gold-wash: linear-gradient(135deg, #f7ecd2 0%, #f3ead9 65%);
-    --font-display: "Anton", Impact, "Arial Narrow", sans-serif;
+    --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -128,8 +128,7 @@
   @media (prefers-reduced-motion: reduce) {
     section.active { animation: none; }
   }
-  h2 {
-    font-family: var(--font-display);    font-weight: 400;    font-size: 1.3rem;    margin-bottom: 14px;
+  h2 {    font-family: var(--font-label);    font-weight: 600;    font-size: 1.3rem;    margin-bottom: 14px;
     border-left: 4px solid var(--red);
     padding-left: 10px;
   }
@@ -230,7 +229,7 @@
     padding: 16px;
   }
   .team-card h3 {
-    font-family: var(--font-display);    font-weight: 400;    margin: 0 0 4px;
+    font-family: var(--font-label);    font-weight: 600;    margin: 0 0 4px;
     font-size: 1.05rem;
     color: var(--text);
   }
@@ -320,7 +319,7 @@
     gap: 4px;
   }
   .champ-card .champ-team {
-    font-family: var(--font-display);    font-size: 1.1rem;    font-weight: 400;
+    font-family: var(--font-label);    font-size: 1.1rem;    font-weight: 600;    letter-spacing: 0.3px;
     display: flex;
     align-items: center;
     gap: 5px;
