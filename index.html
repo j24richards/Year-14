@@ -257,6 +257,15 @@
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
   }
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .history-card table { font-size: 0.85rem; }
+  .history-card th, .history-card td { padding: 6px 4px; }
+  .history-card td:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
   .sync-note {
     text-align: center;
     font-size: 0.75rem;
@@ -315,6 +324,61 @@
     font-size: 0.9rem;
   }
   .admin-btn:hover { opacity: 0.88; }
+  .admin-btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .admin-btn-secondary:hover { opacity: 0.8; }
+  .admin-history-year {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .admin-history-year-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .admin-history-year-head label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .admin-history-year-input { max-width: 100px; }
+  .admin-history-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .admin-remove-row-btn, .admin-remove-year-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .admin-remove-row-btn:hover, .admin-remove-year-btn:hover { color: var(--red); border-color: var(--red); }
+  .admin-add-row-btn {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+  .admin-add-row-btn:hover { color: var(--text); border-color: var(--text); }
   #admin-status {
     margin-top: 12px;
     font-size: 0.85rem;
@@ -441,6 +505,8 @@
         <tbody id="history-body"></tbody>
       </table>
     </div>
+    <h2>Full Standings by Year</h2>
+    <div class="history-grid" id="history-grid"></div>
   </section>
 
   <section id="rules">
@@ -479,6 +545,12 @@
         <h3 style="margin-top:0;">Keeper Selections</h3>
         <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Pick up to four kept players per team.</p>
         <div id="admin-keepers"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Season History</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Add each season's full final standings, top team first. Leave a team blank to drop that row.</p>
+        <div id="admin-history"></div>
+        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-year-btn">+ Add Year</button>
       </div>
       <button class="admin-btn" id="admin-save-btn">Save Changes</button>
       <p id="admin-status"></p>
@@ -2227,6 +2299,82 @@ function renderKeepersGrid(data) {
   }
 }
 
+function getRowStandings(row) {
+  if (row.standings && row.standings.length) return row.standings;
+  const arr = [];
+  if (row.champion) arr.push({ team: row.champion, manager: row.championManager });
+  if (row.runnerUp) arr.push({ team: row.runnerUp, manager: row.runnerUpManager });
+  return arr;
+}
+
+function renderHistorySection(data) {
+  const historyBody = document.getElementById("history-body");
+  historyBody.innerHTML = "";
+  const historyGrid = document.getElementById("history-grid");
+  historyGrid.innerHTML = "";
+
+  const sorted = (data.history || []).slice().sort((a, b) => b.year - a.year);
+
+  sorted.forEach(row => {
+    const standings = getRowStandings(row);
+    const champ = standings[0];
+    const runner = standings[1];
+    const champCell = champ ? (champ.team + (champ.manager ? " (" + champ.manager + ")" : "")) : "TBD";
+    const runnerCell = runner ? (runner.team + (runner.manager ? " (" + runner.manager + ")" : "")) : "TBD";
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + champCell + "</td><td class=\"runner-up\">" + runnerCell + "</td>";
+    historyBody.appendChild(tr);
+
+    const card = document.createElement("div");
+    card.className = "team-card history-card";
+    let html = "<h3>" + row.year + "</h3>";
+    if (standings.length) {
+      html += "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th></tr></thead><tbody>";
+      standings.forEach((s, i) => {
+        html += "<tr><td>" + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
+      });
+      html += "</tbody></table>";
+    } else {
+      html += "<div class=\"stat-line\">Records pending.</div>";
+    }
+    card.innerHTML = html;
+    historyGrid.appendChild(card);
+  });
+}
+
+function addHistoryRow(rowsWrap, team, manager) {
+  const row = document.createElement("div");
+  row.className = "admin-history-row";
+  row.innerHTML = "<input type=\"text\" class=\"admin-history-team\" placeholder=\"Team name\" value=\"" + (team || "") + "\">" +
+    "<input type=\"text\" class=\"admin-history-manager\" placeholder=\"Manager\" value=\"" + (manager || "") + "\">" +
+    "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
+  row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
+  rowsWrap.appendChild(row);
+}
+
+function addHistoryYearBlock(container, season) {
+  const yearData = season || { year: "", standings: [] };
+  const block = document.createElement("div");
+  block.className = "admin-history-year";
+  block.innerHTML = "<div class=\"admin-history-year-head\">" +
+    "<label>Year</label>" +
+    "<input type=\"number\" class=\"admin-history-year-input\" placeholder=\"Year\" value=\"" + (yearData.year || "") + "\">" +
+    "<button type=\"button\" class=\"admin-remove-year-btn\">Remove Year</button>" +
+    "</div>" +
+    "<div class=\"admin-history-rows\"></div>" +
+    "<button type=\"button\" class=\"admin-add-row-btn\">+ Add Team</button>";
+  block.querySelector(".admin-remove-year-btn").addEventListener("click", () => block.remove());
+  const rowsWrap = block.querySelector(".admin-history-rows");
+  const standings = getRowStandings(yearData);
+  if (standings.length) {
+    standings.forEach(s => addHistoryRow(rowsWrap, s.team, s.manager));
+  } else {
+    addHistoryRow(rowsWrap, "", "");
+  }
+  block.querySelector(".admin-add-row-btn").addEventListener("click", () => addHistoryRow(rowsWrap, "", ""));
+  container.appendChild(block);
+}
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
   document.getElementById("admin-draftdate").value = data.draftDate || "";
@@ -2265,6 +2413,12 @@ function buildAdminForm(data) {
       if (picks[slot]) selects[slot].value = picks[slot];
     }
   });
+
+  const historyEl = document.getElementById("admin-history");
+  historyEl.innerHTML = "";
+  (data.history || []).slice().sort((a, b) => b.year - a.year).forEach(season => {
+    addHistoryYearBlock(historyEl, season);
+  });
 }
 
 function render(LEAGUE_DATA) {
@@ -2282,14 +2436,7 @@ function render(LEAGUE_DATA) {
 
   renderStandingsBody(LEAGUE_DATA);
 
-  const historyBody = document.getElementById("history-body");
-  LEAGUE_DATA.history.forEach(row => {
-    const tr = document.createElement("tr");
-    const champCell = row.champion + (row.championManager ? " (" + row.championManager + ")" : "");
-    const runnerCell = row.runnerUp ? (row.runnerUp + (row.runnerUpManager ? " (" + row.runnerUpManager + ")" : "")) : "TBD";
-    tr.innerHTML = "<td>" + row.year + "</td><td class=\"champion\">" + champCell + "</td><td class=\"runner-up\">" + runnerCell + "</td>";
-    historyBody.appendChild(tr);
-  });
+  renderHistorySection(LEAGUE_DATA);
 
   const teamsGrid = document.getElementById("teams-grid");
   LEAGUE_DATA.teams.forEach(t => {
@@ -2391,6 +2538,10 @@ document.getElementById("admin-unlock-btn").addEventListener("click", () => {
   }
 });
 
+document.getElementById("admin-add-year-btn").addEventListener("click", () => {
+  addHistoryYearBlock(document.getElementById("admin-history"), { year: new Date().getFullYear(), standings: [] });
+});
+
 document.getElementById("admin-save-btn").addEventListener("click", async () => {
   const statusEl = document.getElementById("admin-status");
   if (!CURRENT_DATA || !FIRESTORE_REF) {
@@ -2419,6 +2570,21 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     players: keeperMap[k.team] || []
   }));
 
+  const newHistory = [];
+  document.querySelectorAll("#admin-history .admin-history-year").forEach(block => {
+    const yearVal = Number(block.querySelector(".admin-history-year-input").value);
+    if (!yearVal) return;
+    const standings = [];
+    block.querySelectorAll(".admin-history-row").forEach(row => {
+      const team = row.querySelector(".admin-history-team").value.trim();
+      const manager = row.querySelector(".admin-history-manager").value.trim();
+      if (team) standings.push({ team: team, manager: manager });
+    });
+    newHistory.push({ year: yearVal, standings: standings });
+  });
+  newHistory.sort((a, b) => b.year - a.year);
+  CURRENT_DATA.history = newHistory;
+
   statusEl.textContent = "Saving…";
   try {
     await setDoc(FIRESTORE_REF, CURRENT_DATA);
@@ -2426,6 +2592,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     document.getElementById("commish-note").textContent = CURRENT_DATA.commissionerNote;
     renderStandingsBody(CURRENT_DATA);
     renderKeepersGrid(CURRENT_DATA);
+    renderHistorySection(CURRENT_DATA);
   } catch (err) {
     statusEl.textContent = "Save failed: " + err.message;
   }
