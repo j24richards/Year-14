@@ -112,6 +112,8 @@
     nav button {
       flex: none;
       white-space: nowrap;
+      padding: 11px 20px;
+      min-height: 44px;
     }
   }
   nav button.active {
@@ -332,6 +334,9 @@
   .champ-card .champ-team { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
   .champ-card .champ-mgr { color: var(--muted); font-size: 0.85rem; text-align: right; }
   .trophy-icon { color: var(--gold); flex: none; }
+  .trophy-icon-silver { color: var(--silver); }
+  .trophy-icon-bronze { color: var(--bronze); }
+  .history-card td .trophy-icon { margin-right: 4px; vertical-align: -1px; }
   .table-scroll { overflow-x: auto; }
   #ledger-table { min-width: 640px; font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
   #ledger-table thead th { background: var(--panel); }
@@ -2410,6 +2415,7 @@ function renderHistorySection(data) {
 
   const sorted = (data.history || []).slice().sort((a, b) => b.year - a.year);
   const rankClass = i => i === 0 ? "rank-gold" : i === 1 ? "rank-silver" : i === 2 ? "rank-bronze" : "";
+  const rankIcon = i => i === 0 ? trophyIconHtml() : i === 1 ? trophyIconHtml("trophy-icon-silver") : i === 2 ? trophyIconHtml("trophy-icon-bronze") : "";
 
   sorted.forEach(row => {
     const standings = getRowStandings(row);
@@ -2421,7 +2427,7 @@ function renderHistorySection(data) {
     if (standings.length) {
       html += "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th></tr></thead><tbody>";
       standings.forEach((s, i) => {
-        html += "<tr class=\"" + rankClass(i) + "\"><td>" + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
+        html += "<tr class=\"" + rankClass(i) + "\"><td>" + rankIcon(i) + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
       });
       html += "</tbody></table>";
     } else {
