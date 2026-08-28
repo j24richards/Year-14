@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="page-title">Year 14 — Fantasy Football History</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Year 14">
+<meta property="og:description" content="Fantasy football league hub — standings, rosters, draft history, and more.">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@600&display=swap" rel="stylesheet">
@@ -524,6 +529,30 @@
     align-items: center;
     margin-bottom: 8px;
   }
+  .admin-draftresult-row {
+    display: grid;
+    grid-template-columns: 70px 70px 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .admin-trade-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .admin-draftorder-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 640px) {
+    .admin-draftresult-row, .admin-trade-row, .admin-draftorder-row { grid-template-columns: 1fr; }
+  }
   .admin-remove-row-btn, .admin-remove-year-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -750,6 +779,29 @@
         <div id="admin-history"></div>
         <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-year-btn">+ Add Year</button>
       </div>
+      <div class="card">
+        <h3 style="margin-top:0;">2026 Draft Order &mdash; Trades</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Order is set automatically. Only set a new owner for a pick that's been traded.</p>
+        <div id="admin-draftorder"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">2026 Draft Results</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Add each pick once the draft happens.</p>
+        <div id="admin-draftresults"></div>
+        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-draftresult-btn">+ Add Pick</button>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Trades</h3>
+        <div id="admin-trades"></div>
+        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-trade-btn">+ Add Trade</button>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">2026 Teams</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Once draft results above are filled in, generate next year's rosters from them instead of typing them twice.</p>
+        <button type="button" class="admin-btn admin-btn-secondary" id="admin-generate-teams2026-btn">Generate 2026 Teams from Draft Results</button>
+        <p id="admin-generate-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
+      </div>
+      <button type="button" class="admin-btn admin-btn-secondary" id="admin-export-btn">Download Backup (JSON)</button>
       <button class="admin-btn" id="admin-save-btn">Save Changes</button>
       <p id="admin-status"></p>
     </div>
@@ -3205,10 +3257,85 @@ function buildTeamCard(t) {
   return card;
 }
 
+function parseRecord(record) {
+  const parts = String(record || "0-0").split("-").map(Number);
+  return { w: parts[0] || 0, l: parts[1] || 0 };
+}
+
+function renderTeamsGrid(data) {
+  const teamsGrid = document.getElementById("teams-grid");
+  teamsGrid.innerHTML = "";
+  data.teams.forEach(t => {
+    teamsGrid.appendChild(buildTeamCard(t));
+  });
+}
+
+function renderTeams2026(data) {
+  const teams2026 = data.teams2026 || [];
+  const teams2026Grid = document.getElementById("teams2026-grid");
+  teams2026Grid.innerHTML = "";
+  const teams2026EmptyNote = document.getElementById("teams2026-empty-note");
+  if (teams2026.length) {
+    teams2026EmptyNote.style.display = "none";
+    teams2026.forEach(t => {
+      teams2026Grid.appendChild(buildTeamCard(t));
+    });
+  } else {
+    teams2026EmptyNote.style.display = "block";
+  }
+}
+
+function renderDraftOrderSection(data) {
+  const draftOrderList = document.getElementById("draftorder-list");
+  draftOrderList.innerHTML = "";
+  (data.draftOrder2026 || []).forEach(p => {
+    const li = document.createElement("li");
+    if (p.newOwner) {
+      li.innerHTML = "<span class=\"draft-order-owner\">" + p.newOwner + "<span class=\"swap-icon\" title=\"Traded pick\" aria-hidden=\"true\">&nbsp;&#8644;</span><span class=\"sr-only\"> (traded)</span></span><span class=\"draft-order-orig\">(from " + p.originalTeam + ")</span>";
+    } else {
+      li.textContent = p.originalTeam;
+    }
+    draftOrderList.appendChild(li);
+  });
+}
+
+function renderDraftResults(data) {
+  document.getElementById("draft-heading").textContent = data.currentSeason.year + " Draft Results";
+  const draftBody = document.getElementById("draft-body");
+  draftBody.innerHTML = "";
+  const draftEmptyNote = document.getElementById("draft-empty-note");
+  const draftResults = data.draftResults || [];
+  if (draftResults.length) {
+    draftEmptyNote.style.display = "none";
+    draftResults.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + row.round + "</td><td>" + row.pick + "</td><td>" + row.team + "</td><td>" + row.player + "</td>";
+      draftBody.appendChild(tr);
+    });
+  } else {
+    draftEmptyNote.style.display = "block";
+  }
+}
+
+function renderTradesSection(data) {
+  const tradesBody = document.getElementById("trades-body");
+  tradesBody.innerHTML = "";
+  (data.trades || []).forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + row.date + "</td><td>" + row.teams + "</td><td>" + row.details + "</td>";
+    tradesBody.appendChild(tr);
+  });
+}
+
 function renderStandingsBody(data) {
   const standingsBody = document.getElementById("standings-body");
   standingsBody.innerHTML = "";
-  data.currentSeason.standings.forEach((row, i) => {
+  const sorted = data.currentSeason.standings.slice().sort((a, b) => {
+    const ra = parseRecord(a.record), rb = parseRecord(b.record);
+    if (rb.w !== ra.w) return rb.w - ra.w;
+    return (b.pointsFor || 0) - (a.pointsFor || 0);
+  });
+  sorted.forEach((row, i) => {
     const tr = document.createElement("tr");
     tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + row.team + "</td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
     standingsBody.appendChild(tr);
@@ -3422,6 +3549,52 @@ function buildAdminForm(data) {
   (data.history || []).slice().sort((a, b) => b.year - a.year).forEach(season => {
     addHistoryYearBlock(historyEl, season);
   });
+
+  const teamOptions = ["<option value=\"\">— no trade —</option>"].concat(
+    data.teams.map(t => "<option value=\"" + t.team + "\">" + t.team + "</option>")
+  ).join("");
+
+  const draftOrderEl = document.getElementById("admin-draftorder");
+  draftOrderEl.innerHTML = "";
+  (data.draftOrder2026 || []).forEach((p, i) => {
+    const div = document.createElement("div");
+    div.className = "admin-draftorder-row";
+    div.innerHTML = "<span class=\"admin-team-label\">" + p.originalTeam + "</span>" +
+      "<select data-idx=\"" + i + "\" class=\"admin-draftorder-select\">" + teamOptions + "</select>";
+    draftOrderEl.appendChild(div);
+    if (p.newOwner) div.querySelector("select").value = p.newOwner;
+  });
+
+  const draftResultsEl = document.getElementById("admin-draftresults");
+  draftResultsEl.innerHTML = "";
+  (data.draftResults || []).forEach(r => addDraftResultRow(draftResultsEl, r.round, r.pick, r.team, r.player));
+
+  const tradesEl = document.getElementById("admin-trades");
+  tradesEl.innerHTML = "";
+  (data.trades || []).forEach(t => addTradeRow(tradesEl, t.date, t.teams, t.details));
+}
+
+function addDraftResultRow(rowsWrap, round, pick, team, player) {
+  const row = document.createElement("div");
+  row.className = "admin-draftresult-row";
+  row.innerHTML = "<input type=\"text\" class=\"admin-dr-round\" placeholder=\"Rd\" value=\"" + (round || "") + "\">" +
+    "<input type=\"text\" class=\"admin-dr-pick\" placeholder=\"Pick\" value=\"" + (pick || "") + "\">" +
+    "<input type=\"text\" class=\"admin-dr-team\" placeholder=\"Team\" value=\"" + (team || "") + "\">" +
+    "<input type=\"text\" class=\"admin-dr-player\" placeholder=\"Player\" value=\"" + (player || "") + "\">" +
+    "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
+  row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
+  rowsWrap.appendChild(row);
+}
+
+function addTradeRow(rowsWrap, date, teams, details) {
+  const row = document.createElement("div");
+  row.className = "admin-trade-row";
+  row.innerHTML = "<input type=\"text\" class=\"admin-trade-date\" placeholder=\"Date\" value=\"" + (date || "") + "\">" +
+    "<input type=\"text\" class=\"admin-trade-teams\" placeholder=\"Teams involved\" value=\"" + (teams || "") + "\">" +
+    "<input type=\"text\" class=\"admin-trade-details\" placeholder=\"Details\" value=\"" + (details || "") + "\">" +
+    "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
+  row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
+  rowsWrap.appendChild(row);
 }
 
 function render(LEAGUE_DATA) {
@@ -3450,49 +3623,13 @@ function render(LEAGUE_DATA) {
 
   renderHistorySection(LEAGUE_DATA);
 
-  const teamsGrid = document.getElementById("teams-grid");
-  LEAGUE_DATA.teams.forEach(t => {
-    teamsGrid.appendChild(buildTeamCard(t));
-  });
-
-  const teams2026 = LEAGUE_DATA.teams2026 || [];
-  const teams2026Grid = document.getElementById("teams2026-grid");
-  const teams2026EmptyNote = document.getElementById("teams2026-empty-note");
-  if (teams2026.length) {
-    teams2026EmptyNote.style.display = "none";
-    teams2026.forEach(t => {
-      teams2026Grid.appendChild(buildTeamCard(t));
-    });
-  } else {
-    teams2026EmptyNote.style.display = "block";
-  }
+  renderTeamsGrid(LEAGUE_DATA);
+  renderTeams2026(LEAGUE_DATA);
 
   renderKeepersGrid(LEAGUE_DATA);
 
-  const draftOrderList = document.getElementById("draftorder-list");
-  (LEAGUE_DATA.draftOrder2026 || []).forEach(p => {
-    const li = document.createElement("li");
-    if (p.newOwner) {
-      li.innerHTML = "<span class=\"draft-order-owner\">" + p.newOwner + "<span class=\"swap-icon\" title=\"Traded pick\" aria-hidden=\"true\">&nbsp;&#8644;</span><span class=\"sr-only\"> (traded)</span></span><span class=\"draft-order-orig\">(from " + p.originalTeam + ")</span>";
-    } else {
-      li.textContent = p.originalTeam;
-    }
-    draftOrderList.appendChild(li);
-  });
-
-  document.getElementById("draft-heading").textContent = LEAGUE_DATA.currentSeason.year + " Draft Results";
-  const draftBody = document.getElementById("draft-body");
-  const draftEmptyNote = document.getElementById("draft-empty-note");
-  if (LEAGUE_DATA.draftResults && LEAGUE_DATA.draftResults.length) {
-    draftEmptyNote.style.display = "none";
-    LEAGUE_DATA.draftResults.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + row.round + "</td><td>" + row.pick + "</td><td>" + row.team + "</td><td>" + row.player + "</td>";
-      draftBody.appendChild(tr);
-    });
-  } else {
-    draftEmptyNote.style.display = "block";
-  }
+  renderDraftOrderSection(LEAGUE_DATA);
+  renderDraftResults(LEAGUE_DATA);
 
   const draftResults2025 = LEAGUE_DATA.draftResults2025 || [];
   const d25TeamNames = draftResults2025.length ? draftResults2025[0].picks.map(p => p.team) : [];
@@ -3508,12 +3645,7 @@ function render(LEAGUE_DATA) {
     draft2025Body.appendChild(tr);
   });
 
-  const tradesBody = document.getElementById("trades-body");
-  LEAGUE_DATA.trades.forEach(row => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + row.date + "</td><td>" + row.teams + "</td><td>" + row.details + "</td>";
-    tradesBody.appendChild(tr);
-  });
+  renderTradesSection(LEAGUE_DATA);
 
   const rulesGrid = document.getElementById("rules-grid");
   LEAGUE_DATA.rulesGroups.forEach(group => {
@@ -3553,6 +3685,54 @@ document.getElementById("admin-unlock-btn").addEventListener("click", () => {
 
 document.getElementById("admin-add-year-btn").addEventListener("click", () => {
   addHistoryYearBlock(document.getElementById("admin-history"), { year: new Date().getFullYear(), standings: [] });
+});
+
+document.getElementById("admin-add-draftresult-btn").addEventListener("click", () => {
+  addDraftResultRow(document.getElementById("admin-draftresults"), "", "", "", "");
+});
+
+document.getElementById("admin-add-trade-btn").addEventListener("click", () => {
+  addTradeRow(document.getElementById("admin-trades"), "", "", "");
+});
+
+document.getElementById("admin-generate-teams2026-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-generate-status");
+  if (!CURRENT_DATA) return;
+  const results = CURRENT_DATA.draftResults || [];
+  if (!results.length) {
+    statusEl.textContent = "No draft results yet — fill those in first.";
+    return;
+  }
+  const byTeam = {};
+  results.forEach(r => {
+    if (!r.team) return;
+    if (!byTeam[r.team]) byTeam[r.team] = [];
+    byTeam[r.team].push({ player: r.player || "", pos: "", nfl: "", keeperCost: null, kept: false });
+  });
+  CURRENT_DATA.teams2026 = Object.keys(byTeam).map(teamName => {
+    const existing = CURRENT_DATA.teams.find(t => t.team === teamName);
+    return {
+      team: teamName,
+      manager: existing ? existing.manager : "",
+      roster: byTeam[teamName]
+    };
+  });
+  renderTeams2026(CURRENT_DATA);
+  statusEl.textContent = "Generated " + CURRENT_DATA.teams2026.length + " team(s) from draft results — click Save Changes to publish. (Position, NFL team, and keeper cost are left blank; add those later if you want them shown.)";
+});
+
+document.getElementById("admin-export-btn").addEventListener("click", () => {
+  if (!CURRENT_DATA) return;
+  const blob = new Blob([JSON.stringify(CURRENT_DATA, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const slug = (CURRENT_DATA.leagueName || "league").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  a.href = url;
+  a.download = slug + "-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 });
 
 document.getElementById("admin-save-btn").addEventListener("click", async () => {
@@ -3598,6 +3778,29 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   newHistory.sort((a, b) => b.year - a.year);
   CURRENT_DATA.history = newHistory;
 
+  document.querySelectorAll("#admin-draftorder .admin-draftorder-select").forEach(sel => {
+    CURRENT_DATA.draftOrder2026[Number(sel.dataset.idx)].newOwner = sel.value || null;
+  });
+
+  const newDraftResults = [];
+  document.querySelectorAll("#admin-draftresults .admin-draftresult-row").forEach(row => {
+    const round = row.querySelector(".admin-dr-round").value.trim();
+    const pick = row.querySelector(".admin-dr-pick").value.trim();
+    const team = row.querySelector(".admin-dr-team").value.trim();
+    const player = row.querySelector(".admin-dr-player").value.trim();
+    if (team || player) newDraftResults.push({ round: round, pick: pick, team: team, player: player });
+  });
+  CURRENT_DATA.draftResults = newDraftResults;
+
+  const newTrades = [];
+  document.querySelectorAll("#admin-trades .admin-trade-row").forEach(row => {
+    const date = row.querySelector(".admin-trade-date").value.trim();
+    const teams = row.querySelector(".admin-trade-teams").value.trim();
+    const details = row.querySelector(".admin-trade-details").value.trim();
+    if (teams || details) newTrades.push({ date: date, teams: teams, details: details });
+  });
+  CURRENT_DATA.trades = newTrades;
+
   statusEl.textContent = "Saving…";
   try {
     await setDoc(FIRESTORE_REF, CURRENT_DATA);
@@ -3606,6 +3809,11 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     renderStandingsBody(CURRENT_DATA);
     renderKeepersGrid(CURRENT_DATA);
     renderHistorySection(CURRENT_DATA);
+    renderDraftOrderSection(CURRENT_DATA);
+    renderDraftResults(CURRENT_DATA);
+    renderTradesSection(CURRENT_DATA);
+    renderTeamsGrid(CURRENT_DATA);
+    renderTeams2026(CURRENT_DATA);
   } catch (err) {
     statusEl.textContent = "Save failed: " + err.message;
   }
