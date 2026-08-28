@@ -3352,26 +3352,70 @@ function teamBadgeHtml(teamName) {
   return "<span class=\"team-badge team-badge-initials\" style=\"background: hsl(" + hue + ", 60%, 40%);\" aria-hidden=\"true\">" + initials + "</span>";
 }
 
+function levenshteinDistance(a, b) {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const temp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      prev = temp;
+    }
+  }
+  return dp[n];
+}
+
 function searchPlayers(query) {
   const resultsEl = document.getElementById("player-search-results");
   resultsEl.innerHTML = "";
   const q = query.trim().toLowerCase();
   if (!q || !CURRENT_DATA) return;
   const matches = [];
+  const seen = new Set();
+  const addMatch = (player, team, label) => {
+    const key = player + "|" + team + "|" + label;
+    if (seen.has(key)) return;
+    seen.add(key);
+    matches.push({ player, team, label });
+  };
   (CURRENT_DATA.teams || []).forEach(t => {
     (t.roster || []).forEach(p => {
       if (p.player && p.player.toLowerCase().includes(q)) {
-        matches.push({ player: p.player, team: t.team, label: "2025" });
+        addMatch(p.player, t.team, "2025");
       }
     });
   });
   (CURRENT_DATA.teams2026 || []).forEach(t => {
     (t.roster || []).forEach(p => {
       if (p.player && p.player.toLowerCase().includes(q)) {
-        matches.push({ player: p.player, team: t.team, label: "2026" });
+        addMatch(p.player, t.team, "2026");
       }
     });
   });
+  if (!matches.length && q.length >= 3) {
+    const threshold = q.length <= 4 ? 1 : q.length <= 7 ? 2 : 3;
+    const scored = [];
+    const consider = (p, team, label) => {
+      if (!p.player) return;
+      const nameLower = p.player.toLowerCase();
+      const tokens = nameLower.split(/\s+/).concat([nameLower]);
+      let best = Infinity;
+      tokens.forEach(tok => {
+        const d = levenshteinDistance(q, tok);
+        if (d < best) best = d;
+      });
+      if (best <= threshold) scored.push({ player: p.player, team, label, dist: best });
+    };
+    (CURRENT_DATA.teams || []).forEach(t => (t.roster || []).forEach(p => consider(p, t.team, "2025")));
+    (CURRENT_DATA.teams2026 || []).forEach(t => (t.roster || []).forEach(p => consider(p, t.team, "2026")));
+    scored.sort((a, b) => a.dist - b.dist);
+    scored.forEach(m => addMatch(m.player, m.team, m.label));
+  }
   if (!matches.length) {
     resultsEl.innerHTML = "<div class=\"player-search-empty\">No players found.</div>";
     return;
