@@ -576,14 +576,14 @@
 
 <nav>
   <button data-tab="home" class="active">Home</button>
-  <button data-tab="draft2025">2025 Draft</button>
-  <button data-tab="history">History</button>
-  <button data-tab="teams">2025 Teams</button>
-  <button data-tab="trades">Trades</button>
+  <button data-tab="teams2026">2026 Teams</button>
+  <button data-tab="draft">2026 Draft</button>
   <button data-tab="keepers">Keepers</button>
   <button data-tab="draftorder">Draft Order</button>
-  <button data-tab="draft">Draft</button>
-  <button data-tab="teams2026">2026 Teams</button>
+  <button data-tab="trades">Trades</button>
+  <button data-tab="teams">2025 Teams</button>
+  <button data-tab="draft2025">2025 Draft</button>
+  <button data-tab="history">History</button>
   <button data-tab="rules">Rules</button>
   <button data-tab="admin">Admin</button>
 </nav>
@@ -627,6 +627,60 @@
     </div>
   </section>
 
+  <section id="teams2026">
+    <h2>2026 Teams &amp; Managers</h2>
+    <div class="teams-grid" id="teams2026-grid"></div>
+    <p id="teams2026-empty-note" style="color: var(--muted); font-style: italic; margin: 10px 0 0;">
+      2026 rosters will appear here once the draft wraps up.
+    </p>
+  </section>
+
+  <section id="draft">
+    <h2 id="draft-heading">Draft Results</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Round</th><th>Pick</th><th>Team</th><th>Player</th></tr>
+        </thead>
+        <tbody id="draft-body"></tbody>
+      </table>
+      <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
+        Draft results will appear here once the commissioner enters them after the draft.
+      </p>
+    </div>
+  </section>
+
+  <section id="keepers">
+    <h2 id="keepers-heading">Keeper Selections</h2>
+    <p style="color: var(--muted); margin-top: -6px;">Each manager's keeper picks for the upcoming season, entered by the commissioner once choices are in.</p>
+    <div class="teams-grid" id="keepers-grid"></div>
+  </section>
+
+  <section id="draftorder">
+    <h2>2026 Draft Order</h2>
+    <p style="color: var(--muted); margin-top: -6px;">Not a snake draft &mdash; same order every round, set by 2025 standings. A name with a &#8644; means that pick has changed hands via trade.</p>
+    <div class="card">
+      <ol class="draft-order-list" id="draftorder-list"></ol>
+    </div>
+  </section>
+
+  <section id="trades">
+    <h2>Trades</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
+        </thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="teams">
+    <h2>2025 Teams &amp; Managers</h2>
+    <div class="teams-grid" id="teams-grid"></div>
+  </section>
+
   <section id="draft2025">
     <h2>2025 Draft Results</h2>
     <div class="card">
@@ -651,60 +705,6 @@
         <table id="ledger-table"></table>
       </div>
     </div>
-  </section>
-
-  <section id="teams">
-    <h2>2025 Teams &amp; Managers</h2>
-    <div class="teams-grid" id="teams-grid"></div>
-  </section>
-
-  <section id="trades">
-    <h2>Trades</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
-        </thead>
-        <tbody id="trades-body"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="keepers">
-    <h2 id="keepers-heading">Keeper Selections</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Each manager's keeper picks for the upcoming season, entered by the commissioner once choices are in.</p>
-    <div class="teams-grid" id="keepers-grid"></div>
-  </section>
-
-  <section id="draftorder">
-    <h2>2026 Draft Order</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Not a snake draft &mdash; same order every round, set by 2025 standings. A name with a &#8644; means that pick has changed hands via trade.</p>
-    <div class="card">
-      <ol class="draft-order-list" id="draftorder-list"></ol>
-    </div>
-  </section>
-
-  <section id="draft">
-    <h2 id="draft-heading">Draft Results</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Round</th><th>Pick</th><th>Team</th><th>Player</th></tr>
-        </thead>
-        <tbody id="draft-body"></tbody>
-      </table>
-      <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
-        Draft results will appear here once the commissioner enters them after the draft.
-      </p>
-    </div>
-  </section>
-
-  <section id="teams2026">
-    <h2>2026 Teams &amp; Managers</h2>
-    <div class="teams-grid" id="teams2026-grid"></div>
-    <p id="teams2026-empty-note" style="color: var(--muted); font-style: italic; margin: 10px 0 0;">
-      2026 rosters will appear here once the draft wraps up.
-    </p>
   </section>
 
   <section id="rules">
