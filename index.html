@@ -576,13 +576,14 @@
 
 <nav>
   <button data-tab="home" class="active">Home</button>
-  <button data-tab="teams">Teams</button>
+  <button data-tab="draft2025">2025 Draft</button>
+  <button data-tab="history">History</button>
+  <button data-tab="teams">2025 Teams</button>
+  <button data-tab="trades">Trades</button>
   <button data-tab="keepers">Keepers</button>
   <button data-tab="draftorder">Draft Order</button>
   <button data-tab="draft">Draft</button>
-  <button data-tab="draft2025">2025 Draft</button>
-  <button data-tab="trades">Trades</button>
-  <button data-tab="history">History</button>
+  <button data-tab="teams2026">2026 Teams</button>
   <button data-tab="rules">Rules</button>
   <button data-tab="admin">Admin</button>
 </nav>
@@ -626,9 +627,47 @@
     </div>
   </section>
 
+  <section id="draft2025">
+    <h2>2025 Draft Results</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Round</th><th id="draft2025-team-headers-placeholder"></th></tr>
+        </thead>
+        <tbody id="draft2025-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="history">
+    <h2>Champions Board</h2>
+    <div class="champ-board" id="champ-board"></div>
+    <h2>Full Standings by Year</h2>
+    <div class="history-grid" id="history-grid"></div>
+    <h2>Manager Ledger</h2>
+    <div class="card">
+      <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Titles, top-3 finishes, and finish history by year. Teams without a recorded manager aren't counted.</p>
+      <div class="table-scroll">
+        <table id="ledger-table"></table>
+      </div>
+    </div>
+  </section>
+
   <section id="teams">
-    <h2>Teams &amp; Managers</h2>
+    <h2>2025 Teams &amp; Managers</h2>
     <div class="teams-grid" id="teams-grid"></div>
+  </section>
+
+  <section id="trades">
+    <h2>Trades</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
+        </thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="keepers">
@@ -660,42 +699,12 @@
     </div>
   </section>
 
-  <section id="draft2025">
-    <h2>2025 Draft Results</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Round</th><th id="draft2025-team-headers-placeholder"></th></tr>
-        </thead>
-        <tbody id="draft2025-body"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="trades">
-    <h2>Trades</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
-        </thead>
-        <tbody id="trades-body"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="history">
-    <h2>Champions Board</h2>
-    <div class="champ-board" id="champ-board"></div>
-    <h2>Full Standings by Year</h2>
-    <div class="history-grid" id="history-grid"></div>
-    <h2>Manager Ledger</h2>
-    <div class="card">
-      <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Titles, top-3 finishes, and finish history by year. Teams without a recorded manager aren't counted.</p>
-      <div class="table-scroll">
-        <table id="ledger-table"></table>
-      </div>
-    </div>
+  <section id="teams2026">
+    <h2>2026 Teams &amp; Managers</h2>
+    <div class="teams-grid" id="teams2026-grid"></div>
+    <p id="teams2026-empty-note" style="color: var(--muted); font-style: italic; margin: 10px 0 0;">
+      2026 rosters will appear here once the draft wraps up.
+    </p>
   </section>
 
   <section id="rules">
@@ -791,6 +800,9 @@ let FIRESTORE_REF = null;
      - draftResults2025   last year's completed draft (static
                           record — replace with each new year's
                           results once draftResults is filled in)
+     - teams2026          next year's rosters — leave empty until
+                          after the draft, then fill in (same
+                          shape as "teams")
      - currentSeason      standings for the year in progress
      - history            add a new entry once a season ends
    ============================================================ */
@@ -2065,6 +2077,7 @@ const DEFAULT_LEAGUE_DATA = {
       ]
     }
   ],
+  "teams2026": [],
   "draftOrder2026": [
     { "originalTeam": "White Pool Covers", "newOwner": null },
     { "originalTeam": "Jimmy Jones Cutlets", "newOwner": null },
@@ -3150,6 +3163,48 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+function buildTeamCard(t) {
+  const card = document.createElement("div");
+  card.className = "team-card";
+  let html = "<h3>" + t.team + "</h3>" +
+    "<div class=\"manager\">" + t.manager + "</div>";
+  if (t.keepers2025 != null) {
+    html += "<div class=\"stat-line\">2025 keepers kept: " + t.keepers2025 + " of 4</div>";
+  }
+  if (t.roster && t.roster.length) {
+    const posOrder = ["QB", "RB", "WR", "TE", "K", "DEF"];
+    const groups = {};
+    const otherGroup = [];
+    t.roster.forEach(p => {
+      const pos = (p.pos || "").toUpperCase();
+      if (posOrder.includes(pos)) {
+        if (!groups[pos]) groups[pos] = [];
+        groups[pos].push(p);
+      } else {
+        otherGroup.push(p);
+      }
+    });
+    html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th></tr></thead><tbody>";
+    const renderRow = p => {
+      const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
+      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+    };
+    posOrder.forEach(pos => {
+      if (groups[pos] && groups[pos].length) {
+        html += "<tr class=\"pos-group\"><td colspan=\"4\">" + pos + "</td></tr>";
+        groups[pos].forEach(p => { html += renderRow(p); });
+      }
+    });
+    if (otherGroup.length) {
+      html += "<tr class=\"pos-group\"><td colspan=\"4\">Other</td></tr>";
+      otherGroup.forEach(p => { html += renderRow(p); });
+    }
+    html += "</tbody></table>";
+  }
+  card.innerHTML = html;
+  return card;
+}
+
 function renderStandingsBody(data) {
   const standingsBody = document.getElementById("standings-body");
   standingsBody.innerHTML = "";
@@ -3397,44 +3452,20 @@ function render(LEAGUE_DATA) {
 
   const teamsGrid = document.getElementById("teams-grid");
   LEAGUE_DATA.teams.forEach(t => {
-    const card = document.createElement("div");
-    card.className = "team-card";
-    let html = "<h3>" + t.team + "</h3>" +
-      "<div class=\"manager\">" + t.manager + "</div>" +
-      "<div class=\"stat-line\">2025 keepers kept: " + t.keepers2025 + " of 4</div>";
-    if (t.roster && t.roster.length) {
-      const posOrder = ["QB", "RB", "WR", "TE", "K", "DEF"];
-      const groups = {};
-      const otherGroup = [];
-      t.roster.forEach(p => {
-        const pos = (p.pos || "").toUpperCase();
-        if (posOrder.includes(pos)) {
-          if (!groups[pos]) groups[pos] = [];
-          groups[pos].push(p);
-        } else {
-          otherGroup.push(p);
-        }
-      });
-      html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th></tr></thead><tbody>";
-      const renderRow = p => {
-        const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
-        return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
-      };
-      posOrder.forEach(pos => {
-        if (groups[pos] && groups[pos].length) {
-          html += "<tr class=\"pos-group\"><td colspan=\"4\">" + pos + "</td></tr>";
-          groups[pos].forEach(p => { html += renderRow(p); });
-        }
-      });
-      if (otherGroup.length) {
-        html += "<tr class=\"pos-group\"><td colspan=\"4\">Other</td></tr>";
-        otherGroup.forEach(p => { html += renderRow(p); });
-      }
-      html += "</tbody></table>";
-    }
-    card.innerHTML = html;
-    teamsGrid.appendChild(card);
+    teamsGrid.appendChild(buildTeamCard(t));
   });
+
+  const teams2026 = LEAGUE_DATA.teams2026 || [];
+  const teams2026Grid = document.getElementById("teams2026-grid");
+  const teams2026EmptyNote = document.getElementById("teams2026-empty-note");
+  if (teams2026.length) {
+    teams2026EmptyNote.style.display = "none";
+    teams2026.forEach(t => {
+      teams2026Grid.appendChild(buildTeamCard(t));
+    });
+  } else {
+    teams2026EmptyNote.style.display = "block";
+  }
 
   renderKeepersGrid(LEAGUE_DATA);
 
