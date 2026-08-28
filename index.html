@@ -89,6 +89,18 @@
     letter-spacing: 0.2px;
   }
   header a { color: #fff; text-decoration: underline; }
+  .header-last-updated {
+    position: absolute;
+    top: 14px;
+    left: 20px;
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+  @media (max-width: 520px) {
+    .header-last-updated { display: none; }
+  }
   nav {
     display: flex;
     justify-content: center;
@@ -598,6 +610,7 @@
 <body>
 
 <header>
+  <div class="header-last-updated" id="header-last-updated"></div>
   <h1 id="page-heading">Year <span class="yr-accent">14</span></h1>
   <p>Tracking our fantasy football league, year after year.</p>
   <p><a href="Year 14.xlsx" download style="color: #fff;">Download full roster &amp; keeper tracker (.xlsx)</a></p>
@@ -3257,6 +3270,13 @@ function buildTeamCard(t) {
   return card;
 }
 
+function formatLastUpdated(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return "";
+  return "Updated " + d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
 function parseRecord(record) {
   const parts = String(record || "0-0").split("-").map(Number);
   return { w: parts[0] || 0, l: parts[1] || 0 };
@@ -3615,6 +3635,7 @@ function render(LEAGUE_DATA) {
   document.getElementById("commish-note").textContent = LEAGUE_DATA.commissionerNote;
   document.getElementById("season-heading").textContent = LEAGUE_DATA.currentSeason.year + " Season Standings";
   document.getElementById("updated-date").textContent = LEAGUE_DATA.lastUpdated;
+  document.getElementById("header-last-updated").textContent = formatLastUpdated(LEAGUE_DATA.lastUpdated);
 
   renderCountdown();
   setInterval(renderCountdown, 1000);
@@ -3743,6 +3764,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   }
   CURRENT_DATA.commissionerNote = document.getElementById("admin-note").value;
   CURRENT_DATA.draftDate = document.getElementById("admin-draftdate").value;
+  CURRENT_DATA.lastUpdated = new Date().toISOString().slice(0, 10);
 
   document.querySelectorAll(".admin-record-input").forEach(input => {
     CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].record = input.value;
@@ -3806,6 +3828,8 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     await setDoc(FIRESTORE_REF, CURRENT_DATA);
     statusEl.textContent = "Saved! The site is now showing your changes.";
     document.getElementById("commish-note").textContent = CURRENT_DATA.commissionerNote;
+    document.getElementById("updated-date").textContent = CURRENT_DATA.lastUpdated;
+    document.getElementById("header-last-updated").textContent = formatLastUpdated(CURRENT_DATA.lastUpdated);
     renderStandingsBody(CURRENT_DATA);
     renderKeepersGrid(CURRENT_DATA);
     renderHistorySection(CURRENT_DATA);
