@@ -21,7 +21,7 @@
     --text: #0a2240;
     --muted: #6b6048;
     --accent: #0a3161;
-    --red: #b31942;
+    --red: #b32328;
     --gold: #b8860b;
     --silver: #6e6b5f;
     --bronze: #a9702f;
@@ -37,7 +37,7 @@
       --text: #eef0f5;
       --muted: #a3a9b8;
       --accent: #0a3161;
-      --red: #e0435f;
+      --red: #e04a37;
       --gold: #d9a832;
       --silver: #9aa3b5;
       --bronze: #c9905c;
@@ -3759,7 +3759,7 @@ document.getElementById("admin-export-btn").addEventListener("click", () => {
 document.getElementById("admin-save-btn").addEventListener("click", async () => {
   const statusEl = document.getElementById("admin-status");
   if (!CURRENT_DATA || !FIRESTORE_REF) {
-    statusEl.textContent = "Not connected to Firebase yet — try again in a moment.";
+    statusEl.textContent = "Not connected yet — try again in a moment.";
     return;
   }
   CURRENT_DATA.commissionerNote = document.getElementById("admin-note").value;
@@ -3857,16 +3857,16 @@ async function loadAndRender() {
       // though the live Firestore document predates it. Anything the
       // live document already has still wins.
       render({ ...DEFAULT_LEAGUE_DATA, ...snap.data() });
-      syncNote.textContent = "Live data — synced from Firebase.";
+      syncNote.textContent = "Live data — synced.";
     } else {
       await setDoc(FIRESTORE_REF, DEFAULT_LEAGUE_DATA);
       render(DEFAULT_LEAGUE_DATA);
-      syncNote.textContent = "Live data — synced from Firebase (just initialized).";
+      syncNote.textContent = "Live data — synced (just initialized).";
     }
   } catch (err) {
     console.error("Firebase load failed, using built-in defaults:", err);
     render(DEFAULT_LEAGUE_DATA);
-    syncNote.textContent = "Showing built-in defaults (couldn't reach Firebase).";
+    syncNote.textContent = "Showing built-in defaults (couldn't reach the live data).";
   }
 }
 
