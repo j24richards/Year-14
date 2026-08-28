@@ -40,6 +40,17 @@
     }
   }
   * { box-sizing: border-box; }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -275,6 +286,72 @@
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
   }
+  .draft-order-owner {
+    color: var(--gold);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .draft-order-owner .swap-icon {
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  .draft-order-none { color: var(--muted); }
+  .draft-order-list {
+    list-style: none;
+    counter-reset: pick;
+    margin: 0;
+    padding: 0;
+  }
+  .draft-order-list li {
+    counter-increment: pick;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--border);
+    font-size: 1rem;
+  }
+  .draft-order-list li:last-child { border-bottom: none; }
+  .draft-order-list li::before {
+    content: counter(pick) ".";
+    font-family: var(--font-label);
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 22px;
+  }
+  .draft-order-orig {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  #draft2025 .card {
+    overflow-x: visible;
+    padding: 14px 6px;
+  }
+  #draft2025 table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  #draft2025 th, #draft2025 td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 0.64rem;
+    padding: 6px 3px;
+    text-align: center;
+    line-height: 1.25;
+  }
+  @media (max-width: 700px) {
+    #draft2025 th, #draft2025 td {
+      font-size: 0.56rem;
+      padding: 5px 2px;
+    }
+  }
+  #draft2025 th:first-child, #draft2025 td:first-child {
+    width: 26px;
+    text-align: left;
+  }
   .history-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -501,7 +578,9 @@
   <button data-tab="home" class="active">Home</button>
   <button data-tab="teams">Teams</button>
   <button data-tab="keepers">Keepers</button>
+  <button data-tab="draftorder">Draft Order</button>
   <button data-tab="draft">Draft</button>
+  <button data-tab="draft2025">2025 Draft</button>
   <button data-tab="trades">Trades</button>
   <button data-tab="history">History</button>
   <button data-tab="rules">Rules</button>
@@ -558,6 +637,14 @@
     <div class="teams-grid" id="keepers-grid"></div>
   </section>
 
+  <section id="draftorder">
+    <h2>2026 Draft Order</h2>
+    <p style="color: var(--muted); margin-top: -6px;">Not a snake draft &mdash; same order every round, set by 2025 standings. A name with a &#8644; means that pick has changed hands via trade.</p>
+    <div class="card">
+      <ol class="draft-order-list" id="draftorder-list"></ol>
+    </div>
+  </section>
+
   <section id="draft">
     <h2 id="draft-heading">Draft Results</h2>
     <div class="card">
@@ -570,6 +657,18 @@
       <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
         Draft results will appear here once the commissioner enters them after the draft.
       </p>
+    </div>
+  </section>
+
+  <section id="draft2025">
+    <h2>2025 Draft Results</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Round</th><th id="draft2025-team-headers-placeholder"></th></tr>
+        </thead>
+        <tbody id="draft2025-body"></tbody>
+      </table>
     </div>
   </section>
 
@@ -684,7 +783,14 @@ let FIRESTORE_REF = null;
      - leagueName        e.g. "Year 15"
      - draftDate         ISO date/time string for the countdown,
                           e.g. "2027-08-29T19:00:00"
+     - draftOrder2026     pick order for the upcoming draft (not a
+                          snake draft, so one order for every
+                          round); set a pick's "newOwner" once
+                          it's traded
      - draftResults       fill in after the current year's draft
+     - draftResults2025   last year's completed draft (static
+                          record — replace with each new year's
+                          results once draftResults is filled in)
      - currentSeason      standings for the year in progress
      - history            add a new entry once a season ends
    ============================================================ */
@@ -1959,7 +2065,696 @@ const DEFAULT_LEAGUE_DATA = {
       ]
     }
   ],
+  "draftOrder2026": [
+    { "originalTeam": "White Pool Covers", "newOwner": null },
+    { "originalTeam": "Jimmy Jones Cutlets", "newOwner": null },
+    { "originalTeam": "Terry Glenn", "newOwner": null },
+    { "originalTeam": "Huge Ditka", "newOwner": null },
+    { "originalTeam": "Dumpster Fire", "newOwner": null },
+    { "originalTeam": "My Ball Zach Ertz", "newOwner": null },
+    { "originalTeam": "Allen's Wayside Furniture", "newOwner": null },
+    { "originalTeam": "Leeroy Judkins", "newOwner": null },
+    { "originalTeam": "Run CMC", "newOwner": null },
+    { "originalTeam": "Prestige Worldwide", "newOwner": null }
+  ],
   "draftResults": [],
+  "draftResults2025": [
+    {
+      "round": "1",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "CeeDee Lamb"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Ashton Jeanty"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Bijan Robinson"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Jahmyr Gibbs"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Ladd McConkey"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Omarion Hampton"
+        },
+        {
+          "team": "JR",
+          "player": "James Cook III"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Christian McCaffrey"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "James Conner"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Saquon Barkley"
+        }
+      ]
+    },
+    {
+      "round": "2",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Malik Nabers"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Marvin Harrison"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Josh Allen"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Drake London"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Breece Hall"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Tee Higgins"
+        },
+        {
+          "team": "JR",
+          "player": "Jaxon Smith-Njigba"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Mike Evans"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Terry McLaurin"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "DJ Moore"
+        }
+      ]
+    },
+    {
+      "round": "3",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "TreVeyon Henderson"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Isiah Pacheco"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Davante Adams"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Kevin Walker III"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Alvin Kamara"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Jonathan Taylor"
+        },
+        {
+          "team": "JR",
+          "player": "DK Metcalf"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Chuba Hubbard"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Derrick Henry"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "George Pickens"
+        }
+      ]
+    },
+    {
+      "round": "4",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Jaylen Warren"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Jaylen Waddle"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Xavier Worthy"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Tony Pollard"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "RJ Harvey"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Tetairoa McMillan"
+        },
+        {
+          "team": "JR",
+          "player": "Emeka Egbuka"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Courtland Sutton"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "George Kittle"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Travis Hunter"
+        }
+      ]
+    },
+    {
+      "round": "5",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Patrick Mahomes"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Joe Burrow"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Zay Flowers"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Rome Odunze"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Amon-Ra St. Brown"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Ja'Marr Chase"
+        },
+        {
+          "team": "JR",
+          "player": "Kaleb Johnson"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Brock Bowers"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "D'Andre Swift"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Josh Jacobs"
+        }
+      ]
+    },
+    {
+      "round": "6",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Stefon Diggs"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Deebo Samuel"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Tyrone Tracy Jr."
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Dallas Goedert"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "T.J Hockenson"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Chris Olave"
+        },
+        {
+          "team": "JR",
+          "player": "Ricky Pearsall"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Kyler Murray"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Evan Engram"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Jakobi Meyers"
+        }
+      ]
+    },
+    {
+      "round": "7",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Aaron Jones Sr."
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Matthew Golden"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Mark Andrews"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "DeVonta Smith"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Travis Etienne"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Tyler Warren"
+        },
+        {
+          "team": "JR",
+          "player": "Brian Thomas Jr."
+        },
+        {
+          "team": "Run CMC",
+          "player": "Jerry Jeudy"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Brock Purdy"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Bo Nix"
+        }
+      ]
+    },
+    {
+      "round": "8",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Cooper Kupp"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Keon Coleman"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Michael Pittman Jr"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Rashid Shaheed"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Jordan Mason"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Jayden Daniels"
+        },
+        {
+          "team": "JR",
+          "player": "Jalen Hurts"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Cam Skattebo"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Chris Godwin Jr"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Rashee Rice"
+        }
+      ]
+    },
+    {
+      "round": "9",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Jordan Addison"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Justin Jefferson"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Tucker Kraft"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Justin Herbert"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Jauan Jennings"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Zach Charbonnet"
+        },
+        {
+          "team": "JR",
+          "player": "Braelon Allen"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Joe Mixon"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Nico Collin"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "J.K Dobbins"
+        }
+      ]
+    },
+    {
+      "round": "10",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "C.J Stroud"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Javonte Williams"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Rashod Bateman"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Tank Bigsby"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Khalil Shakir"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Brandon Aubrey"
+        },
+        {
+          "team": "JR",
+          "player": "Jacory Crosky-Merritt"
+        },
+        {
+          "team": "Run CMC",
+          "player": "De'Von Achane"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Bhayshul Tuten"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Darnell Mooney"
+        }
+      ]
+    },
+    {
+      "round": "11",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Harrison Butker"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Colston Loveland"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Josh Downs"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Kansas City"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Tyler Bass"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "DeAndre Hopkins"
+        },
+        {
+          "team": "JR",
+          "player": "Austin Ekeler"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Cameron Dicker"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Cedric Tillman"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "David Njoku"
+        }
+      ]
+    },
+    {
+      "round": "12",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Baltimore"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Tre' Harris"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Jake Bates"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Joshua Palmer"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Philadelphia"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Baker Mayfield"
+        },
+        {
+          "team": "JR",
+          "player": "Brian Robinson Jr"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Jayden Reed"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Dak Prescott"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Denver"
+        }
+      ]
+    },
+    {
+      "round": "13",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Travis Kelce"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Detroit"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "David Montgomery"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Jake Elliott"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Marvin Mims Jr."
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Rhamondre Stevenson"
+        },
+        {
+          "team": "JR",
+          "player": "Quinshon Judkins"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Brandon Aiyuk"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Pittsburg"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Chase McLaughlin"
+        }
+      ]
+    },
+    {
+      "round": "14",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Amari Cooper"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Chris Boswell"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Kyren Williams"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Wan'Dale Robinson"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Lamar Jackson"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Buffalo"
+        },
+        {
+          "team": "JR",
+          "player": "Trey McBride"
+        },
+        {
+          "team": "Run CMC",
+          "player": "A.J. Brown"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Ka'Imi Fairbairn"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Garrett Wilson"
+        }
+      ]
+    },
+    {
+      "round": "15",
+      "picks": [
+        {
+          "team": "Huge Ditka",
+          "player": "Nick Chubb"
+        },
+        {
+          "team": "White Pool Covers",
+          "player": "Sam LaPorta"
+        },
+        {
+          "team": "Bed Bath & Bijan",
+          "player": "Jameson Williams"
+        },
+        {
+          "team": "Dumpster Fire",
+          "player": "Adam Thielen"
+        },
+        {
+          "team": "Jimmy Jones Cutlets",
+          "player": "Puka Nacua"
+        },
+        {
+          "team": "Prestige Worldwide",
+          "player": "Calvin Ridley"
+        },
+        {
+          "team": "JR",
+          "player": "Chase Brown"
+        },
+        {
+          "team": "Run CMC",
+          "player": "Keenan Allen"
+        },
+        {
+          "team": "Terry Glenn",
+          "player": "Tyreek Hill"
+        },
+        {
+          "team": "My Ball Zach Ertz",
+          "player": "Bucky Irving"
+        }
+      ]
+    }
+  ],
   "keeperSelections": [
     {
       "team": "White Pool Covers",
@@ -2643,6 +3438,17 @@ function render(LEAGUE_DATA) {
 
   renderKeepersGrid(LEAGUE_DATA);
 
+  const draftOrderList = document.getElementById("draftorder-list");
+  (LEAGUE_DATA.draftOrder2026 || []).forEach(p => {
+    const li = document.createElement("li");
+    if (p.newOwner) {
+      li.innerHTML = "<span class=\"draft-order-owner\">" + p.newOwner + "<span class=\"swap-icon\" title=\"Traded pick\" aria-hidden=\"true\">&nbsp;&#8644;</span><span class=\"sr-only\"> (traded)</span></span><span class=\"draft-order-orig\">(from " + p.originalTeam + ")</span>";
+    } else {
+      li.textContent = p.originalTeam;
+    }
+    draftOrderList.appendChild(li);
+  });
+
   document.getElementById("draft-heading").textContent = LEAGUE_DATA.currentSeason.year + " Draft Results";
   const draftBody = document.getElementById("draft-body");
   const draftEmptyNote = document.getElementById("draft-empty-note");
@@ -2656,6 +3462,20 @@ function render(LEAGUE_DATA) {
   } else {
     draftEmptyNote.style.display = "block";
   }
+
+  const draftResults2025 = LEAGUE_DATA.draftResults2025 || [];
+  const d25TeamNames = draftResults2025.length ? draftResults2025[0].picks.map(p => p.team) : [];
+  document.getElementById("draft2025-team-headers-placeholder").outerHTML = d25TeamNames.map(n => "<th>" + n + "</th>").join("");
+  const draft2025Body = document.getElementById("draft2025-body");
+  draftResults2025.forEach(r => {
+    const tr = document.createElement("tr");
+    let html = "<td>" + r.round + "</td>";
+    r.picks.forEach(p => {
+      html += "<td>" + (p.player || "—") + "</td>";
+    });
+    tr.innerHTML = html;
+    draft2025Body.appendChild(tr);
+  });
 
   const tradesBody = document.getElementById("trades-body");
   LEAGUE_DATA.trades.forEach(row => {
@@ -2769,7 +3589,11 @@ async function loadAndRender() {
     const snap = await getDoc(FIRESTORE_REF);
 
     if (snap.exists()) {
-      render(snap.data());
+      // Merge so any field added to DEFAULT_LEAGUE_DATA later (like
+      // draftOrder2026 / draftResults2025) shows up immediately even
+      // though the live Firestore document predates it. Anything the
+      // live document already has still wins.
+      render({ ...DEFAULT_LEAGUE_DATA, ...snap.data() });
       syncNote.textContent = "Live data — synced from Firebase.";
     } else {
       await setDoc(FIRESTORE_REF, DEFAULT_LEAGUE_DATA);
