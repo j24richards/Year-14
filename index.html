@@ -890,6 +890,20 @@
         <h3 style="margin-top:0;">Keeper Selections</h3>
         <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Pick up to four kept players per team.</p>
         <div id="admin-keepers"></div>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
+          <input type="checkbox" id="admin-keepers-visible">
+          Make keeper selections visible to everyone
+        </label>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Move a Player Between Rosters</h3>
+        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Fix a roster mistake by moving a player from one team's roster to another.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
+          <select id="admin-move-player-select" style="flex:2; min-width:180px;"></select>
+          <select id="admin-move-team-select" style="flex:1; min-width:140px;"></select>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-move-player-btn">Move Player</button>
+        </div>
+        <p id="admin-move-status" style="color: var(--muted); font-size: 0.82rem;"></p>
       </div>
       <div class="card">
         <h3 style="margin-top:0;">Season History</h3>
@@ -2990,6 +3004,7 @@ const DEFAULT_LEAGUE_DATA = {
       "players": []
     }
   ],
+  "keepersVisible": false,
   "trades": [
     {
       "date": "TBD",
@@ -3571,6 +3586,10 @@ function renderKeepersGrid(data) {
   document.getElementById("keepers-heading").textContent = data.currentSeason.year + " Keeper Selections";
   const keepersGrid = document.getElementById("keepers-grid");
   keepersGrid.innerHTML = "";
+  if (!data.keepersVisible) {
+    keepersGrid.innerHTML = '<p style="color: var(--muted); grid-column: 1 / -1;">Keeper selections are not finalized yet — check back soon.</p>';
+    return;
+  }
   if (data.keeperSelections) {
     data.keeperSelections.forEach(k => {
       const card = document.createElement("div");
@@ -3730,9 +3749,56 @@ function addHistoryYearBlock(container, season) {
   container.appendChild(block);
 }
 
+function populateKeeperPicker(data) {
+  const keepersEl = document.getElementById("admin-keepers");
+  if (!keepersEl) return;
+  keepersEl.innerHTML = "";
+  const KEEPER_SLOTS = 4;
+  data.teams.forEach(t => {
+    const existing = (data.keeperSelections || []).find(k => k.team === t.team);
+    const picks = (existing && existing.players) || [];
+    const options = ["<option value=\"\">— none —</option>"].concat(
+      t.roster.map(p => "<option value=\"" + p.player + "\">" + p.player + "</option>")
+    ).join("");
+    const block = document.createElement("div");
+    block.className = "admin-keeper-block";
+    let html = "<span class=\"admin-team-label\">" + t.team + "</span><div class=\"admin-keeper-selects\">";
+    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
+      html += "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>";
+    }
+    html += "</div>";
+    block.innerHTML = html;
+    keepersEl.appendChild(block);
+    const selects = block.querySelectorAll("select");
+    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
+      if (picks[slot]) selects[slot].value = picks[slot];
+    }
+  });
+}
+
+function populateMoveRosterControls(data) {
+  const playerSel = document.getElementById("admin-move-player-select");
+  const teamSel = document.getElementById("admin-move-team-select");
+  if (!playerSel || !teamSel) return;
+  const players = [];
+  data.teams.forEach(t => {
+    t.roster.forEach(p => {
+      players.push({ team: t.team, player: p.player });
+    });
+  });
+  players.sort((a, b) => a.player.localeCompare(b.player));
+  playerSel.innerHTML = players.map(p =>
+    "<option value=\"" + p.team + "||" + p.player + "\">" + p.player + " (" + p.team + ")</option>"
+  ).join("");
+  teamSel.innerHTML = data.teams.map(t =>
+    "<option value=\"" + t.team + "\">" + t.team + "</option>"
+  ).join("");
+}
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
   document.getElementById("admin-draftdate").value = data.draftDate || "";
+  document.getElementById("admin-keepers-visible").checked = !!data.keepersVisible;
 
   const standingsEl = document.getElementById("admin-standings");
   standingsEl.innerHTML = "";
@@ -3756,31 +3822,10 @@ function buildAdminForm(data) {
     badgesEl.appendChild(div);
   });
 
-  const keepersEl = document.getElementById("admin-keepers");
-  keepersEl.innerHTML = "";
-  const KEEPER_SLOTS = 4;
-  data.teams.forEach(t => {
-    const existing = (data.keeperSelections || []).find(k => k.team === t.team);
-    const picks = (existing && existing.players) || [];
-    const options = ["<option value=\"\">— none —</option>"].concat(
-      t.roster.map(p => "<option value=\"" + p.player + "\">" + p.player + "</option>")
-    ).join("");
-    const block = document.createElement("div");
-    block.className = "admin-keeper-block";
-    let html = "<span class=\"admin-team-label\">" + t.team + "</span><div class=\"admin-keeper-selects\">";
-    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
-      html += "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>";
-    }
-    html += "</div>";
-    block.innerHTML = html;
-    keepersEl.appendChild(block);
-    const selects = block.querySelectorAll("select");
-    for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
-      if (picks[slot]) selects[slot].value = picks[slot];
-    }
-  });
-
-  const historyEl = document.getElementById("admin-history");
+  populateKeeperPicker(data);
+    populateMoveRosterControls(data);
+  
+    const historyEl = document.getElementById("admin-history");
   historyEl.innerHTML = "";
   (data.history || []).slice().sort((a, b) => b.year - a.year).forEach(season => {
     addHistoryYearBlock(historyEl, season);
@@ -3927,6 +3972,12 @@ document.getElementById("admin-unlock-btn").addEventListener("click", () => {
   }
 });
 
+document.getElementById("admin-password").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    document.getElementById("admin-unlock-btn").click();
+  }
+});
+
 document.getElementById("admin-add-year-btn").addEventListener("click", () => {
   addHistoryYearBlock(document.getElementById("admin-history"), { year: new Date().getFullYear(), standings: [] });
 });
@@ -3963,6 +4014,31 @@ document.getElementById("admin-generate-teams2026-btn").addEventListener("click"
   });
   renderTeams2026(CURRENT_DATA);
   statusEl.textContent = "Generated " + CURRENT_DATA.teams2026.length + " team(s) from draft results — click Save Changes to publish. (Position, NFL team, and keeper cost are left blank; add those later if you want them shown.)";
+});
+
+document.getElementById("admin-move-player-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-move-status");
+  if (!CURRENT_DATA) return;
+  const playerSel = document.getElementById("admin-move-player-select");
+  const teamSel = document.getElementById("admin-move-team-select");
+  const raw = playerSel.value;
+  if (!raw) { statusEl.textContent = "No player available to move."; return; }
+  const sep = raw.indexOf("||");
+  const fromTeam = raw.slice(0, sep);
+  const playerName = raw.slice(sep + 2);
+  const toTeam = teamSel.value;
+  if (!toTeam) { statusEl.textContent = "Choose a destination team."; return; }
+  if (fromTeam === toTeam) { statusEl.textContent = playerName + " is already on " + toTeam + "."; return; }
+  const fromTeamObj = CURRENT_DATA.teams.find(t => t.team === fromTeam);
+  const toTeamObj = CURRENT_DATA.teams.find(t => t.team === toTeam);
+  if (!fromTeamObj || !toTeamObj) { statusEl.textContent = "Team not found."; return; }
+  const idx = fromTeamObj.roster.findIndex(p => p.player === playerName);
+  if (idx === -1) { statusEl.textContent = "Player not found on " + fromTeam + "."; return; }
+  const moved = fromTeamObj.roster.splice(idx, 1)[0];
+  toTeamObj.roster.push(moved);
+  populateMoveRosterControls(CURRENT_DATA);
+  populateKeeperPicker(CURRENT_DATA);
+  statusEl.textContent = "Moved " + playerName + " from " + fromTeam + " to " + toTeam + ". Click Save Changes to publish.";
 });
 
 document.getElementById("admin-export-btn").addEventListener("click", () => {
@@ -4014,6 +4090,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     manager: k.manager,
     players: keeperMap[k.team] || []
   }));
+  CURRENT_DATA.keepersVisible = document.getElementById("admin-keepers-visible").checked;
 
   const newHistory = [];
   document.querySelectorAll("#admin-history .admin-history-year").forEach(block => {
