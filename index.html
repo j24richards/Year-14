@@ -1000,10 +1000,20 @@ const firebaseConfig = {
   measurementId: "G-K5FTVHNG9P"
 };
 
-const ADMIN_PASSWORD = "Year14Keepers2026";
+// SHA-256 hash of the commissioner password, so the password itself isn't
+// sitting in plain text in this public file. To change the password:
+// hash the new value (e.g. in a browser console: run the sha256Hex()
+// function below on your new password) and paste the result here.
+const ADMIN_PASSWORD_HASH = "f7798d0e74383db36f56aeac6ee392a7813d85a808902ef64d58df7e1159d947";
 let CURRENT_DATA = null;
 let FIRESTORE_DB = null;
 let FIRESTORE_REF = null;
+
+async function sha256Hex(str) {
+  const bytes = new TextEncoder().encode(str);
+  const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 /* ============================================================
    DEFAULT DATA — used the very first time the site loads (it
@@ -3655,11 +3665,13 @@ function renderKeepersGrid(data) {
       card.className = "team-card";
       let html = "<h3>" + teamBadgeHtml(k.team) + "<span class=\"team-card-name\">" + k.team + "</span></h3><div class=\"manager\">" + k.manager + "</div>";
       if (k.players && k.players.length) {
+        const playersByRound = k.players
+          .map(p => ({ name: p, round: getKeeperRound(data, k.team, p) }))
+          .sort((a, b) => (a.round || 999) - (b.round || 999));
         html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
-        k.players.forEach(p => {
-          const round = getKeeperRound(data, k.team, p);
-          const roundBadge = round ? " <span class=\"cost-badge\">Round " + ordinal(round) + "</span>" : "";
-          html += "<li>" + p + roundBadge + "</li>";
+        playersByRound.forEach(p => {
+          const roundBadge = p.round ? " <span class=\"cost-badge\">Round " + ordinal(p.round) + "</span>" : "";
+          html += "<li>" + p.name + roundBadge + "</li>";
         });
         html += "</ul>";
       } else {
@@ -4022,9 +4034,10 @@ document.getElementById("mobile-nav-select").addEventListener("change", (e) => {
   if (btn) btn.click();
 });
 
-document.getElementById("admin-unlock-btn").addEventListener("click", () => {
+document.getElementById("admin-unlock-btn").addEventListener("click", async () => {
   const val = document.getElementById("admin-password").value;
-  if (val === ADMIN_PASSWORD) {
+  const hash = await sha256Hex(val);
+  if (hash === ADMIN_PASSWORD_HASH) {
     document.getElementById("admin-locked").style.display = "none";
     document.getElementById("admin-panel").style.display = "block";
     document.getElementById("admin-error").style.display = "none";
