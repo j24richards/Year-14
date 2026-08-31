@@ -603,6 +603,25 @@
     color: var(--text);
   }
   .admin-btn-secondary:hover { opacity: 0.8; }
+  .export-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin: 16px 0 20px;
+  }
+  .export-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .export-option input { width: 16px; height: 16px; }
+  .export-option label { font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+  .export-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  #export-status { color: var(--muted); font-size: 0.85rem; margin-top: 10px; }
   .admin-history-year {
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -695,6 +714,7 @@
     border-top: 4px solid var(--red);
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
 <body>
 
@@ -715,6 +735,7 @@
   <button data-tab="teams">2025 Teams</button>
   <button data-tab="draft2025">2025 Draft</button>
   <button data-tab="history">History</button>
+  <button data-tab="export">Export</button>
   <button data-tab="rules">Rules</button>
   <button data-tab="admin">Admin</button>
 </nav>
@@ -729,6 +750,7 @@
     <option value="teams">2025 Teams</option>
     <option value="draft2025">2025 Draft</option>
     <option value="history">History</option>
+    <option value="export">Export</option>
     <option value="rules">Rules</option>
     <option value="admin">Admin</option>
   </select>
@@ -846,6 +868,27 @@
       <div class="table-scroll">
         <table id="ledger-table"></table>
       </div>
+    </div>
+  </section>
+
+  <section id="export">
+    <h2>Export to Excel</h2>
+    <div class="card">
+      <p style="color: var(--muted); margin-top: -4px;">Pick the sections you want, then download a spreadsheet built from the site's current live data.</p>
+      <div class="export-actions">
+        <button type="button" class="admin-btn admin-btn-secondary" id="export-select-all-btn">Select All</button>
+        <button type="button" class="admin-btn admin-btn-secondary" id="export-clear-all-btn">Clear All</button>
+      </div>
+      <div class="export-options">
+        <div class="export-option"><input type="checkbox" id="export-teams2026" checked><label for="export-teams2026">2026 Teams</label></div>
+        <div class="export-option"><input type="checkbox" id="export-draftResults" checked><label for="export-draftResults">2026 Draft</label></div>
+        <div class="export-option"><input type="checkbox" id="export-draftOrder2026" checked><label for="export-draftOrder2026">Draft Order</label></div>
+        <div class="export-option"><input type="checkbox" id="export-trades" checked><label for="export-trades">Trades</label></div>
+        <div class="export-option"><input type="checkbox" id="export-teams" checked><label for="export-teams">2025 Teams</label></div>
+        <div class="export-option"><input type="checkbox" id="export-draftResults2025" checked><label for="export-draftResults2025">2025 Draft</label></div>
+      </div>
+      <button type="button" class="admin-btn" id="export-download-btn">Download Excel (.xlsx)</button>
+      <div id="export-status"></div>
     </div>
   </section>
 
@@ -4150,7 +4193,234 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   }
 });
 
-async function loadAndRender() {
+document.getElementById("export-select-all-btn").addEventListener("click", () => {
+  document.querySelectorAll(".export-option input[type='checkbox']").forEach(cb => cb.checked = true);
+});
+document.getElementById("export-clear-all-btn").addEventListener("click", () => {
+  document.querySelectorAll(".export-option input[type='checkbox']").forEach(cb => cb.checked = false);
+});
+
+function flattenRosterForExport(teams, includeKept) {
+  const rows = [];
+  (teams || []).forEach(t => {
+    (t.roster || []).forEach(p => {
+      const row = {
+        Team: t.team,
+        Manager: t.manager || "",
+        Player: p.player,
+        Position: p.pos || "",
+        "NFL Team": p.nfl || "",
+        "Keeper Cost": p.keeperCost != null ? p.keeperCost : ""
+      };
+      if (includeKept) row["Kept"] = p.kept ? "Yes" : "No";
+      rows.push(row);
+    });
+  });
+  return rows;
+}
+
+function flattenDraftResultsFlat(rows) {
+  return (rows || []).map(r => ({ Round: r.round, Pick: r.pick, Team: r.team, Player: r.player || "" }));
+}
+
+function flattenDraftRounds(rounds) {
+  const rows = [];
+  (rounds || []).forEach(r => {
+    (r.picks || []).forEach(p => {
+      rows.push({ Round: r.round, Team: p.team, Player: p.player || "" });
+    });
+  });
+  return rows;
+}
+
+function flattenDraftOrderList(picks) {
+  return (picks || []).map(p => ({ Team: p.originalTeam, "New Owner": p.newOwner || "—" }));
+}
+
+function flattenTradesForExport(trades) {
+  return (trades || []).map(t => ({ Date: t.date || "", Teams: t.teams || "", Details: t.details || "" }));
+}
+
+function styleExportSheet(ws, rows, type, opts) {
+  opts = opts || {};
+  const groupBy = opts.groupBy || null;
+  const groupLabel = opts.groupLabel || (key => key);
+  const hideColumns = opts.hideColumns || [];
+  const cellStyle = opts.cellStyle || null;
+  const allHeaders = Object.keys(rows[0]);
+  const displayHeaders = allHeaders.filter(h => hideColumns.indexOf(h) === -1);
+  const numCols = Math.max(1, displayHeaders.length);
+  const isRoster = type === "roster";
+  const titleFill = isRoster ? "FF1F4E79" : "FF4472C4";
+  const titleFontSize = isRoster ? 15 : 13;
+  const headerFill = isRoster ? "FF2E75B6" : "FFB4C6E7";
+  const headerFontColor = isRoster ? "FFFFFFFF" : "FF1F3864";
+
+  ws.mergeCells(1, 1, 1, numCols);
+  const titleCell = ws.getCell(1, 1);
+  titleCell.value = ws.name;
+  titleCell.font = { name: "Calibri", size: titleFontSize, bold: true, color: { argb: "FFFFFFFF" } };
+  titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: titleFill } };
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  ws.getRow(1).height = 30;
+
+  function writeHeaderRow(rowNum) {
+    const headerRow = ws.getRow(rowNum);
+    displayHeaders.forEach((h, idx) => {
+      const cell = headerRow.getCell(idx + 1);
+      cell.value = h;
+      cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: headerFontColor } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: headerFill } };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        bottom: { style: "medium", color: { argb: "FF8EA9DB" } },
+        top: { style: "thin", color: { argb: "FFE0E0E0" } }
+      };
+    });
+    headerRow.height = 20;
+  }
+
+  function writeDataRow(rowNum, rowData, bandIndex) {
+    const row = ws.getRow(rowNum);
+    const bandFill = bandIndex % 2 === 0 ? "FFFFFFFF" : "FFF7F7F7";
+    displayHeaders.forEach((h, idx) => {
+      const cell = row.getCell(idx + 1);
+      const val = rowData[h] != null ? rowData[h] : "";
+      cell.value = val;
+      const custom = cellStyle ? cellStyle(h, val, rowData) : null;
+      const font = { name: "Calibri", size: 11 };
+      if (custom && custom.bold) font.bold = true;
+      if (custom && custom.color) font.color = { argb: custom.color };
+      cell.font = font;
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bandFill } };
+      cell.alignment = { vertical: "middle" };
+      cell.border = { bottom: { style: "thin", color: { argb: "FFE0E0E0" } } };
+    });
+  }
+
+  let currentRow = 2;
+
+  if (groupBy) {
+    const groups = [];
+    const groupLookup = new Map();
+    rows.forEach(r => {
+      const key = groupBy(r) || "(Unassigned)";
+      if (!groupLookup.has(key)) {
+        groupLookup.set(key, groups.length);
+        groups.push({ key: key, rows: [] });
+      }
+      groups[groupLookup.get(key)].rows.push(r);
+    });
+
+    groups.forEach(g => {
+      ws.mergeCells(currentRow, 1, currentRow, numCols);
+      const sectionCell = ws.getCell(currentRow, 1);
+      sectionCell.value = groupLabel(g.key, g.rows);
+      sectionCell.font = { name: "Calibri", size: 12, bold: true, color: { argb: "FF1F3864" } };
+      sectionCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDCE6F1" } };
+      sectionCell.alignment = { horizontal: "left", vertical: "middle", indent: 1 };
+      ws.getRow(currentRow).height = 22;
+      currentRow++;
+
+      writeHeaderRow(currentRow);
+      currentRow++;
+
+      g.rows.forEach((r, i) => {
+        writeDataRow(currentRow, r, i);
+        currentRow++;
+      });
+
+      currentRow++;
+    });
+  } else {
+    writeHeaderRow(currentRow);
+    currentRow++;
+    rows.forEach((r, i) => {
+      writeDataRow(currentRow, r, i);
+      currentRow++;
+    });
+  }
+
+  displayHeaders.forEach((h, idx) => {
+    let maxLen = h.length;
+    rows.forEach(r => {
+      const val = r[h] == null ? "" : String(r[h]);
+      if (val.length > maxLen) maxLen = val.length;
+    });
+    ws.getColumn(idx + 1).width = Math.min(42, Math.max(10, maxLen + 3));
+  });
+
+  ws.views = [{ state: "frozen", xSplit: 0, ySplit: 1 }];
+}
+
+document.getElementById("export-download-btn").addEventListener("click", async () => {
+  const statusEl = document.getElementById("export-status");
+  const data = CURRENT_DATA || DEFAULT_LEAGUE_DATA;
+
+  const rosterGroupLabel = (key, groupRows) => {
+    const manager = groupRows[0] && groupRows[0].Manager;
+    return manager ? key + " — " + manager : key;
+  };
+
+  const exportSections = [
+    { id: "export-teams2026", sheet: "2026 Teams", type: "roster", rows: () => flattenRosterForExport(data.teams2026, false),
+      groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
+    { id: "export-draftResults", sheet: "2026 Draft", type: "table", rows: () => flattenDraftResultsFlat(data.draftResults),
+      groupBy: r => r.Team, hideColumns: ["Team"] },
+    { id: "export-draftOrder2026", sheet: "Draft Order", type: "table", rows: () => flattenDraftOrderList(data.draftOrder2026),
+      cellStyle: (header, value) => header === "Team" ? null : (value === "—" ? { color: "FF4B5B78" } : { color: "FFB82514", bold: true }) },
+    { id: "export-trades", sheet: "Trades", type: "table", rows: () => flattenTradesForExport(data.trades) },
+    { id: "export-teams", sheet: "2025 Teams", type: "roster", rows: () => flattenRosterForExport(data.teams, true),
+      groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
+    { id: "export-draftResults2025", sheet: "2025 Draft", type: "table", rows: () => flattenDraftRounds(data.draftResults2025),
+      groupBy: r => r.Team, hideColumns: ["Team"] }
+  ];
+
+  const selected = exportSections.filter(s => {
+    const cb = document.getElementById(s.id);
+    return cb && cb.checked;
+  });
+
+  if (!selected.length) {
+    statusEl.textContent = "Pick at least one section to export.";
+    return;
+  }
+
+  statusEl.textContent = "Building workbook...";
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = data.leagueName || "Year 14";
+  workbook.created = new Date();
+
+  selected.forEach(s => {
+    const rows = s.rows();
+    const ws = workbook.addWorksheet(s.sheet.slice(0, 31));
+    styleExportSheet(ws, rows.length ? rows : [{ "No data": "Nothing here yet" }], s.type, {
+      groupBy: s.groupBy, groupLabel: s.groupLabel, hideColumns: s.hideColumns, cellStyle: s.cellStyle
+    });
+  });
+
+  const slug = (data.leagueName || "Year 14").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
+  const dateStr = new Date().toISOString().slice(0, 10);
+
+  try {
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = slug + "-export-" + dateStr + ".xlsx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusEl.textContent = "Downloaded " + selected.length + " sheet(s).";
+  } catch (err) {
+    statusEl.textContent = "Export failed: " + err.message;
+  }
+});
+
+
   const syncNote = document.getElementById("sync-note");
   try {
     const app = initializeApp(firebaseConfig);
