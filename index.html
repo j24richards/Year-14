@@ -4420,7 +4420,7 @@ document.getElementById("export-download-btn").addEventListener("click", async (
   }
 });
 
-
+async function loadAndRender() {
   const syncNote = document.getElementById("sync-note");
   try {
     const app = initializeApp(firebaseConfig);
