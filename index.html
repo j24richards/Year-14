@@ -3625,6 +3625,19 @@ function renderStandingsBody(data) {
   });
 }
 
+function getDraftSpot(data, teamName) {
+  const order = data.draftOrder2026 || [];
+  const idx = order.findIndex(p => p.originalTeam === teamName);
+  return idx === -1 ? 999 : idx + 1;
+}
+
+function getKeeperRound(data, teamName, playerName) {
+  const team = (data.teams || []).find(t => t.team === teamName);
+  if (!team || !team.roster) return null;
+  const rosterSpot = team.roster.find(r => r.player === playerName);
+  return rosterSpot && rosterSpot.keeperCost ? rosterSpot.keeperCost : null;
+}
+
 function renderKeepersGrid(data) {
   document.getElementById("keepers-heading").textContent = data.currentSeason.year + " Keeper Selections";
   const keepersGrid = document.getElementById("keepers-grid");
@@ -3634,14 +3647,19 @@ function renderKeepersGrid(data) {
     return;
   }
   if (data.keeperSelections) {
-    data.keeperSelections.forEach(k => {
+    const sortedSelections = data.keeperSelections.slice().sort((a, b) => {
+      return getDraftSpot(data, a.team) - getDraftSpot(data, b.team);
+    });
+    sortedSelections.forEach(k => {
       const card = document.createElement("div");
       card.className = "team-card";
       let html = "<h3>" + teamBadgeHtml(k.team) + "<span class=\"team-card-name\">" + k.team + "</span></h3><div class=\"manager\">" + k.manager + "</div>";
       if (k.players && k.players.length) {
         html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
         k.players.forEach(p => {
-          html += "<li>" + p + "</li>";
+          const round = getKeeperRound(data, k.team, p);
+          const roundBadge = round ? " <span class=\"cost-badge\">Round " + ordinal(round) + "</span>" : "";
+          html += "<li>" + p + roundBadge + "</li>";
         });
         html += "</ul>";
       } else {
