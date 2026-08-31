@@ -989,6 +989,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyALB6LcLLzHTMfokqjWDrqzmfGBP6fyAFQ",
@@ -1000,20 +1001,19 @@ const firebaseConfig = {
   measurementId: "G-K5FTVHNG9P"
 };
 
-// SHA-256 hash of the commissioner password, so the password itself isn't
-// sitting in plain text in this public file. To change the password:
-// hash the new value (e.g. in a browser console: run the sha256Hex()
-// function below on your new password) and paste the result here.
-const ADMIN_PASSWORD_HASH = "f7798d0e74383db36f56aeac6ee392a7813d85a808902ef64d58df7e1159d947";
+// The commissioner "password" box now signs in to a real Firebase Auth
+// account behind the scenes (instead of comparing against a value stored
+// in this file), and Firestore's security rules only allow writes from a
+// signed-in user. This email doesn't need to be kept secret — it's just
+// the account's username; the actual secret is the password, which is
+// never stored anywhere in this file. It must exactly match the email of
+// the one user created under Authentication -> Users in the Firebase
+// console for this project.
+const COMMISSIONER_EMAIL = "commissioner@year-14.local";
 let CURRENT_DATA = null;
 let FIRESTORE_DB = null;
+let FIRESTORE_AUTH = null;
 let FIRESTORE_REF = null;
-
-async function sha256Hex(str) {
-  const bytes = new TextEncoder().encode(str);
-  const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
 
 /* ============================================================
    DEFAULT DATA — used the very first time the site loads (it
@@ -4036,12 +4036,12 @@ document.getElementById("mobile-nav-select").addEventListener("change", (e) => {
 
 document.getElementById("admin-unlock-btn").addEventListener("click", async () => {
   const val = document.getElementById("admin-password").value;
-  const hash = await sha256Hex(val);
-  if (hash === ADMIN_PASSWORD_HASH) {
+  try {
+    await signInWithEmailAndPassword(FIRESTORE_AUTH, COMMISSIONER_EMAIL, val);
     document.getElementById("admin-locked").style.display = "none";
     document.getElementById("admin-panel").style.display = "block";
     document.getElementById("admin-error").style.display = "none";
-  } else {
+  } catch (err) {
     document.getElementById("admin-error").style.display = "block";
   }
 });
@@ -4456,6 +4456,7 @@ async function loadAndRender() {
   try {
     const app = initializeApp(firebaseConfig);
     FIRESTORE_DB = getFirestore(app);
+    FIRESTORE_AUTH = getAuth(app);
     FIRESTORE_REF = doc(FIRESTORE_DB, "site", "leagueData");
     const snap = await getDoc(FIRESTORE_REF);
 
