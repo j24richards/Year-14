@@ -1188,10 +1188,51 @@ const DEFAULT_LEAGUE_DATA = {
     },
     {
       "year": 2024,
-      "champion": "TBD",
-      "championManager": "TBD",
-      "runnerUp": "TBD",
-      "runnerUpManager": "TBD"
+      "note": "Champion not recovered -- Yahoo's own league history no longer shows full standings for this season. Only recovered result: JR finished 4th of 10."
+    },
+    {
+      "year": 2023,
+      "note": "No data recoverable for this season -- it falls in the gap left by Yahoo's broken league history tool. If you have an old record of who won, add it here."
+    },
+    {
+      "year": 2022,
+      "note": "No data recoverable for this season -- it falls in the gap left by Yahoo's broken league history tool. If you have an old record of who won, add it here."
+    },
+    {
+      "year": 2021,
+      "note": "Champion not recovered -- Yahoo's own league history no longer shows full standings for this season. Only recovered result: Uncle Norman finished 5th of 10."
+    },
+    {
+      "year": 2020,
+      "champion": "My WR1 Likes # 2",
+      "championManager": "Jordan"
+    },
+    {
+      "year": 2019,
+      "note": "Champion not recovered -- Yahoo's own league history no longer shows full standings for this season. Only recovered result: 2 Gurleys 1 Kupp finished 6th of 10."
+    },
+    {
+      "year": 2018,
+      "champion": "2 Gurleys 1 Kupp",
+      "championManager": "Jordan"
+    },
+    {
+      "year": 2017,
+      "champion": "It Ertz Wentz Eifert",
+      "championManager": "Jordan"
+    },
+    {
+      "year": 2016,
+      "note": "Champion not recovered -- Yahoo's own league history no longer shows full standings for this season. Only recovered result: Jimmie Legs finished 8th of 10."
+    },
+    {
+      "year": 2015,
+      "champion": "Jimmie Legs",
+      "championManager": "Jordan"
+    },
+    {
+      "year": 2014,
+      "note": "Champion not recovered -- Yahoo's own league history no longer shows full standings for this season. Only recovered result: Jimmie Legs finished 6th of 10."
     }
   ],
   "teams": [
@@ -3971,6 +4012,8 @@ function renderHistorySection(data) {
         html += "<tr class=\"" + rankClass(i) + "\"><td>" + rankIcon(i) + (i + 1) + "</td><td>" + s.team + "</td><td>" + (s.manager || "") + "</td></tr>";
       });
       html += "</tbody></table>";
+    } else if (row.note) {
+      html += "<div class=\"stat-line\" style=\"color: var(--muted); font-size: 0.82rem;\">" + row.note + "</div>";
     } else {
       html += "<div class=\"stat-line\">Records pending.</div>";
     }
