@@ -605,8 +605,19 @@
   .admin-keeper-block .admin-team-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; display: block; }
   .admin-keeper-selects {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 8px;
+  }
+  .admin-keeper-pair {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .admin-keeper-pair .admin-keeper-select { flex: 1; min-width: 0; }
+  .admin-keeper-round-input {
+    width: 62px;
+    flex-shrink: 0;
+    text-align: center;
   }
   .admin-btn {
     background: var(--red);
@@ -961,12 +972,19 @@
       <details class="card admin-details">
         <summary class="admin-summary">Keeper Selections<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team.</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The round shown on the Keepers page is calculated from these automatically, including bumping earlier keepers up a round when a new keeper claims their spot.</p>
           <div id="admin-keepers"></div>
           <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
             <input type="checkbox" id="admin-keepers-visible">
             Make keeper selections visible to everyone
           </label>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Keeper Rules Text<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Wording shown on the Rules page under "Keeper Rules." Edit any line below and Save Changes to publish it.</p>
+          <div id="admin-keeperrules"></div>
         </div>
       </details>
       <details class="card admin-details">
@@ -3207,8 +3225,8 @@ const DEFAULT_LEAGUE_DATA = {
           "value": "A player added off waivers counts as a last-round pick for keeper purposes"
         },
         {
-          "label": "Last-Round Keeper Bump",
-          "value": "If a keeper was a last-round pick the prior year, they move up one draft spot"
+          "label": "Round Conflicts",
+          "value": "If a newly kept player's draft round is already held by another kept player, the new keeper takes that round and the previously kept player moves up one round (repeating if that round is also taken)"
         },
         {
           "label": "Trades",
@@ -3691,6 +3709,57 @@ function getKeeperRound(data, teamName, playerName) {
   return rosterSpot && rosterSpot.keeperCost ? rosterSpot.keeperCost : null;
 }
 
+// Resolves the actual draft-round cost of each of a team's chosen keepers,
+// applying the round-collision rule: each kept player's base round is the
+// draft position they held the prior year (their stored keeperCost). If a
+// newly-kept player's base round is already held by a returning keeper, the
+// new keeper takes that round and the returning keeper moves up one round
+// (cascading further if that round is also taken by another returning
+// keeper). Returns { playerName: finalRound }.
+function resolveTeamKeeperRounds(data, teamName) {
+  const team = (data.teams || []).find(t => t.team === teamName);
+  const selection = (data.keeperSelections || []).find(k => k.team === teamName);
+  if (!team || !team.roster || !selection || !selection.players || !selection.players.length) return {};
+
+  const rosterByName = {};
+  team.roster.forEach(r => { rosterByName[r.player] = r; });
+
+  const entries = selection.players
+    .map(name => {
+      const r = rosterByName[name];
+      return {
+        name: name,
+        baseRound: r && r.keeperCost != null ? r.keeperCost : null,
+        returning: !!(r && r.kept)
+      };
+    })
+    .filter(e => e.baseRound != null);
+
+  const result = {};
+  const occupied = new Set();
+
+  const place = (entry) => {
+    let round = entry.baseRound;
+    while (occupied.has(round) && round > 1) round--;
+    result[entry.name] = round;
+    occupied.add(round);
+  };
+
+  // New keepers claim their true base round first — they never bump for a
+  // returning keeper, only vice versa.
+  entries.filter(e => !e.returning).forEach(place);
+
+  // Returning keepers keep their base round unless a new keeper (or a
+  // higher-round returning keeper already displaced) is sitting on it, in
+  // which case they cascade up one round at a time. Processing from the
+  // highest base round down mirrors the actual chain of displacement.
+  entries.filter(e => e.returning)
+    .sort((a, b) => b.baseRound - a.baseRound)
+    .forEach(place);
+
+  return result;
+}
+
 function renderKeepersGrid(data) {
   document.getElementById("keepers-heading").textContent = data.currentSeason.year + " Keeper Selections";
   const keepersGrid = document.getElementById("keepers-grid");
@@ -3708,8 +3777,9 @@ function renderKeepersGrid(data) {
       card.className = "team-card";
       let html = "<h3>" + teamBadgeHtml(k.team) + "<span class=\"team-card-name\">" + k.team + "</span></h3><div class=\"manager\">" + k.manager + "</div>";
       if (k.players && k.players.length) {
+        const resolvedRounds = resolveTeamKeeperRounds(data, k.team);
         const playersByRound = k.players
-          .map(p => ({ name: p, round: getKeeperRound(data, k.team, p) }))
+          .map(p => ({ name: p, round: resolvedRounds[p] != null ? resolvedRounds[p] : getKeeperRound(data, k.team, p) }))
           .sort((a, b) => (a.round || 999) - (b.round || 999));
         html += "<ul style=\"margin:0; padding-left:18px; font-size:0.85rem;\">";
         playersByRound.forEach(p => {
@@ -3865,6 +3935,24 @@ function addHistoryYearBlock(container, season) {
   container.appendChild(block);
 }
 
+function populateKeeperRulesEditor(data) {
+  const el = document.getElementById("admin-keeperrules");
+  if (!el) return;
+  el.innerHTML = "";
+  const group = (data.rulesGroups || []).find(g => g.title === "Keeper Rules");
+  if (!group || !group.rows) {
+    el.innerHTML = "<p style=\"color: var(--muted); font-size: 0.82rem;\">No \"Keeper Rules\" group found in the Rules data.</p>";
+    return;
+  }
+  group.rows.forEach((row, i) => {
+    const div = document.createElement("div");
+    div.className = "admin-field";
+    div.innerHTML = "<label>" + row.label + "</label>" +
+      "<textarea data-idx=\"" + i + "\" class=\"admin-keeperrule-input\" rows=\"2\">" + row.value + "</textarea>";
+    el.appendChild(div);
+  });
+}
+
 function populateKeeperPicker(data) {
   const keepersEl = document.getElementById("admin-keepers");
   if (!keepersEl) return;
@@ -3873,6 +3961,8 @@ function populateKeeperPicker(data) {
   data.teams.forEach(t => {
     const existing = (data.keeperSelections || []).find(k => k.team === t.team);
     const picks = (existing && existing.players) || [];
+    const rosterByName = {};
+    t.roster.forEach(p => { rosterByName[p.player] = p; });
     const options = ["<option value=\"\">— none —</option>"].concat(
       t.roster.map(p => "<option value=\"" + p.player + "\">" + p.player + "</option>")
     ).join("");
@@ -3880,14 +3970,26 @@ function populateKeeperPicker(data) {
     block.className = "admin-keeper-block";
     let html = "<span class=\"admin-team-label\">" + t.team + "</span><div class=\"admin-keeper-selects\">";
     for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
-      html += "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>";
+      html += "<div class=\"admin-keeper-pair\">" +
+        "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>" +
+        "<input type=\"number\" min=\"1\" max=\"30\" class=\"admin-keeper-round-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"Base draft round (the round this player was picked/kept at last year)\" placeholder=\"Rd\">" +
+        "</div>";
     }
     html += "</div>";
     block.innerHTML = html;
     keepersEl.appendChild(block);
-    const selects = block.querySelectorAll("select");
+    const pairs = block.querySelectorAll(".admin-keeper-pair");
     for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
-      if (picks[slot]) selects[slot].value = picks[slot];
+      const select = pairs[slot].querySelector("select");
+      const roundInput = pairs[slot].querySelector(".admin-keeper-round-input");
+      const pick = picks[slot];
+      if (pick) select.value = pick;
+      const rosterSpot = rosterByName[select.value];
+      roundInput.value = rosterSpot && rosterSpot.keeperCost != null ? rosterSpot.keeperCost : "";
+      select.addEventListener("change", () => {
+        const spot = rosterByName[select.value];
+        roundInput.value = spot && spot.keeperCost != null ? spot.keeperCost : "";
+      });
     }
   });
 }
@@ -3939,6 +4041,7 @@ function buildAdminForm(data) {
   });
 
   populateKeeperPicker(data);
+  populateKeeperRulesEditor(data);
     populateMoveRosterControls(data);
   
     const historyEl = document.getElementById("admin-history");
@@ -4208,6 +4311,26 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     players: keeperMap[k.team] || []
   }));
   CURRENT_DATA.keepersVisible = document.getElementById("admin-keepers-visible").checked;
+
+  document.querySelectorAll(".admin-keeper-round-input").forEach(input => {
+    if (input.value === "") return;
+    const team = input.dataset.team;
+    const pair = input.closest(".admin-keeper-pair");
+    const select = pair ? pair.querySelector(".admin-keeper-select") : null;
+    const playerName = select ? select.value : "";
+    if (!playerName) return;
+    const teamObj = CURRENT_DATA.teams.find(t => t.team === team);
+    const rosterSpot = teamObj && teamObj.roster.find(r => r.player === playerName);
+    if (rosterSpot) rosterSpot.keeperCost = Number(input.value) || rosterSpot.keeperCost;
+  });
+
+  const keeperRulesGroup = (CURRENT_DATA.rulesGroups || []).find(g => g.title === "Keeper Rules");
+  if (keeperRulesGroup) {
+    document.querySelectorAll(".admin-keeperrule-input").forEach(textarea => {
+      const idx = Number(textarea.dataset.idx);
+      if (keeperRulesGroup.rows[idx]) keeperRulesGroup.rows[idx].value = textarea.value;
+    });
+  }
 
   const newHistory = [];
   document.querySelectorAll("#admin-history .admin-history-year").forEach(block => {
