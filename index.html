@@ -972,7 +972,7 @@
       <details class="card admin-details">
         <summary class="admin-summary">Keeper Selections<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The ADP field is the player's Yahoo ADP (average draft position, lower = more valuable). When two keepers land on the same round, the round shown on the Keepers page is auto-resolved using ADP: the more valuable player moves up a round (except at round 1, where the more valuable player keeps round 1 and the other moves up to round 2 instead).</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The ADP field is the player's FantasyPros Half PPR ADP (average draft position, lower = more valuable) — Half PPR is used since this league is half-PPR scoring. When two keepers land on the same round, the round shown on the Keepers page is auto-resolved using ADP: the more valuable player moves up a round (except at round 1, where the more valuable player keeps round 1 and the other moves up to round 2 instead).</p>
           <div id="admin-keepers"></div>
           <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
             <input type="checkbox" id="admin-keepers-visible">
@@ -3226,7 +3226,7 @@ const DEFAULT_LEAGUE_DATA = {
         },
         {
           "label": "Round Conflicts",
-          "value": "If two kept players share the same draft round, the player with the better Yahoo ADP moves up one round (repeating if that earlier round is also taken); at round 1, the better-ADP player keeps round 1 and the other player moves up to round 2 instead"
+          "value": "If two kept players share the same draft round, the player with the better FantasyPros Half PPR ADP moves up one round (repeating if that earlier round is also taken); at round 1, the better-ADP player keeps round 1 and the other player moves up to round 2 instead"
         },
         {
           "label": "Trades",
@@ -3713,7 +3713,7 @@ function getKeeperRound(data, teamName, playerName) {
 // applying the round-collision rule: each kept player's base round is the
 // draft position they held the prior year (their stored keeperCost). If two
 // kept players share the same base round, the player with the better (lower
-// numeric) Yahoo ADP moves up one round; the other stays put (cascading
+// numeric) FantasyPros ADP moves up one round; the other stays put (cascading
 // further if that earlier round is also taken by another kept player). At
 // round 1 there's no earlier round to move to, so the rule flips: the
 // better-ADP player keeps round 1 and the other moves up to round 2 instead.
@@ -3992,7 +3992,7 @@ function populateKeeperPicker(data) {
       html += "<div class=\"admin-keeper-pair\">" +
         "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>" +
         "<input type=\"number\" min=\"1\" max=\"30\" class=\"admin-keeper-round-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"Base draft round (the round this player was picked/kept at last year)\" placeholder=\"Rd\">" +
-        "<input type=\"number\" min=\"1\" step=\"0.1\" class=\"admin-keeper-adp-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"Yahoo ADP (average draft position) -- lower is more valuable\" placeholder=\"ADP\">" +
+        "<input type=\"number\" min=\"1\" step=\"0.1\" class=\"admin-keeper-adp-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"FantasyPros Half PPR ADP (average draft position) -- lower is more valuable\" placeholder=\"ADP\">" +
         "</div>";
     }
     html += "</div>";
