@@ -619,6 +619,10 @@
     flex-shrink: 0;
     text-align: center;
   }
+  .admin-keeper-adp-input.stale-adp {
+    border: 1px solid #d99a00;
+    background: rgba(217, 154, 0, 0.15);
+  }
   .admin-btn {
     background: var(--red);
     border: none;
@@ -972,7 +976,7 @@
       <details class="card admin-details">
         <summary class="admin-summary">Keeper Selections<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The ADP field is the player's FantasyPros Half PPR ADP (average draft position, lower = more valuable) — Half PPR is used since this league is half-PPR scoring. When two keepers land on the same round, the round shown on the Keepers page is auto-resolved using ADP: the more valuable player moves up a round (except at round 1, where the more valuable player keeps round 1 and the other moves up to round 2 instead).</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The ADP field is the player's FantasyPros Half PPR ADP (average draft position, lower = more valuable) — Half PPR is used since this league is half-PPR scoring. When two keepers land on the same round, the round shown on the Keepers page is auto-resolved using ADP: the more valuable player moves up a round (except at round 1, where the more valuable player keeps round 1 and the other moves up to round 2 instead). ADP values are tied to the season they're entered for — an <span style="color:#d99a00;">amber-highlighted</span> ADP field means that value is left over from a prior year and is being ignored until you re-enter and save it for this season.</p>
           <div id="admin-keepers"></div>
           <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
             <input type="checkbox" id="admin-keepers-visible">
@@ -3726,13 +3730,18 @@ function resolveTeamKeeperRounds(data, teamName) {
   const rosterByName = {};
   team.roster.forEach(r => { rosterByName[r.player] = r; });
 
+  const currentYear = data.currentSeason && data.currentSeason.year;
   const entries = selection.players
     .map(name => {
       const r = rosterByName[name];
+      // An ADP value only counts if it was confirmed for the season being
+      // drafted right now -- a stale value left over from a prior year (or
+      // never stamped) is treated as missing rather than trusted.
+      const adpIsCurrent = r && r.adp != null && r.adpYear === currentYear;
       return {
         name: name,
         baseRound: r && r.keeperCost != null ? r.keeperCost : null,
-        adp: r && r.adp != null ? Number(r.adp) : 9999
+        adp: adpIsCurrent ? Number(r.adp) : 9999
       };
     })
     .filter(e => e.baseRound != null);
@@ -3972,6 +3981,15 @@ function populateKeeperRulesEditor(data) {
   });
 }
 
+// An ADP value only counts as trustworthy for this season if it was actually
+// entered/confirmed for the season currently being drafted (adpYear matches
+// currentSeason.year). Anything else -- carried over from a prior year, or
+// never stamped -- is stale and must be visually flagged and re-confirmed.
+function isAdpStale(data, rosterSpot) {
+  if (!rosterSpot || rosterSpot.adp == null) return false; // nothing entered yet -- not "stale", just empty
+  return rosterSpot.adpYear !== (data.currentSeason && data.currentSeason.year);
+}
+
 function populateKeeperPicker(data) {
   const keepersEl = document.getElementById("admin-keepers");
   if (!keepersEl) return;
@@ -4008,10 +4026,20 @@ function populateKeeperPicker(data) {
       const rosterSpot = rosterByName[select.value];
       roundInput.value = rosterSpot && rosterSpot.keeperCost != null ? rosterSpot.keeperCost : "";
       adpInput.value = rosterSpot && rosterSpot.adp != null ? rosterSpot.adp : "";
+      const stale = isAdpStale(data, rosterSpot);
+      adpInput.classList.toggle("stale-adp", stale);
+      adpInput.title = stale
+        ? "This ADP is from a prior season and is being ignored on the Keepers page until re-confirmed. Re-enter and save to mark it current."
+        : "FantasyPros Half PPR ADP (average draft position) -- lower is more valuable";
       select.addEventListener("change", () => {
         const spot = rosterByName[select.value];
         roundInput.value = spot && spot.keeperCost != null ? spot.keeperCost : "";
         adpInput.value = spot && spot.adp != null ? spot.adp : "";
+        const staleNow = isAdpStale(data, spot);
+        adpInput.classList.toggle("stale-adp", staleNow);
+        adpInput.title = staleNow
+          ? "This ADP is from a prior season and is being ignored on the Keepers page until re-confirmed. Re-enter and save to mark it current."
+          : "FantasyPros Half PPR ADP (average draft position) -- lower is more valuable";
       });
     }
   });
@@ -4355,7 +4383,13 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     if (!playerName) return;
     const teamObj = CURRENT_DATA.teams.find(t => t.team === team);
     const rosterSpot = teamObj && teamObj.roster.find(r => r.player === playerName);
-    if (rosterSpot) rosterSpot.adp = Number(input.value);
+    if (rosterSpot) {
+      rosterSpot.adp = Number(input.value);
+      // Stamp the season this ADP was confirmed for, so a value that quietly
+      // carries over into a future year without being re-entered gets
+      // flagged as stale instead of being trusted.
+      rosterSpot.adpYear = CURRENT_DATA.currentSeason && CURRENT_DATA.currentSeason.year;
+    }
   });
 
   const keeperRulesGroup = (CURRENT_DATA.rulesGroups || []).find(g => g.title === "Keeper Rules");
