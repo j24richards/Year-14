@@ -605,7 +605,7 @@
   .admin-keeper-block .admin-team-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; display: block; }
   .admin-keeper-selects {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 8px;
   }
   .admin-keeper-pair {
@@ -614,7 +614,7 @@
     align-items: center;
   }
   .admin-keeper-pair .admin-keeper-select { flex: 1; min-width: 0; }
-  .admin-keeper-round-input {
+  .admin-keeper-round-input, .admin-keeper-adp-input {
     width: 62px;
     flex-shrink: 0;
     text-align: center;
@@ -972,7 +972,7 @@
       <details class="card admin-details">
         <summary class="admin-summary">Keeper Selections<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The round shown on the Keepers page is calculated from these automatically, including bumping earlier keepers up a round when a new keeper claims their spot.</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team. The Rd field is the player's base draft round (where they were picked or kept last year) — it fills in automatically but can be corrected by hand. The ADP field is the player's Yahoo ADP (average draft position, lower = more valuable). When two keepers land on the same round, the round shown on the Keepers page is auto-resolved using ADP: the more valuable player moves up a round (except at round 1, where the more valuable player keeps round 1 and the other moves up to round 2 instead).</p>
           <div id="admin-keepers"></div>
           <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
             <input type="checkbox" id="admin-keepers-visible">
@@ -3226,7 +3226,7 @@ const DEFAULT_LEAGUE_DATA = {
         },
         {
           "label": "Round Conflicts",
-          "value": "If a newly kept player's draft round is already held by another kept player, the new keeper takes that round and the previously kept player moves up one round (repeating if that round is also taken)"
+          "value": "If two kept players share the same draft round, the player with the better Yahoo ADP moves up one round (repeating if that earlier round is also taken); at round 1, the better-ADP player keeps round 1 and the other player moves up to round 2 instead"
         },
         {
           "label": "Trades",
@@ -3711,11 +3711,13 @@ function getKeeperRound(data, teamName, playerName) {
 
 // Resolves the actual draft-round cost of each of a team's chosen keepers,
 // applying the round-collision rule: each kept player's base round is the
-// draft position they held the prior year (their stored keeperCost). If a
-// newly-kept player's base round is already held by a returning keeper, the
-// new keeper takes that round and the returning keeper moves up one round
-// (cascading further if that round is also taken by another returning
-// keeper). Returns { playerName: finalRound }.
+// draft position they held the prior year (their stored keeperCost). If two
+// kept players share the same base round, the player with the better (lower
+// numeric) Yahoo ADP moves up one round; the other stays put (cascading
+// further if that earlier round is also taken by another kept player). At
+// round 1 there's no earlier round to move to, so the rule flips: the
+// better-ADP player keeps round 1 and the other moves up to round 2 instead.
+// Returns { playerName: finalRound }.
 function resolveTeamKeeperRounds(data, teamName) {
   const team = (data.teams || []).find(t => t.team === teamName);
   const selection = (data.keeperSelections || []).find(k => k.team === teamName);
@@ -3730,7 +3732,7 @@ function resolveTeamKeeperRounds(data, teamName) {
       return {
         name: name,
         baseRound: r && r.keeperCost != null ? r.keeperCost : null,
-        returning: !!(r && r.kept)
+        adp: r && r.adp != null ? Number(r.adp) : 9999
       };
     })
     .filter(e => e.baseRound != null);
@@ -3738,24 +3740,41 @@ function resolveTeamKeeperRounds(data, teamName) {
   const result = {};
   const occupied = new Set();
 
-  const place = (entry) => {
+  const placeDown = (entry) => {
     let round = entry.baseRound;
     while (occupied.has(round) && round > 1) round--;
+    if (occupied.has(round)) {
+      // Extremely rare: round 1 is already taken by an earlier cross-bucket
+      // cascade. Fall back to searching upward from the base round instead.
+      round = entry.baseRound;
+      while (occupied.has(round)) round++;
+    }
     result[entry.name] = round;
     occupied.add(round);
   };
 
-  // New keepers claim their true base round first — they never bump for a
-  // returning keeper, only vice versa.
-  entries.filter(e => !e.returning).forEach(place);
+  const placeUp = (entry) => {
+    let round = entry.baseRound;
+    while (occupied.has(round)) round++;
+    result[entry.name] = round;
+    occupied.add(round);
+  };
 
-  // Returning keepers keep their base round unless a new keeper (or a
-  // higher-round returning keeper already displaced) is sitting on it, in
-  // which case they cascade up one round at a time. Processing from the
-  // highest base round down mirrors the actual chain of displacement.
-  entries.filter(e => e.returning)
-    .sort((a, b) => b.baseRound - a.baseRound)
-    .forEach(place);
+  // Base round 2+: the less valuable (worse/higher ADP) player keeps its base
+  // round; a more valuable player kept at the same round bumps up to an
+  // earlier round, cascading further if that round is also taken.
+  entries
+    .filter(e => e.baseRound > 1)
+    .sort((a, b) => b.adp - a.adp) // worst ADP first, so it claims its base round
+    .forEach(placeDown);
+
+  // Round 1 has no earlier round to move to, so the rule flips: the more
+  // valuable player keeps round 1, and the less valuable player is pushed to
+  // a later round instead.
+  entries
+    .filter(e => e.baseRound === 1)
+    .sort((a, b) => a.adp - b.adp) // best ADP first, so it claims round 1
+    .forEach(placeUp);
 
   return result;
 }
@@ -3973,6 +3992,7 @@ function populateKeeperPicker(data) {
       html += "<div class=\"admin-keeper-pair\">" +
         "<select data-team=\"" + t.team + "\" class=\"admin-keeper-select\" data-slot=\"" + slot + "\">" + options + "</select>" +
         "<input type=\"number\" min=\"1\" max=\"30\" class=\"admin-keeper-round-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"Base draft round (the round this player was picked/kept at last year)\" placeholder=\"Rd\">" +
+        "<input type=\"number\" min=\"1\" step=\"0.1\" class=\"admin-keeper-adp-input\" data-team=\"" + t.team + "\" data-slot=\"" + slot + "\" title=\"Yahoo ADP (average draft position) -- lower is more valuable\" placeholder=\"ADP\">" +
         "</div>";
     }
     html += "</div>";
@@ -3982,13 +4002,16 @@ function populateKeeperPicker(data) {
     for (let slot = 0; slot < KEEPER_SLOTS; slot++) {
       const select = pairs[slot].querySelector("select");
       const roundInput = pairs[slot].querySelector(".admin-keeper-round-input");
+      const adpInput = pairs[slot].querySelector(".admin-keeper-adp-input");
       const pick = picks[slot];
       if (pick) select.value = pick;
       const rosterSpot = rosterByName[select.value];
       roundInput.value = rosterSpot && rosterSpot.keeperCost != null ? rosterSpot.keeperCost : "";
+      adpInput.value = rosterSpot && rosterSpot.adp != null ? rosterSpot.adp : "";
       select.addEventListener("change", () => {
         const spot = rosterByName[select.value];
         roundInput.value = spot && spot.keeperCost != null ? spot.keeperCost : "";
+        adpInput.value = spot && spot.adp != null ? spot.adp : "";
       });
     }
   });
@@ -4322,6 +4345,17 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     const teamObj = CURRENT_DATA.teams.find(t => t.team === team);
     const rosterSpot = teamObj && teamObj.roster.find(r => r.player === playerName);
     if (rosterSpot) rosterSpot.keeperCost = Number(input.value) || rosterSpot.keeperCost;
+  });
+  document.querySelectorAll(".admin-keeper-adp-input").forEach(input => {
+    if (input.value === "") return;
+    const team = input.dataset.team;
+    const pair = input.closest(".admin-keeper-pair");
+    const select = pair ? pair.querySelector(".admin-keeper-select") : null;
+    const playerName = select ? select.value : "";
+    if (!playerName) return;
+    const teamObj = CURRENT_DATA.teams.find(t => t.team === team);
+    const rosterSpot = teamObj && teamObj.roster.find(r => r.player === playerName);
+    if (rosterSpot) rosterSpot.adp = Number(input.value);
   });
 
   const keeperRulesGroup = (CURRENT_DATA.rulesGroups || []).find(g => g.title === "Keeper Rules");
