@@ -549,6 +549,28 @@
     box-sizing: border-box;
   }
   textarea { min-height: 80px; resize: vertical; }
+  .admin-details { padding: 0; }
+  .admin-details > .admin-summary {
+    cursor: pointer;
+    padding: 18px 20px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .admin-details > .admin-summary::-webkit-details-marker { display: none; }
+  .admin-details > .admin-summary .admin-chevron {
+    color: var(--muted);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  .admin-details[open] > .admin-summary .admin-chevron { transform: rotate(90deg); }
+  .admin-body { padding: 0 20px 20px; }
   .admin-field { margin-bottom: 14px; }
   .admin-field label {
     display: block;
@@ -909,73 +931,94 @@
       <p id="admin-error" style="display:none;">Incorrect password.</p>
     </div>
     <div id="admin-panel" style="display:none;">
-      <div class="card">
-        <h3 style="margin-top:0;">Commissioner's Note</h3>
-        <div class="admin-field">
-          <textarea id="admin-note"></textarea>
+      <details class="card admin-details">
+        <summary class="admin-summary">Commissioner's Note &amp; Draft Date<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <div class="admin-field">
+            <label for="admin-note">Commissioner's Note</label>
+            <textarea id="admin-note"></textarea>
+          </div>
+          <div class="admin-field">
+            <label for="admin-draftdate">Draft Date &amp; Time</label>
+            <input type="datetime-local" id="admin-draftdate">
+          </div>
         </div>
-        <h3>Draft Date &amp; Time</h3>
-        <div class="admin-field">
-          <input type="datetime-local" id="admin-draftdate">
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Current Season Standings<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Record and points for, per team.</p>
+          <div id="admin-standings"></div>
         </div>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Current Season Standings</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Record and points for, per team.</p>
-        <div id="admin-standings"></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Team Badges</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Optional: paste an emoji per team to use as its badge instead of the auto-generated initials.</p>
-        <div id="admin-badges"></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Keeper Selections</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Pick up to four kept players per team.</p>
-        <div id="admin-keepers"></div>
-        <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
-          <input type="checkbox" id="admin-keepers-visible">
-          Make keeper selections visible to everyone
-        </label>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Move a Player Between Rosters</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Fix a roster mistake by moving a player from one team's roster to another.</p>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
-          <select id="admin-move-player-select" style="flex:2; min-width:180px;"></select>
-          <select id="admin-move-team-select" style="flex:1; min-width:140px;"></select>
-          <button type="button" class="admin-btn admin-btn-secondary" id="admin-move-player-btn">Move Player</button>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Team Badges<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Optional: paste an emoji per team to use as its badge instead of the auto-generated initials.</p>
+          <div id="admin-badges"></div>
         </div>
-        <p id="admin-move-status" style="color: var(--muted); font-size: 0.82rem;"></p>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Season History</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Add each season's full final standings, top team first. Leave a team blank to drop that row.</p>
-        <div id="admin-history"></div>
-        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-year-btn">+ Add Year</button>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">2026 Draft Order &mdash; Trades</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Order is set automatically. Only set a new owner for a pick that's been traded.</p>
-        <div id="admin-draftorder"></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">2026 Draft Results</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Add each pick once the draft happens.</p>
-        <div id="admin-draftresults"></div>
-        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-draftresult-btn">+ Add Pick</button>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">Trades</h3>
-        <div id="admin-trades"></div>
-        <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-trade-btn">+ Add Trade</button>
-      </div>
-      <div class="card">
-        <h3 style="margin-top:0;">2026 Teams</h3>
-        <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Once draft results above are filled in, generate next year's rosters from them instead of typing them twice.</p>
-        <button type="button" class="admin-btn admin-btn-secondary" id="admin-generate-teams2026-btn">Generate 2026 Teams from Draft Results</button>
-        <p id="admin-generate-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
-      </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Keeper Selections<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick up to four kept players per team.</p>
+          <div id="admin-keepers"></div>
+          <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:0.9rem; color: var(--text); cursor:pointer;">
+            <input type="checkbox" id="admin-keepers-visible">
+            Make keeper selections visible to everyone
+          </label>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Move a Player Between Rosters<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fix a roster mistake by moving a player from one team's roster to another.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
+            <select id="admin-move-player-select" style="flex:2; min-width:180px;"></select>
+            <select id="admin-move-team-select" style="flex:1; min-width:140px;"></select>
+            <button type="button" class="admin-btn admin-btn-secondary" id="admin-move-player-btn">Move Player</button>
+          </div>
+          <p id="admin-move-status" style="color: var(--muted); font-size: 0.82rem;"></p>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Season History<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Add each season's full final standings, top team first. Leave a team blank to drop that row.</p>
+          <div id="admin-history"></div>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-year-btn">+ Add Year</button>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">2026 Draft Order &mdash; Trades<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Order is set automatically. Only set a new owner for a pick that's been traded.</p>
+          <div id="admin-draftorder"></div>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">2026 Draft Results<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Add each pick once the draft happens.</p>
+          <div id="admin-draftresults"></div>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-draftresult-btn">+ Add Pick</button>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Trades<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <div id="admin-trades"></div>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-trade-btn">+ Add Trade</button>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">2026 Teams<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Once draft results above are filled in, generate next year's rosters from them instead of typing them twice.</p>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-generate-teams2026-btn">Generate 2026 Teams from Draft Results</button>
+          <p id="admin-generate-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
+        </div>
+      </details>
       <button type="button" class="admin-btn admin-btn-secondary" id="admin-export-btn">Download Backup (JSON)</button>
       <button class="admin-btn" id="admin-save-btn">Save Changes</button>
       <p id="admin-status"></p>
