@@ -1006,6 +1006,18 @@
         </div>
       </details>
       <details class="card admin-details">
+        <summary class="admin-summary">Rename a Team<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Renames a team everywhere it appears on the site — standings, roster, keeper selections, badges, and draft order.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
+            <select id="admin-rename-team-select" style="flex:1; min-width:180px;"></select>
+            <input type="text" id="admin-rename-team-input" placeholder="New team name" style="flex:1; min-width:180px;">
+            <button type="button" class="admin-btn admin-btn-secondary" id="admin-rename-team-btn">Rename Team</button>
+          </div>
+          <p id="admin-rename-team-status" style="color: var(--muted); font-size: 0.82rem;"></p>
+        </div>
+      </details>
+      <details class="card admin-details">
         <summary class="admin-summary">Season History<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Add each season's full final standings, top team first. Leave a team blank to drop that row.</p>
@@ -4215,6 +4227,46 @@ function populateMoveRosterControls(data) {
   ).join("");
 }
 
+function populateRenameTeamControls(data) {
+  const teamSel = document.getElementById("admin-rename-team-select");
+  if (!teamSel) return;
+  teamSel.innerHTML = data.teams.map(t =>
+    "<option value=\"" + t.team + "\">" + t.team + "</option>"
+  ).join("");
+}
+
+// Renames a team everywhere its name is stored as data (not free-text like
+// trade descriptions, and not past seasons in history, which are a record of
+// what the team was called at the time).
+function renameTeamEverywhere(data, oldName, newName) {
+  const teamObj = (data.teams || []).find(t => t.team === oldName);
+  if (teamObj) teamObj.team = newName;
+
+  if (data.currentSeason && data.currentSeason.standings) {
+    const standingsRow = data.currentSeason.standings.find(r => r.team === oldName);
+    if (standingsRow) standingsRow.team = newName;
+  }
+
+  (data.draftOrder2026 || []).forEach(round => {
+    (round.picks || []).forEach(p => {
+      if (p.originalTeam === oldName) p.originalTeam = newName;
+      if (p.newOwner === oldName) p.newOwner = newName;
+    });
+  });
+
+  const keeperSel = (data.keeperSelections || []).find(k => k.team === oldName);
+  if (keeperSel) keeperSel.team = newName;
+
+  (data.teams2026 || []).forEach(t => {
+    if (t.team === oldName) t.team = newName;
+  });
+
+  if (data.teamBadges && Object.prototype.hasOwnProperty.call(data.teamBadges, oldName)) {
+    data.teamBadges[newName] = data.teamBadges[oldName];
+    delete data.teamBadges[oldName];
+  }
+}
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
   document.getElementById("admin-draftdate").value = data.draftDate || "";
@@ -4245,7 +4297,8 @@ function buildAdminForm(data) {
   populateKeeperPicker(data);
   populateKeeperRulesEditor(data);
     populateMoveRosterControls(data);
-  
+    populateRenameTeamControls(data);
+
     const historyEl = document.getElementById("admin-history");
   historyEl.innerHTML = "";
   (data.history || []).slice().sort((a, b) => b.year - a.year).forEach(season => {
@@ -4461,6 +4514,31 @@ document.getElementById("admin-move-player-btn").addEventListener("click", () =>
   populateMoveRosterControls(CURRENT_DATA);
   populateKeeperPicker(CURRENT_DATA);
   statusEl.textContent = "Moved " + playerName + " from " + fromTeam + " to " + toTeam + ". Click Save Changes to publish.";
+});
+
+document.getElementById("admin-rename-team-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-rename-team-status");
+  if (!CURRENT_DATA) return;
+  const teamSel = document.getElementById("admin-rename-team-select");
+  const input = document.getElementById("admin-rename-team-input");
+  const oldName = teamSel.value;
+  const newName = input.value.trim();
+  if (!oldName) { statusEl.textContent = "Choose a team to rename."; return; }
+  if (!newName) { statusEl.textContent = "Enter a new team name."; return; }
+  if (newName === oldName) { statusEl.textContent = "That's already this team's name."; return; }
+  if (CURRENT_DATA.teams.some(t => t.team === newName)) {
+    statusEl.textContent = "Another team is already named \"" + newName + "\".";
+    return;
+  }
+  renameTeamEverywhere(CURRENT_DATA, oldName, newName);
+  input.value = "";
+  buildAdminForm(CURRENT_DATA);
+  renderStandingsBody(CURRENT_DATA);
+  renderTeamsGrid(CURRENT_DATA);
+  renderTeams2026(CURRENT_DATA);
+  renderKeepersGrid(CURRENT_DATA);
+  renderDraftOrderSection(CURRENT_DATA);
+  statusEl.textContent = "Renamed \"" + oldName + "\" to \"" + newName + "\". Click Save Changes to publish.";
 });
 
 document.getElementById("admin-export-btn").addEventListener("click", () => {
