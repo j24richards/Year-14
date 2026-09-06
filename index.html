@@ -4364,11 +4364,11 @@ function renameTeamEverywhere(data, oldName, newName) {
     if (standingsRow) standingsRow.team = newName;
   }
 
-  (data.draftOrder2026 || []).forEach(round => {
-    (round.picks || []).forEach(p => {
-      if (p.originalTeam === oldName) p.originalTeam = newName;
-      if (p.newOwner === oldName) p.newOwner = newName;
-    });
+  // draftOrder2026 here is a flat array of picks (one per team, since this
+  // league uses the same draft order every round) -- not nested per round.
+  (data.draftOrder2026 || []).forEach(p => {
+    if (p.originalTeam === oldName) p.originalTeam = newName;
+    if (p.newOwner === oldName) p.newOwner = newName;
   });
 
   const keeperSel = (data.keeperSelections || []).find(k => k.team === oldName);
