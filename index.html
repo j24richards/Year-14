@@ -26,6 +26,7 @@
     --silver: #7c8aa0;
     --bronze: #a86a3d;
     --gold-wash: rgba(184, 37, 20, 0.07);
+    --keeper: #1a7f37;
     --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -42,6 +43,7 @@
       --silver: #9aa5b8;
       --bronze: #c98b52;
       --gold-wash: rgba(220, 44, 24, 0.1);
+      --keeper: #3fb950;
     }
   }
   * { box-sizing: border-box; }
@@ -401,6 +403,72 @@
     font-weight: 400;
   }
   .draft-order-none { color: var(--muted); }
+  .draft-order-keeper {
+    color: var(--keeper);
+    font-weight: 600;
+  }
+  .draft-order-keeper .keeper-icon {
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  #draftorder .card {
+    padding: 14px 6px;
+  }
+  #draftorder table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  #draftorder th, #draftorder td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 0.74rem;
+    padding: 7px 4px;
+    text-align: center;
+    line-height: 1.25;
+  }
+  #draftorder th:first-child, #draftorder td:first-child {
+    width: 32px;
+    text-align: left;
+  }
+  #draftorder tbody tr:nth-child(even) {
+    background: var(--panel-2);
+  }
+  @media (max-width: 700px) and (min-width: 481px) {
+    #draftorder th, #draftorder td {
+      font-size: 0.62rem;
+      padding: 5px 2px;
+    }
+  }
+  /* Phones: many real columns can't stay legible with no scroll, so fall
+     back to a clean horizontal scroll with normal-size, unwrapped text
+     rather than the tiny word-broken grid that would otherwise result. */
+  @media (max-width: 480px) {
+    #draftorder .card {
+      overflow-x: auto;
+    }
+    #draftorder table {
+      table-layout: auto;
+      width: auto;
+      min-width: 100%;
+    }
+    #draftorder th, #draftorder td {
+      white-space: nowrap;
+      overflow-wrap: normal;
+      font-size: 0.78rem;
+      padding: 8px 12px;
+    }
+    #draftorder th:first-child, #draftorder td:first-child {
+      width: auto;
+      position: sticky;
+      left: 0;
+      background: var(--panel);
+    }
+    #draftorder tbody tr:nth-child(even) td:first-child {
+      background: var(--panel-2);
+    }
+  }
   .draft-order-list {
     list-style: none;
     counter-reset: pick;
@@ -861,9 +929,14 @@
 
   <section id="draftorder">
     <h2>2026 Draft Order</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Not a snake draft &mdash; same order every round, set by 2025 standings. A name with a &#8644; means that pick has changed hands via trade.</p>
+    <p style="color: var(--muted); margin-top: -6px;">Not a snake draft &mdash; same order every round, set by 2025 standings. A name with a &#8644; means that pick has changed hands via trade. A green player name with a &#128274; marks a round a team is spending on a keeper instead of drafting.</p>
     <div class="card">
-      <ol class="draft-order-list" id="draftorder-list"></ol>
+      <table>
+        <thead>
+          <tr><th>Round</th><th id="draftorder-team-headers-placeholder"></th></tr>
+        </thead>
+        <tbody id="draftorder-body"></tbody>
+      </table>
     </div>
   </section>
 
@@ -3762,18 +3835,45 @@ function renderTeams2026(data) {
   }
 }
 
+// The draft order itself is the same every round (this isn't a snake draft),
+// so data.draftOrder2026 only stores one trade state per team. To show the
+// round-by-round picture -- including which round each team is spending on a
+// keeper instead of drafting -- this renders one row per round, repeating
+// that team's trade state in every round and overlaying keeper info for the
+// specific round it applies to.
 function renderDraftOrderSection(data) {
-  const draftOrderList = document.getElementById("draftorder-list");
-  draftOrderList.innerHTML = "";
-  (data.draftOrder2026 || []).forEach(p => {
-    const li = document.createElement("li");
-    if (p.newOwner) {
-      li.innerHTML = "<span class=\"draft-order-owner\">" + p.newOwner + "<span class=\"swap-icon\" title=\"Traded pick\" aria-hidden=\"true\">&nbsp;&#8644;</span><span class=\"sr-only\"> (traded)</span></span><span class=\"draft-order-orig\">(from " + p.originalTeam + ")</span>";
-    } else {
-      li.textContent = p.originalTeam;
-    }
-    draftOrderList.appendChild(li);
-  });
+  const picks = data.draftOrder2026 || [];
+  const headerRow = document.querySelector("#draftorder thead tr");
+  headerRow.innerHTML = "<th>Round</th>" + picks.map(p => "<th>" + p.originalTeam + "</th>").join("");
+  const draftOrderBody = document.getElementById("draftorder-body");
+  draftOrderBody.innerHTML = "";
+
+  const keeperMapsByTeam = {};
+  if (data.keepersVisible) {
+    picks.forEach(p => { keeperMapsByTeam[p.originalTeam] = getTeamKeeperRoundMap(data, p.originalTeam); });
+  }
+
+  const rosterLengths = (data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
+  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+
+  for (let round = 1; round <= numRounds; round++) {
+    const tr = document.createElement("tr");
+    let html = "<td>" + round + "</td>";
+    picks.forEach(p => {
+      const keeperMap = keeperMapsByTeam[p.originalTeam];
+      const keeperPlayers = keeperMap ? keeperMap[round] : null;
+      if (keeperPlayers && keeperPlayers.length) {
+        const names = keeperPlayers.join(", ");
+        html += "<td class=\"draft-order-keeper\" aria-label=\"" + names + ", kept player\">" + names + "<span class=\"keeper-icon\" title=\"Keeper\" aria-hidden=\"true\">&nbsp;&#128274;</span></td>";
+      } else if (p.newOwner) {
+        html += "<td class=\"draft-order-owner\" aria-label=\"" + p.newOwner + ", traded pick\">" + p.newOwner + "<span class=\"swap-icon\" title=\"Traded pick\" aria-hidden=\"true\">&nbsp;&#8644;</span></td>";
+      } else {
+        html += "<td class=\"draft-order-none\">—</td>";
+      }
+    });
+    tr.innerHTML = html;
+    draftOrderBody.appendChild(tr);
+  }
 }
 
 function renderDraftResults(data) {
@@ -3947,6 +4047,23 @@ function resolveTeamKeeperRounds(data, teamName) {
   });
 
   return result;
+}
+
+// Returns { finalRound: [playerName, ...] } for a team's kept players, using
+// the same round-resolution logic as the Keepers tab (resolveTeamKeeperRounds),
+// falling back to the player's raw keeperCost if a resolved round isn't
+// available for some reason.
+function getTeamKeeperRoundMap(data, teamName) {
+  const selection = (data.keeperSelections || []).find(k => k.team === teamName);
+  if (!selection || !selection.players || !selection.players.length) return {};
+  const resolvedRounds = resolveTeamKeeperRounds(data, teamName);
+  const map = {};
+  selection.players.forEach(p => {
+    const round = resolvedRounds[p] != null ? resolvedRounds[p] : getKeeperRound(data, teamName, p);
+    if (round == null) return;
+    (map[round] = map[round] || []).push(p);
+  });
+  return map;
 }
 
 function renderKeepersGrid(data) {
@@ -4731,6 +4848,31 @@ function flattenDraftOrderList(picks) {
   return (picks || []).map(p => ({ Team: p.originalTeam, "New Owner": p.newOwner || "—" }));
 }
 
+// Mirrors the round-by-round matrix shown on the Draft Order tab: one row
+// per round, one column per team, with keeper picks overlaid on the round
+// they're spending.
+function flattenDraftOrderMatrix(picks, data) {
+  if (!picks || !picks.length) return [];
+  const teamNames = picks.map(p => p.originalTeam);
+  const keeperMapsByTeam = {};
+  if (data && data.keepersVisible) {
+    teamNames.forEach(n => { keeperMapsByTeam[n] = getTeamKeeperRoundMap(data, n); });
+  }
+  const rosterLengths = (data && data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
+  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+  const rows = [];
+  for (let round = 1; round <= numRounds; round++) {
+    const row = { Round: round };
+    picks.forEach(p => {
+      const keeperMap = keeperMapsByTeam[p.originalTeam];
+      const keeperPlayers = keeperMap ? keeperMap[round] : null;
+      row[p.originalTeam] = (keeperPlayers && keeperPlayers.length) ? keeperPlayers.join(", ") : (p.newOwner || "—");
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
 function flattenTradesForExport(trades) {
   return (trades || []).map(t => ({ Date: t.date || "", Teams: t.teams || "", Details: t.details || "" }));
 }
@@ -4861,8 +5003,8 @@ document.getElementById("export-download-btn").addEventListener("click", async (
       groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
     { id: "export-draftResults", sheet: "2026 Draft", type: "table", rows: () => flattenDraftResultsFlat(data.draftResults),
       groupBy: r => r.Team, hideColumns: ["Team"] },
-    { id: "export-draftOrder2026", sheet: "Draft Order", type: "table", rows: () => flattenDraftOrderList(data.draftOrder2026),
-      cellStyle: (header, value) => header === "Team" ? null : (value === "—" ? { color: "FF4B5B78" } : { color: "FFB82514", bold: true }) },
+    { id: "export-draftOrder2026", sheet: "Draft Order", type: "table", rows: () => flattenDraftOrderMatrix(data.draftOrder2026, data),
+      cellStyle: (header, value) => header === "Round" ? null : (value === "—" ? { color: "FF4B5B78" } : { color: "FFB82514", bold: true }) },
     { id: "export-trades", sheet: "Trades", type: "table", rows: () => flattenTradesForExport(data.trades) },
     { id: "export-teams", sheet: "2025 Teams", type: "roster", rows: () => flattenRosterForExport(data.teams, true),
       groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
