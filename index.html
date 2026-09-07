@@ -368,6 +368,9 @@
     color: var(--muted);
     font-size: 0.85rem;
     margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .team-badge {
     display: inline-flex;
@@ -1064,8 +1067,9 @@
     gap: 16px;
     margin-bottom: 24px;
   }
-  .history-card table { font-size: 0.85rem; }
-  .history-card th, .history-card td { padding: 6px 4px; }
+  .history-card table { font-size: 0.85rem; table-layout: fixed; width: 100%; }
+  .history-card th, .history-card td { padding: 6px 4px; white-space: nowrap; }
+  .history-card td:nth-child(2), .history-card td:nth-child(3) { overflow: hidden; text-overflow: ellipsis; }
   /* white-space: nowrap plus the shrink-to-fit width keep the trophy icon
      glued to its rank number -- a long team name elsewhere in the same
      card's table can otherwise squeeze this column just enough that the
@@ -1074,7 +1078,7 @@
     color: var(--muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    width: 1%;
+    width: 34px;
   }
   .history-card tr.rank-gold td { color: var(--gold); font-weight: 600; }
   .history-card tr.rank-silver td { color: var(--silver); font-weight: 600; }
@@ -1154,8 +1158,22 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    min-width: 0;
   }
-  .alltime-record-sub { color: var(--muted); font-size: 0.76rem; margin-top: 3px; }
+  .alltime-record-value span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .alltime-record-sub {
+    color: var(--muted);
+    font-size: 0.76rem;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .trophy-icon { color: var(--gold); flex: none; }
   .trophy-icon-silver { color: var(--silver); }
   .trophy-icon-bronze { color: var(--bronze); }
@@ -4898,7 +4916,7 @@ function renderAllTimeRecords(ledgerRows) {
     const leaders = ledgerRows.filter(r => r.titles === maxTitles);
     cards.push({
       label: "Most Championships",
-      value: trophyIconHtml() + namesJoined(leaders),
+      value: trophyIconHtml() + "<span>" + namesJoined(leaders) + "</span>",
       sub: maxTitles + (maxTitles === 1 ? " title" : " titles")
     });
   }
@@ -4908,7 +4926,7 @@ function renderAllTimeRecords(ledgerRows) {
     const leaders = ledgerRows.filter(r => r.top3 === maxTop3);
     cards.push({
       label: "Most Top-3 Finishes",
-      value: namesJoined(leaders),
+      value: "<span>" + namesJoined(leaders) + "</span>",
       sub: maxTop3 + (maxTop3 === 1 ? " finish" : " finishes")
     });
   }
@@ -4922,7 +4940,7 @@ function renderAllTimeRecords(ledgerRows) {
     const leaders = eligible.filter(r => r.avg === minAvg);
     cards.push({
       label: "Best Avg Finish",
-      value: namesJoined(leaders),
+      value: "<span>" + namesJoined(leaders) + "</span>",
       sub: minAvg.toFixed(1) + " avg &middot; " + MIN_SEASONS_FOR_AVG + "+ seasons"
     });
   }
