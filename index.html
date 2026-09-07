@@ -1314,7 +1314,7 @@
       <p style="color: var(--muted); font-size: 0.85rem; margin-top:-6px;">There's no login for this site, so just pick whichever team you want to practice drafting for &mdash; bots will run every other team.</p>
       <div class="mockdraft-team-grid" id="mockdraft-team-grid"></div>
       <div class="mockdraft-rules-note">
-        <strong>Rules:</strong> Linear order (not snake), matching the Draft Order tab exactly &mdash; trades and keeper-locked rounds are honored, so a round with a keeper is skipped entirely. Max 2 QB, 1 K, 1 DEF per roster. You get 1:15 per pick; if time runs out you auto-draft the best player available (skipping anyone who'd bust a position cap). Bots take a few seconds (2&ndash;5) between picks so you can follow along. Picking a team below takes you to the board first &mdash; nothing starts until you hit Start Draft there.
+        <strong>Rules:</strong> Linear order (not snake), matching the Draft Order tab exactly &mdash; trades and keeper-locked rounds are honored, so a round with a keeper is skipped entirely. Max 2 QB, 1 K, 1 DEF per roster. Bots don't just take pure best-ADP-available &mdash; each pick weighs ADP, that team's positional need, and a bit of realistic unpredictability standing in for a player's upside/downside, though a true difference-maker rarely falls far past their real draft slot. You get 1:15 per pick; if time runs out you auto-draft using that same logic (skipping anyone who'd bust a position cap). Bots take a few seconds (2&ndash;5) between picks so you can follow along. Picking a team below takes you to the board first &mdash; nothing starts until you hit Start Draft there.
       </div>
       <button type="button" class="admin-btn" id="mockdraft-start-btn" disabled>Start Mock Draft</button>
     </div>
@@ -5297,12 +5297,62 @@ function mockCapsOk(roster, pos) {
   return true;
 }
 
+// Soft roster-construction targets used only to weight a bot's preference
+// toward filling out a real-looking roster (a starter plus some depth at
+// each skill position) -- separate from the hard position caps in
+// mockCapsOk above, which this never overrides.
+const MOCK_ROSTER_TARGETS = { QB: 2, RB: 5, WR: 6, TE: 2, K: 1, DEF: 1 };
+
+// Bots don't draft pure best-ADP-available -- real people don't either.
+// Each pick is scored on a mix of ADP, this team's positional need, and a
+// bit of per-pick unpredictability standing in for a player's upside/
+// downside, then the highest-scoring option after that randomness is
+// applied gets taken. Only the next MOCK_PICK_WINDOW cap-eligible players
+// on the board are ever in play for a given pick, so the result is always
+// a plausible reach or fall -- never absurd (a true late-round player can
+// never sneak into round 1). Players still in the top MOCK_ELITE_TIER of
+// the whole remaining board get an extra bump so true difference-makers
+// ("potential league winners") rarely slide far past their real ADP,
+// exactly the way a bot recognizing star power would behave.
+const MOCK_PICK_WINDOW = 10;
+const MOCK_ELITE_TIER = 24;
+
 function mockBestAvailable(teamName) {
   const roster = MOCK_STATE.rosters[teamName] || [];
-  for (let i = 0; i < MOCK_STATE.available.length; i++) {
-    if (mockCapsOk(roster, MOCK_STATE.available[i].pos)) return MOCK_STATE.available[i];
+  const eligible = [];
+  for (let i = 0; i < MOCK_STATE.available.length && eligible.length < MOCK_PICK_WINDOW; i++) {
+    const p = MOCK_STATE.available[i];
+    if (mockCapsOk(roster, p.pos)) eligible.push({ player: p, boardIndex: i });
   }
-  return MOCK_STATE.available[0] || null;
+  if (!eligible.length) return MOCK_STATE.available[0] || null;
+
+  let best = eligible[0].player;
+  let bestScore = -Infinity;
+  eligible.forEach((entry, windowIndex) => {
+    const p = entry.player;
+    // ADP baseline: the closer to the top of the window, the more weight.
+    let score = MOCK_PICK_WINDOW - windowIndex;
+
+    // Need: still short of a sane target at this position pulls it up;
+    // already fully stocked pushes it back down (but never off the board).
+    const target = MOCK_ROSTER_TARGETS[p.pos];
+    if (target) {
+      const have = roster.filter(r => r.pos === p.pos).length;
+      score += have < target ? (target - have) * 3 : -5;
+    }
+
+    // League-winner talents rarely fall far past their real draft slot.
+    if (entry.boardIndex < MOCK_ELITE_TIER) score += 6;
+
+    // Upside/downside and general human unpredictability: a multiplicative
+    // per-pick swing rather than a flat bonus, so it scales with how much
+    // is already riding on this pick instead of always moving the needle
+    // by the same fixed amount.
+    score = Math.max(0.5, score) * (0.5 + Math.random());
+
+    if (score > bestScore) { bestScore = score; best = p; }
+  });
+  return best;
 }
 
 function initMockDraftTab(data) {
