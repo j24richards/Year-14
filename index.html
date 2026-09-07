@@ -6127,6 +6127,11 @@ function renderMockAvailablePlayers() {
 // pick goes to the bench.
 const MOCK_STARTER_CAPS = { QB: 1, RB: 2, WR: 3, TE: 1, K: 1, DEF: 1 };
 const MOCK_FLEX_ELIGIBLE = ["RB", "WR", "TE"];
+// 10 starter slots (QB, RB x2, WR x3, TE, FLEX, K, DEF) out of the 15-round
+// roster leaves 5 bench slots -- shown as fixed, labeled rows just like the
+// starter slots so an open bench spot reads as "Empty" instead of just
+// shrinking the bench list.
+const MOCK_BENCH_SIZE = LEAGUE_DRAFT_TOTAL_ROUNDS - 10;
 
 function assignMockRosterSlots(picks) {
   const starters = { QB: [], RB: [], WR: [], TE: [], K: [], DEF: [] };
@@ -6168,14 +6173,23 @@ function renderRosterSlots(picks) {
   html += slotRowHtml("K", starters.K[0]);
   html += slotRowHtml("DEF", starters.DEF[0]);
   html += "</div>";
-  html += "<div class=\"mockdraft-roster-bench-label\">Bench (" + bench.length + ")</div>";
-  if (bench.length) {
-    html += "<div class=\"mockdraft-roster-bench\">" + bench.map(p =>
-      "<div class=\"mockdraft-slot-row bench\"><span class=\"mockdraft-slot-player\">" + p.player + "<span class=\"mockdraft-slot-meta\">" + p.pos + " &middot; " + p.nfl + "</span></span></div>"
-    ).join("") + "</div>";
-  } else {
-    html += "<div class=\"mockdraft-roster-bench-empty\">No bench players yet.</div>";
+  html += "<div class=\"mockdraft-roster-bench-label\">Bench (" + bench.length + "/" + MOCK_BENCH_SIZE + ")</div>";
+  html += "<div class=\"mockdraft-roster-bench\">";
+  for (let i = 0; i < MOCK_BENCH_SIZE; i++) {
+    const p = bench[i];
+    html += p
+      ? "<div class=\"mockdraft-slot-row bench\"><span class=\"mockdraft-slot-label\">Bench</span><span class=\"mockdraft-slot-player\">" + p.player + "<span class=\"mockdraft-slot-meta\">" + p.pos + " &middot; " + p.nfl + "</span></span></div>"
+      : "<div class=\"mockdraft-slot-row bench\"><span class=\"mockdraft-slot-label\">Bench</span><span class=\"mockdraft-slot-player mockdraft-slot-empty\">Empty</span></div>";
   }
+  // Extra picks beyond the normal bench size (e.g. a second QB or K/DEF
+  // stashed for a bye week) still need somewhere to show up.
+  if (bench.length > MOCK_BENCH_SIZE) {
+    for (let i = MOCK_BENCH_SIZE; i < bench.length; i++) {
+      const p = bench[i];
+      html += "<div class=\"mockdraft-slot-row bench\"><span class=\"mockdraft-slot-label\">Bench</span><span class=\"mockdraft-slot-player\">" + p.player + "<span class=\"mockdraft-slot-meta\">" + p.pos + " &middot; " + p.nfl + "</span></span></div>";
+    }
+  }
+  html += "</div>";
   return html;
 }
 
