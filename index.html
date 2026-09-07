@@ -27,6 +27,7 @@
     --bronze: #a86a3d;
     --gold-wash: rgba(184, 37, 20, 0.07);
     --keeper: #1a7f37;
+    --injury-risk: #a5680a;
     --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -44,6 +45,7 @@
       --bronze: #c98b52;
       --gold-wash: rgba(220, 44, 24, 0.1);
       --keeper: #3fb950;
+      --injury-risk: #e8a33d;
     }
   }
   * { box-sizing: border-box; }
@@ -732,6 +734,7 @@
   .mockdraft-player-info { display: flex; flex-direction: column; }
   .mockdraft-player-name { font-weight: 600; }
   .mockdraft-player-meta { color: var(--muted); font-size: 0.75rem; }
+  .mockdraft-injury-tag { color: var(--injury-risk); font-weight: 600; }
   .mockdraft-draft-btn {
     background: var(--gold);
     color: #fff;
@@ -1314,7 +1317,7 @@
       <p style="color: var(--muted); font-size: 0.85rem; margin-top:-6px;">There's no login for this site, so just pick whichever team you want to practice drafting for &mdash; bots will run every other team.</p>
       <div class="mockdraft-team-grid" id="mockdraft-team-grid"></div>
       <div class="mockdraft-rules-note">
-        <strong>Rules:</strong> Linear order (not snake), matching the Draft Order tab exactly &mdash; trades and keeper-locked rounds are honored, so a round with a keeper is skipped entirely. Max 2 QB, 1 K, 1 DEF per roster. Bots don't just take pure best-ADP-available &mdash; each pick weighs ADP, that team's positional need, and a bit of realistic unpredictability standing in for a player's upside/downside, though a true difference-maker rarely falls far past their real draft slot. You get 1:15 per pick; if time runs out you auto-draft using that same logic (skipping anyone who'd bust a position cap). Bots take a few seconds (2&ndash;5) between picks so you can follow along. Picking a team below takes you to the board first &mdash; nothing starts until you hit Start Draft there.
+        <strong>Rules:</strong> Linear order (not snake), matching the Draft Order tab exactly &mdash; trades and keeper-locked rounds are honored, so a round with a keeper is skipped entirely. Max 2 QB, 1 K, 1 DEF per roster. Bots don't just take pure best-ADP-available &mdash; each pick weighs ADP, that team's positional need, a bit of realistic unpredictability standing in for a player's upside/downside, and real Week 1 injury/availability risk (&#9888; tagged in the player list): a proven vet or an elite young talent returning from time out gets treated as high risk, high reward and isn't faded much past their ADP, while a less-proven player coming back from the same kind of absence is treated as high risk, low reward and fades further &mdash; though a true difference-maker overall still rarely falls far past their real draft slot. You get 1:15 per pick; if time runs out you auto-draft using that same logic (skipping anyone who'd bust a position cap). Bots take a few seconds (2&ndash;5) between picks so you can follow along. Picking a team below takes you to the board first &mdash; nothing starts until you hit Start Draft there.
       </div>
       <button type="button" class="admin-btn" id="mockdraft-start-btn" disabled>Start Mock Draft</button>
     </div>
@@ -5317,6 +5320,59 @@ const MOCK_ROSTER_TARGETS = { QB: 2, RB: 5, WR: 6, TE: 2, K: 1, DEF: 1 };
 const MOCK_PICK_WINDOW = 10;
 const MOCK_ELITE_TIER = 24;
 
+// Real, current-as-of-the-2026-opener availability situations, sourced
+// beyond what the ADP snapshot alone bakes in -- weeksOut is the best
+// public estimate of games missed to start the season; vet marks a player
+// with enough banked NFL snaps to slot back into a known role without a
+// speed-of-the-game adjustment; eliteTalent marks talent good enough to
+// shrink that adjustment even for a less experienced player (a gifted
+// young player can play through rust that would sink an average one).
+// durabilityConcern is a separate, softer flag for a player who isn't
+// projected to miss time but carries real recurrence risk. None of this
+// claims certainty -- real injury timelines shift by the day -- it's a
+// deliberately modest nudge, not a hard rule.
+const MOCK_INJURY_NOTES = {
+  "Isiah Pacheco": { weeksOut: 4, vet: true, eliteTalent: false, note: "Back — eligible Wk5" },
+  "Malik Nabers": { weeksOut: 2, vet: false, eliteTalent: true, note: "ACL recovery — Wk1 questionable" },
+  "Zach Charbonnet": { weeksOut: 4, vet: false, eliteTalent: false, note: "Torn ACL (PUP) — unlikely Wk1" },
+  "Christian McCaffrey": { weeksOut: 0, vet: true, eliteTalent: true, durabilityConcern: true, note: "Camp soreness on heavy '25 usage" }
+};
+
+function mockInjuryScoreAdjustment(player) {
+  const injury = MOCK_INJURY_NOTES[player.player];
+  if (!injury) return 0;
+  let adj = 0;
+  if (injury.weeksOut) {
+    // Missed time is a real cost no matter who it is.
+    adj -= injury.weeksOut * 1.5;
+    // A proven vet returning to a known role, or a young player whose raw
+    // talent shrinks the rust/learning-curve gap, integrates back close to
+    // full speed -- the discount an ADP snapshot already applies tends to
+    // overstate the risk, so this only partially re-costs the missed time
+    // (high risk, high reward). A less-proven, non-elite player is the
+    // opposite: NFL-speed rust stacks on top of the missed reps, so it's
+    // realistically slower to pay off even once "back" (high risk, low
+    // reward) -- fade them further instead.
+    adj += (injury.vet || injury.eliteTalent) ? injury.weeksOut * 1.2 : -2;
+  }
+  if (injury.durabilityConcern) {
+    // No missed time projected, but real recurrence risk -- modeled as
+    // extra downside variance rather than a flat discount.
+    adj -= Math.random() * 5;
+  }
+  return adj;
+}
+
+// Small inline tag surfacing the same injury note the bots are weighing,
+// so a human drafting against them can see why a reach or a fall happened
+// -- and factor the risk into their own pick -- instead of it being an
+// invisible thumb on the scale.
+function mockInjuryTagHtml(player) {
+  const injury = MOCK_INJURY_NOTES[player.player];
+  if (!injury) return "";
+  return " &middot; <span class=\"mockdraft-injury-tag\" title=\"" + injury.note + "\">&#9888; " + injury.note + "</span>";
+}
+
 function mockBestAvailable(teamName) {
   const roster = MOCK_STATE.rosters[teamName] || [];
   const eligible = [];
@@ -5343,6 +5399,9 @@ function mockBestAvailable(teamName) {
 
     // League-winner talents rarely fall far past their real draft slot.
     if (entry.boardIndex < MOCK_ELITE_TIER) score += 6;
+
+    // Real injury/availability risk-reward (see mockInjuryScoreAdjustment).
+    score += mockInjuryScoreAdjustment(p);
 
     // Upside/downside and general human unpredictability: a multiplicative
     // per-pick swing rather than a flat bonus, so it scales with how much
@@ -5745,7 +5804,7 @@ function renderMockAvailablePlayers() {
     row.className = "mockdraft-player-row";
     const capOk = isUserTurn && mockCapsOk(MOCK_STATE.rosters[MOCK_STATE.userTeam] || [], p.pos);
     row.innerHTML = "<div class=\"mockdraft-player-info\"><span class=\"mockdraft-player-name\">" + p.player + "</span>" +
-      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + "</span></div>" +
+      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + mockInjuryTagHtml(p) + "</span></div>" +
       "<button type=\"button\" class=\"mockdraft-draft-btn\"" + (capOk ? "" : " disabled") + ">Draft</button>";
     if (capOk) {
       row.querySelector(".mockdraft-draft-btn").addEventListener("click", () => humanMockDraft(p));
