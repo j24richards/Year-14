@@ -676,6 +676,7 @@
   }
   .mockdraft-board.view-grid .mockdraft-columns { grid-template-columns: 1fr; }
   .mockdraft-board.view-grid #mockdraft-col-roster { display: none; }
+  .mockdraft-board.view-grid #mockdraft-col-recent { display: none; }
   /* On wide screens, widen the board past the site's normal 900px column so
      the round-by-team grid and Available Players can sit side by side. Below
      this width (including phones/tablets) the layout stays exactly as-is:
@@ -725,11 +726,16 @@
   }
   .mockdraft-columns {
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 1fr);
     gap: 20px;
+  }
+  @media (max-width: 1050px) {
+    .mockdraft-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+    .mockdraft-col-recent { grid-column: 1 / -1; order: -1; }
   }
   @media (max-width: 800px) {
     .mockdraft-columns { grid-template-columns: 1fr; }
+    .mockdraft-col-recent { grid-column: auto; order: 0; }
   }
   .mockdraft-col {
     background: var(--panel);
@@ -833,9 +839,10 @@
   .mockdraft-pick-log-team { font-weight: 600; flex: none; width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mockdraft-pick-log-keeper { color: var(--keeper); font-weight: 600; }
   .mockdraft-pick-log-keeper .keeper-icon { margin-left: 3px; font-weight: 400; }
-  .mockdraft-recent-picks { max-height: 200px; margin-bottom: 14px; }
+  .mockdraft-recent-picks { max-height: 420px; }
   .mockdraft-recent-picks .mockdraft-pick-log-rd { width: 52px; }
   .mockdraft-recent-picks-empty { color: var(--muted); font-size: 0.8rem; padding: 8px 10px; }
+  @media (max-width: 1050px) { .mockdraft-recent-picks { max-height: 220px; } }
   #mockdraft-board-body td, #mockdraft-board-headers { font-size: 0.78rem; }
   .mockdraft-paused-badge {
     display: none;
@@ -1417,6 +1424,7 @@
           <div class="mockdraft-timer-bar"><div class="mockdraft-timer-fill" id="mockdraft-timer-fill"></div></div>
           <div class="mockdraft-timer-num" id="mockdraft-timer-num">1:15</div>
         </div>
+        <button type="button" class="admin-btn admin-btn-secondary" id="mockdraft-sound-btn" title="Play a chime when you're on the clock">&#128276; Sound: On</button>
         <button type="button" class="admin-btn admin-btn-secondary" id="mockdraft-pause-btn">Pause</button>
         <button type="button" class="admin-btn admin-btn-secondary" id="mockdraft-quit-btn">Quit / Restart</button>
       </div>
@@ -1439,10 +1447,12 @@
       </div>
 
       <div class="mockdraft-columns" id="mockdraft-columns">
-        <div class="mockdraft-col" id="mockdraft-col-players">
+        <div class="mockdraft-col mockdraft-col-recent" id="mockdraft-col-recent">
           <h3 style="margin-top:0;">Recent Picks</h3>
           <div class="mockdraft-pick-log mockdraft-recent-picks" id="mockdraft-recent-picks"></div>
-          <h3>Available Players</h3>
+        </div>
+        <div class="mockdraft-col" id="mockdraft-col-players">
+          <h3 style="margin-top:0;">Available Players</h3>
           <div class="mockdraft-filters" id="mockdraft-filters"></div>
           <input type="text" id="mockdraft-player-search" placeholder="Search available players&hellip;" autocomplete="off">
           <div class="mockdraft-player-list" id="mockdraft-player-list"></div>
@@ -5343,8 +5353,44 @@ const MOCK_STATE = {
   filterPos: "ALL",
   searchQuery: "",
   paused: false,
-  viewingTeam: null
+  viewingTeam: null,
+  soundEnabled: true
 };
+
+// Lightweight "you're on the clock" chime built with the Web Audio API --
+// no audio file to host. The context is created (or resumed) lazily from
+// the "Start Draft" click handler so it's unlocked by a real user gesture
+// before the timer/bot-pick code path ever tries to play it automatically.
+let MOCK_AUDIO_CTX = null;
+function getMockAudioCtx() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!MOCK_AUDIO_CTX) MOCK_AUDIO_CTX = new Ctx();
+  if (MOCK_AUDIO_CTX.state === "suspended") MOCK_AUDIO_CTX.resume();
+  return MOCK_AUDIO_CTX;
+}
+// A short two-note ding, only ever played when it becomes the human
+// drafter's own turn (never for bot picks) -- an audible cue to look back
+// at the tab.
+function playMockOnClockChime() {
+  if (!MOCK_STATE.soundEnabled) return;
+  const ctx = getMockAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  [[880, 0, 0.16], [1318.5, 0.11, 0.24]].forEach(([freq, offset, dur]) => {
+    const start = now + offset;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.25, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + dur + 0.02);
+  });
+}
 
 // Builds the linear (non-snake) mock-draft pick sequence directly from the
 // live Draft Order tab's own data. Unlike Hold My Rings, this league's
@@ -5715,6 +5761,7 @@ function startMockDraft() {
 function beginMockDraft() {
   if (!MOCK_STATE.active || MOCK_STATE.started) return;
   MOCK_STATE.started = true;
+  getMockAudioCtx(); // warm up / unlock audio now, on a real click, so later automatic chimes aren't blocked
   const beginBar = document.getElementById("mockdraft-begin-bar");
   if (beginBar) beginBar.style.display = "none";
   const pauseBtn = document.getElementById("mockdraft-pause-btn");
@@ -5750,6 +5797,7 @@ function advanceMockPick() {
   renderMockAvailablePlayers();
   renderMockGrid();
   if (current.team === MOCK_STATE.userTeam) {
+    playMockOnClockChime();
     startMockTimer();
   } else {
     MOCK_STATE.botHandle = setTimeout(() => {
@@ -6244,6 +6292,16 @@ document.querySelectorAll(".mockdraft-view-btn").forEach(btn => {
     if (gridWrap) gridWrap.style.display = view === "grid" ? "block" : "none";
     if (view === "grid") renderMockGrid();
   });
+});
+
+const mockSoundBtn = document.getElementById("mockdraft-sound-btn");
+if (mockSoundBtn) mockSoundBtn.addEventListener("click", () => {
+  MOCK_STATE.soundEnabled = !MOCK_STATE.soundEnabled;
+  mockSoundBtn.innerHTML = "&#128276; Sound: " + (MOCK_STATE.soundEnabled ? "On" : "Off");
+  if (MOCK_STATE.soundEnabled) {
+    getMockAudioCtx(); // re-warm/unlock on this click too, then confirm audibly
+    playMockOnClockChime();
+  }
 });
 
 const mockPauseBtn = document.getElementById("mockdraft-pause-btn");
