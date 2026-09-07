@@ -5531,9 +5531,25 @@ function mockNeedWeight(round) {
   return Math.min(3.2, 1 + (Math.max(1, round) - 1) * 0.17);
 }
 
+// Real drafters treat K/DEF as pure end-of-draft roster filler, no matter
+// where a raw ADP snapshot happens to rank a top option -- taking one early
+// costs a bench-depth pick at RB/WR/FLEX that's worth far more the rest of
+// the season, so good managers punt both positions almost to the very last
+// picks. This suppresses K/DEF hard until the final two rounds (when a real
+// starter finally outweighs one more speculative RB/WR flier), so those
+// middle-late rounds stay about building out RB/WR/FLEX depth instead.
+function mockPuntAdjustment(pos, roundsRemaining) {
+  if (pos !== "K" && pos !== "DEF") return 0;
+  if (roundsRemaining <= 1) return 0;
+  return -18 - roundsRemaining * 1.5;
+}
+
 function mockBestAvailable(teamName, round) {
   const roster = MOCK_STATE.rosters[teamName] || [];
   const needWeight = mockNeedWeight(round || 1);
+  const lastPick = MOCK_STATE.pickList[MOCK_STATE.pickList.length - 1];
+  const totalRounds = lastPick ? lastPick.round : (round || 1);
+  const roundsRemaining = Math.max(0, totalRounds - (round || 1));
   const eligible = [];
   for (let i = 0; i < MOCK_STATE.available.length && eligible.length < MOCK_PICK_WINDOW; i++) {
     const p = MOCK_STATE.available[i];
@@ -5568,6 +5584,11 @@ function mockBestAvailable(teamName, round) {
     // MOCK_SITUATION_NOTES) -- a new OC's scheme, a lopsided committee, an
     // exempt-list absence, etc.
     score += mockSituationScoreAdjustment(p);
+
+    // Punt K/DEF until the draft's final couple of rounds (see
+    // mockPuntAdjustment) so those roster spots don't crowd out RB/WR/FLEX
+    // depth in the middle-late rounds.
+    score += mockPuntAdjustment(p.pos, roundsRemaining);
 
     // Upside/downside and general human unpredictability: a multiplicative
     // per-pick swing rather than a flat bonus, so it scales with how much
