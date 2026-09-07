@@ -831,6 +831,8 @@
   .mockdraft-pick-log-row.is-user { background: var(--gold-wash); }
   .mockdraft-pick-log-rd { color: var(--muted); flex: none; width: 60px; }
   .mockdraft-pick-log-team { font-weight: 600; flex: none; width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mockdraft-pick-log-keeper { color: var(--keeper); font-weight: 600; }
+  .mockdraft-pick-log-keeper .keeper-icon { margin-left: 3px; font-weight: 400; }
   #mockdraft-board-body td, #mockdraft-board-headers { font-size: 0.78rem; }
   .mockdraft-paused-badge {
     display: none;
@@ -4400,6 +4402,12 @@ function renderTeams2026(data) {
   }
 }
 
+// The real 2026 draft (and this Mock Draft, which mirrors it) is a fixed
+// 15-round draft for every team -- NOT derived from any team's live roster
+// array length, which can vary (waiver adds, IR spots, etc.) independent of
+// how many rounds the actual draft runs.
+const LEAGUE_DRAFT_TOTAL_ROUNDS = 15;
+
 // The draft order itself is the same every round (this isn't a snake draft),
 // so data.draftOrder2026 only stores one trade state per team. To show the
 // round-by-round picture -- including which round each team is spending on a
@@ -4418,8 +4426,7 @@ function renderDraftOrderSection(data) {
     picks.forEach(p => { keeperMapsByTeam[p.originalTeam] = getTeamKeeperRoundMap(data, p.originalTeam); });
   }
 
-  const rosterLengths = (data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
-  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+  const numRounds = LEAGUE_DRAFT_TOTAL_ROUNDS;
 
   for (let round = 1; round <= numRounds; round++) {
     const tr = document.createElement("tr");
@@ -5349,8 +5356,7 @@ function buildMockDraftPickList(data) {
   if (data.keepersVisible) {
     teamNames.forEach(n => { keeperMaps[n] = getTeamKeeperRoundMap(data, n); });
   }
-  const rosterLengths = (data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
-  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+  const numRounds = LEAGUE_DRAFT_TOTAL_ROUNDS;
   const picks = [];
   for (let round = 1; round <= numRounds; round++) {
     order.forEach(p => {
@@ -6099,16 +6105,50 @@ function refreshMockOtherTeamsView() {
   if (MOCK_STATE.viewingTeam) renderMockOtherTeamRoster(MOCK_STATE.viewingTeam);
 }
 
+// Keeper-locked rounds never appear in MOCK_STATE.log (they're skipped
+// entirely when building the live pick list -- see buildMockDraftPickList),
+// so they're pulled in here from the same source Draft Board View uses
+// (getTeamKeeperRoundMap) and interleaved with the real picks in true
+// draft-slot order (round, then each team's fixed slot position), rather
+// than being invisible in this List View the way they used to be.
 function renderMockPickLog() {
   const el = document.getElementById("mockdraft-pick-log");
   if (!el) return;
   el.innerHTML = "";
-  MOCK_STATE.log.slice().reverse().forEach(entry => {
+
+  const keeperEntries = [];
+  if (CURRENT_DATA && CURRENT_DATA.keepersVisible) {
+    MOCK_STATE.teamNames.forEach((team, slotIndex) => {
+      const keeperMap = getTeamKeeperRoundMap(CURRENT_DATA, team);
+      Object.keys(keeperMap).forEach(round => {
+        keeperMap[round].forEach(player => {
+          keeperEntries.push({ round: Number(round), slotIndex: slotIndex, team: team, player: player, isKeeper: true });
+        });
+      });
+    });
+  }
+  const liveEntries = MOCK_STATE.log.map(entry => ({
+    round: Number(entry.round),
+    slotIndex: MOCK_STATE.teamNames.indexOf(entry.team),
+    team: entry.team,
+    player: entry.player,
+    nfl: entry.nfl,
+    pos: entry.pos,
+    isUser: entry.isUser,
+    isKeeper: false
+  }));
+  const combined = keeperEntries.concat(liveEntries).sort((a, b) =>
+    (b.round - a.round) || (b.slotIndex - a.slotIndex)
+  );
+
+  combined.forEach(entry => {
     const row = document.createElement("div");
-    row.className = "mockdraft-pick-log-row" + (entry.isUser ? " is-user" : "");
+    row.className = "mockdraft-pick-log-row" + (entry.isUser ? " is-user" : "") + (entry.isKeeper ? " is-keeper" : "");
+    const detail = entry.isKeeper
+      ? "<span class=\"mockdraft-pick-log-keeper\">" + entry.player + " &middot; kept<span class=\"keeper-icon\" title=\"Keeper\" aria-hidden=\"true\">&nbsp;&#128274;</span></span>"
+      : "<span>" + entry.player + " (" + entry.nfl + " - " + entry.pos + ")</span>";
     row.innerHTML = "<span class=\"mockdraft-pick-log-rd\">Rd " + entry.round + "</span>" +
-      "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" +
-      "<span>" + entry.player + " (" + entry.nfl + " - " + entry.pos + ")</span>";
+      "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" + detail;
     el.appendChild(row);
   });
 }
@@ -6612,8 +6652,7 @@ function flattenDraftOrderMatrix(picks, data) {
   if (data && data.keepersVisible) {
     teamNames.forEach(n => { keeperMapsByTeam[n] = getTeamKeeperRoundMap(data, n); });
   }
-  const rosterLengths = (data && data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
-  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+  const numRounds = LEAGUE_DRAFT_TOTAL_ROUNDS;
   const rows = [];
   for (let round = 1; round <= numRounds; round++) {
     const row = { Round: round };
