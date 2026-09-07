@@ -6200,13 +6200,14 @@ function renderRosterSlots(picks) {
 function computeMockRosterNeeds(picks) {
   const { starters, flex } = assignMockRosterSlots(picks);
   const needs = [];
-  if (!starters.QB[0]) needs.push("QB");
-  if (!starters.RB[0] || !starters.RB[1]) needs.push("RB");
-  if (!starters.WR[0] || !starters.WR[1] || !starters.WR[2]) needs.push("WR");
-  if (!starters.TE[0]) needs.push("TE");
-  if (!flex) needs.push("FLEX");
-  if (!starters.K[0]) needs.push("K");
-  if (!starters.DEF[0]) needs.push("DEF");
+  const need = (label, have, cap) => { if (have < cap) needs.push({ label: label, have: have, cap: cap }); };
+  need("QB", starters.QB.length, MOCK_STARTER_CAPS.QB);
+  need("RB", starters.RB.length, MOCK_STARTER_CAPS.RB);
+  need("WR", starters.WR.length, MOCK_STARTER_CAPS.WR);
+  need("TE", starters.TE.length, MOCK_STARTER_CAPS.TE);
+  need("FLEX", flex ? 1 : 0, 1);
+  need("K", starters.K.length, MOCK_STARTER_CAPS.K);
+  need("DEF", starters.DEF.length, MOCK_STARTER_CAPS.DEF);
   return needs;
 }
 
@@ -6216,7 +6217,7 @@ function renderMockNeedsBadge(picks) {
     return "<div class=\"mockdraft-needs-complete\">&#9989; Starting lineup set</div>";
   }
   return "<div class=\"mockdraft-needs\"><span class=\"mockdraft-needs-label\">Still needs:</span>" +
-    needs.map(n => "<span class=\"mockdraft-needs-chip\">" + n + "</span>").join("") + "</div>";
+    needs.map(n => "<span class=\"mockdraft-needs-chip\">" + n.label + " " + n.have + "/" + n.cap + "</span>").join("") + "</div>";
 }
 
 function renderMockMyRoster() {
