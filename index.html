@@ -1091,6 +1091,18 @@
         </div>
       </details>
       <details class="card admin-details">
+        <summary class="admin-summary">Rename a Manager<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Renames a manager everywhere it appears on the site — standings, roster, and keeper selections.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
+            <select id="admin-rename-manager-select" style="flex:1; min-width:180px;"></select>
+            <input type="text" id="admin-rename-manager-input" placeholder="New manager name" style="flex:1; min-width:180px;">
+            <button type="button" class="admin-btn admin-btn-secondary" id="admin-rename-manager-btn">Rename Manager</button>
+          </div>
+          <p id="admin-rename-manager-status" style="color: var(--muted); font-size: 0.82rem;"></p>
+        </div>
+      </details>
+      <details class="card admin-details">
         <summary class="admin-summary">Season History<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Add each season's full final standings, top team first. Leave a team blank to drop that row.</p>
@@ -4384,6 +4396,34 @@ function renameTeamEverywhere(data, oldName, newName) {
   }
 }
 
+function populateRenameManagerControls(data) {
+  const sel = document.getElementById("admin-rename-manager-select");
+  if (!sel) return;
+  const seen = {};
+  const managers = [];
+  (data.teams || []).forEach(t => {
+    if (t.manager && !seen[t.manager]) {
+      seen[t.manager] = true;
+      managers.push(t.manager);
+    }
+  });
+  sel.innerHTML = managers.map(m => "<option value=\"" + m + "\">" + m + "</option>").join("");
+}
+
+// Renames a manager everywhere their name is stored as current-season data
+// (not past seasons in history, which are a record of who managed at the
+// time).
+function renameManagerEverywhere(data, oldName, newName) {
+  (data.teams || []).forEach(t => { if (t.manager === oldName) t.manager = newName; });
+  (data.teams2026 || []).forEach(t => { if (t.manager === oldName) t.manager = newName; });
+
+  if (data.currentSeason && data.currentSeason.standings) {
+    data.currentSeason.standings.forEach(r => { if (r.manager === oldName) r.manager = newName; });
+  }
+
+  (data.keeperSelections || []).forEach(k => { if (k.manager === oldName) k.manager = newName; });
+}
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
   document.getElementById("admin-draftdate").value = data.draftDate || "";
@@ -4415,6 +4455,7 @@ function buildAdminForm(data) {
   populateKeeperRulesEditor(data);
     populateMoveRosterControls(data);
     populateRenameTeamControls(data);
+    populateRenameManagerControls(data);
 
     const historyEl = document.getElementById("admin-history");
   historyEl.innerHTML = "";
@@ -4655,6 +4696,26 @@ document.getElementById("admin-rename-team-btn").addEventListener("click", () =>
   renderTeams2026(CURRENT_DATA);
   renderKeepersGrid(CURRENT_DATA);
   renderDraftOrderSection(CURRENT_DATA);
+  statusEl.textContent = "Renamed \"" + oldName + "\" to \"" + newName + "\". Click Save Changes to publish.";
+});
+
+document.getElementById("admin-rename-manager-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-rename-manager-status");
+  if (!CURRENT_DATA) return;
+  const managerSel = document.getElementById("admin-rename-manager-select");
+  const input = document.getElementById("admin-rename-manager-input");
+  const oldName = managerSel.value;
+  const newName = input.value.trim();
+  if (!oldName) { statusEl.textContent = "Choose a manager to rename."; return; }
+  if (!newName) { statusEl.textContent = "Enter a new manager name."; return; }
+  if (newName === oldName) { statusEl.textContent = "That's already this manager's name."; return; }
+  renameManagerEverywhere(CURRENT_DATA, oldName, newName);
+  input.value = "";
+  buildAdminForm(CURRENT_DATA);
+  renderStandingsBody(CURRENT_DATA);
+  renderTeamsGrid(CURRENT_DATA);
+  renderTeams2026(CURRENT_DATA);
+  renderKeepersGrid(CURRENT_DATA);
   statusEl.textContent = "Renamed \"" + oldName + "\" to \"" + newName + "\". Click Save Changes to publish.";
 });
 
