@@ -5766,28 +5766,28 @@ function mockInjuryTagHtml(player) {
 }
 
 // 2026 NFL Draft rookies present in this pool -- real draft round/pick plus
-// a short, sourced scouting-buzz note (as of the 2026 preseason/Week 1) so
-// a human who doesn't recognize a name can immediately tell it's a rookie,
-// where they were actually picked, and whether analysts are high, low, or
-// mixed on the landing spot and why. Same spirit as the injury/situation
-// notes above -- surface the context driving a bot's evaluation instead of
-// leaving it invisible.
+// a short, general buzz note (as of the 2026 preseason/Week 1) so a human
+// who doesn't recognize a name can immediately tell it's a rookie, where
+// they were actually picked, and whether analysts are generally high, low,
+// or mixed on the landing spot. Kept brief and general on purpose -- no
+// naming a specific teammate as "ahead of" or "behind" the rookie, since a
+// depth chart is unsettled and reads as a stronger claim than intended.
 const MOCK_ROOKIE_NOTES = {
-  "Jeremiyah Love": { round: 1, pick: 3, outlook: "high", note: "Little committee competition in ARI — dynasty RB3-caliber buzz" },
-  "Carnell Tate": { round: 1, pick: 4, outlook: "high", note: "Top-5 draft capital — expected to climb the WR pecking order fast" },
-  "Jordyn Tyson": { round: 1, pick: 8, outlook: "high", note: "Projected Week 1 starter opposite Chris Olave (injury notwithstanding)" },
-  "Makai Lemon": { round: 1, pick: 20, outlook: "mixed", note: "Analytics darling, but A.J. Brown still soaks up the top target share" },
-  "KC Concepcion": { round: 1, pick: 24, outlook: "mixed", note: "Real talent, but a shaky Browns QB situation caps the ceiling" },
-  "Jadarian Price": { round: 1, pick: 32, outlook: "mixed", note: "Round 1 capital, but stuck behind Zach Charbonnet on the depth chart" },
-  "De'Zhaun Stribling": { round: 2, pick: 33, outlook: "mixed", note: "Not a Week 1 starter, but SF's banged-up WR room opens a midseason path" },
-  "Denzel Boston": { round: 2, pick: 39, outlook: "mixed", note: "Size and contested-catch ability, but buried behind Concepcion for targets" },
-  "Ja'Kobi Lane": { round: 3, pick: 80, outlook: "low", note: "Cheap late-round dart — needs to win the WR3 job on a good offense" },
-  "Chris Bell": { round: 3, pick: 94, outlook: "high", note: "Miami's WR room was overhauled — real path to a starting role" },
-  "Caleb Douglas": { round: 3, pick: 75, outlook: "mixed", note: "Landed in a wide-open competition with little proven veteran competition" },
-  "Jonah Coleman": { round: 4, pick: 108, outlook: "low", note: "RJ Harvey is ahead of him on the Denver depth chart" },
-  "Mike Washington Jr.": { round: 4, pick: 122, outlook: "low", note: "Change-of-pace/goal-line role behind Ashton Jeanty, not a lead-back path" },
-  "Emmett Johnson": { round: 5, pick: 161, outlook: "mixed", note: "Kenneth Walker signed ahead of him, but still a real depth/insurance role" },
-  "Cyrus Allen": { round: 5, pick: 176, outlook: "low", note: "Buried in a crowded KC WR room behind Rice and Worthy" }
+  "Jeremiyah Love": { round: 1, pick: 3, outlook: "high", note: "Minimal RB competition" },
+  "Carnell Tate": { round: 1, pick: 4, outlook: "high", note: "Top-5 pick, rising role" },
+  "Jordyn Tyson": { round: 1, pick: 8, outlook: "high", note: "Projected Week 1 starter" },
+  "Makai Lemon": { round: 1, pick: 20, outlook: "mixed", note: "Elite metrics, crowded WR room" },
+  "KC Concepcion": { round: 1, pick: 24, outlook: "mixed", note: "Talented, shaky QB situation" },
+  "Jadarian Price": { round: 1, pick: 32, outlook: "mixed", note: "Round 1 capital, crowded backfield" },
+  "De'Zhaun Stribling": { round: 2, pick: 33, outlook: "mixed", note: "Depth role now, upside later" },
+  "Denzel Boston": { round: 2, pick: 39, outlook: "mixed", note: "Physical, crowded WR room" },
+  "Ja'Kobi Lane": { round: 3, pick: 80, outlook: "low", note: "Cheap flier, unproven role" },
+  "Chris Bell": { round: 3, pick: 94, outlook: "high", note: "Wide-open WR room, real opportunity" },
+  "Caleb Douglas": { round: 3, pick: 75, outlook: "mixed", note: "Wide-open competition, real opportunity" },
+  "Jonah Coleman": { round: 4, pick: 108, outlook: "low", note: "Limited early-down opportunity so far" },
+  "Mike Washington Jr.": { round: 4, pick: 122, outlook: "low", note: "Change-of-pace role, not a lead back" },
+  "Emmett Johnson": { round: 5, pick: 161, outlook: "mixed", note: "Day 3 pick, depth role" },
+  "Cyrus Allen": { round: 5, pick: 176, outlook: "low", note: "Crowded WR room, deep-league flier" }
 };
 
 // Small inline tag identifying a rookie and surfacing the same draft-capital
