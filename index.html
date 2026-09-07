@@ -795,6 +795,9 @@
   .mockdraft-player-name { font-weight: 600; }
   .mockdraft-player-meta { color: var(--muted); font-size: 0.75rem; }
   .mockdraft-injury-tag { color: var(--injury-risk); font-weight: 600; }
+  .mockdraft-situation-tag { font-weight: 600; }
+  .mockdraft-situation-tag.positive { color: var(--keeper); }
+  .mockdraft-situation-tag.negative { color: var(--injury-risk); }
   .mockdraft-draft-btn {
     background: var(--gold);
     color: #fff;
@@ -5475,8 +5478,62 @@ function mockInjuryTagHtml(player) {
   return " &middot; <span class=\"mockdraft-injury-tag\" title=\"" + injury.note + "\">&#9888; " + injury.note + "</span>";
 }
 
-function mockBestAvailable(teamName) {
+// Real-world team-situation context for a curated set of players where the
+// 2026 backfield/target-share picture is unusually lopsided or unsettled --
+// a new offensive coordinator's scheme, a committee with a clear lead back,
+// or a suspension/exempt-list absence. This is NOT an attempt to hand-grade
+// scheme fit for all 227 players in the pool (most ADP-driven boards already
+// price that in reasonably well) -- it's a small, deliberately modest nudge
+// for the handful of situations public reporting is unusually clear on as of
+// the 2026 opener, the same spirit as MOCK_INJURY_NOTES above. Positive adj
+// = situation working in the player's favor beyond raw ADP; negative = a
+// real reason to expect less than ADP implies.
+const MOCK_SITUATION_NOTES = {
+  "Josh Jacobs": { adj: -7, note: "On NFL Commissioner's Exempt List — no return timeline", positive: false },
+  "MarShawn Lloyd": { adj: 3, note: "Early-down lead role while Jacobs is out", positive: true },
+  "Omarion Hampton": { adj: 3, note: "New McDaniel scheme features the RB heavily as a receiver", positive: true },
+  "Quentin Johnston": { adj: 2, note: "New McDaniel scheme adds downfield shot-play volume", positive: true },
+  "Ladd McConkey": { adj: 2.5, note: "Slot role projects for a high 2026 target share", positive: true },
+  "Ray Davis": { adj: 2, note: "Clear #2 behind Cook — real standalone handcuff value", positive: true },
+  "Keaton Mitchell": { adj: -2, note: "Speed-package role only, not the early-down back", positive: false },
+  "Tank Bigsby": { adj: 1.5, note: "Complementary role behind Barkley in a run-first offense", positive: true },
+  "Braelon Allen": { adj: -2, note: "Behind Isaiah Davis in the NYJ backfield pecking order", positive: false },
+  "Kaelon Black": { adj: -1.5, note: "RB2 behind McCaffrey; passing-down role still unproven", positive: false },
+  "Jameson Williams": { adj: -2, note: "New-scheme deep-route share trimmed; competes with LaPorta for looks", positive: false },
+  "Sam LaPorta": { adj: 2.5, note: "New scheme leans on the TE — bounce-back target volume", positive: true },
+  "Kenneth Walker III": { adj: 3, note: "New-scheme workhorse role with expanded touches", positive: true }
+};
+
+function mockSituationScoreAdjustment(player) {
+  const situation = MOCK_SITUATION_NOTES[player.player];
+  return situation ? situation.adj : 0;
+}
+
+// Same idea as mockInjuryTagHtml -- surfaces the situational note driving a
+// bot's reach or fade so a human opponent sees the same context, rather than
+// it being an invisible thumb on the scale.
+function mockSituationTagHtml(player) {
+  const situation = MOCK_SITUATION_NOTES[player.player];
+  if (!situation) return "";
+  const cls = "mockdraft-situation-tag " + (situation.positive ? "positive" : "negative");
+  const icon = situation.positive ? "&#9650;" : "&#9660;";
+  return " &middot; <span class=\"" + cls + "\" title=\"" + situation.note + "\">" + icon + " " + situation.note + "</span>";
+}
+
+// How hard need should outweigh raw ADP, by round. Early rounds stay close
+// to best-player-available (a real manager still leans need a little even
+// in round 1 -- nobody drafts a third QB round 2 -- so this never hits pure
+// zero), then climbs steadily so that by the middle-late rounds a real roster
+// hole matters more than a small ADP reach, the way actual managers draft
+// for need once the "best player" tier thins out. Capped so it never gets
+// so extreme that a truly special player can't still get taken.
+function mockNeedWeight(round) {
+  return Math.min(3.2, 1 + (Math.max(1, round) - 1) * 0.17);
+}
+
+function mockBestAvailable(teamName, round) {
   const roster = MOCK_STATE.rosters[teamName] || [];
+  const needWeight = mockNeedWeight(round || 1);
   const eligible = [];
   for (let i = 0; i < MOCK_STATE.available.length && eligible.length < MOCK_PICK_WINDOW; i++) {
     const p = MOCK_STATE.available[i];
@@ -5493,10 +5550,12 @@ function mockBestAvailable(teamName) {
 
     // Need: still short of a sane target at this position pulls it up;
     // already fully stocked pushes it back down (but never off the board).
+    // Scaled by mockNeedWeight so this stays a mild tiebreaker early and
+    // becomes the dominant factor once the draft turns to roster-building.
     const target = MOCK_ROSTER_TARGETS[p.pos];
     if (target) {
       const have = roster.filter(r => r.pos === p.pos).length;
-      score += have < target ? (target - have) * 3 : -5;
+      score += (have < target ? (target - have) * 3 : -5) * needWeight;
     }
 
     // League-winner talents rarely fall far past their real draft slot.
@@ -5504,6 +5563,11 @@ function mockBestAvailable(teamName) {
 
     // Real injury/availability risk-reward (see mockInjuryScoreAdjustment).
     score += mockInjuryScoreAdjustment(p);
+
+    // Team-situation / scheme-fit context for a curated set of players (see
+    // MOCK_SITUATION_NOTES) -- a new OC's scheme, a lopsided committee, an
+    // exempt-list absence, etc.
+    score += mockSituationScoreAdjustment(p);
 
     // Upside/downside and general human unpredictability: a multiplicative
     // per-pick swing rather than a flat bonus, so it scales with how much
@@ -5656,7 +5720,7 @@ function advanceMockPick() {
     startMockTimer();
   } else {
     MOCK_STATE.botHandle = setTimeout(() => {
-      const pick = mockBestAvailable(current.team);
+      const pick = mockBestAvailable(current.team, current.round);
       if (pick) makeMockPick(current.team, pick);
     }, mockBotPickDelay());
   }
@@ -5800,7 +5864,7 @@ function runMockTimerInterval() {
     if (MOCK_STATE.timerRemaining <= 0) {
       clearMockTimer();
       const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
-      const pick = mockBestAvailable(current.team);
+      const pick = mockBestAvailable(current.team, current.round);
       if (pick) makeMockPick(current.team, pick);
     }
   }, 1000);
@@ -5835,7 +5899,7 @@ function resumeMockDraft() {
       runMockTimerInterval();
     } else {
       MOCK_STATE.botHandle = setTimeout(() => {
-        const pick = mockBestAvailable(current.team);
+        const pick = mockBestAvailable(current.team, current.round);
         if (pick) makeMockPick(current.team, pick);
       }, mockBotPickDelay());
     }
@@ -5906,7 +5970,7 @@ function renderMockAvailablePlayers() {
     row.className = "mockdraft-player-row";
     const capOk = isUserTurn && mockCapsOk(MOCK_STATE.rosters[MOCK_STATE.userTeam] || [], p.pos);
     row.innerHTML = "<div class=\"mockdraft-player-info\"><span class=\"mockdraft-player-name\">" + p.player + "</span>" +
-      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + mockInjuryTagHtml(p) + "</span></div>" +
+      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + mockInjuryTagHtml(p) + mockSituationTagHtml(p) + "</span></div>" +
       "<button type=\"button\" class=\"mockdraft-draft-btn\"" + (capOk ? "" : " disabled") + ">Draft</button>";
     if (capOk) {
       row.querySelector(".mockdraft-draft-btn").addEventListener("click", () => humanMockDraft(p));
