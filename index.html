@@ -36,6 +36,7 @@
     --keeper: #1a7f37;
     --injury-risk: #a5680a;
     --injury-risk-wash: rgba(165, 104, 10, 0.1);
+    --rookie-tag: #2f5fa8;
     --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -55,6 +56,7 @@
       --keeper: #3fb950;
       --injury-risk: #e8a33d;
       --injury-risk-wash: rgba(232, 163, 61, 0.14);
+      --rookie-tag: #6ea3e0;
     }
   }
   * { box-sizing: border-box; }
@@ -849,6 +851,22 @@
   .mockdraft-situation-tag { font-weight: 600; }
   .mockdraft-situation-tag.positive { color: var(--keeper); }
   .mockdraft-situation-tag.negative { color: var(--injury-risk); }
+  .mockdraft-rookie-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--rookie-tag);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-right: 3px;
+    vertical-align: 1px;
+  }
+  .mockdraft-rookie-tag { font-weight: 600; }
+  .mockdraft-rookie-tag.positive { color: var(--keeper); }
+  .mockdraft-rookie-tag.negative { color: var(--injury-risk); }
+  .mockdraft-rookie-tag.neutral { color: var(--muted); }
   .mockdraft-draft-btn {
     background: var(--gold);
     color: #fff;
@@ -5694,11 +5712,19 @@ const MOCK_ELITE_TIER = 24;
 // projected to miss time but carries real recurrence risk. None of this
 // claims certainty -- real injury timelines shift by the day -- it's a
 // deliberately modest nudge, not a hard rule.
+// severity is a soft, plain-language label (Minor/Moderate/Serious) -- not a
+// strict medical grading, just a quick read on how worried to be. ir flags
+// an actual Injured Reserve stint (as opposed to day-to-day/questionable or
+// a PUP-list situation) so the tag can call that out specifically, since a
+// human drafting against a rookie they don't recognize may not otherwise
+// know a name on their board is currently on IR at all.
 const MOCK_INJURY_NOTES = {
-  "Isiah Pacheco": { weeksOut: 4, vet: true, eliteTalent: false, note: "Back — eligible Wk5" },
-  "Malik Nabers": { weeksOut: 2, vet: false, eliteTalent: true, note: "ACL recovery — Wk1 questionable" },
-  "Zach Charbonnet": { weeksOut: 4, vet: false, eliteTalent: false, note: "Torn ACL (PUP) — unlikely Wk1" },
-  "Christian McCaffrey": { weeksOut: 0, vet: true, eliteTalent: true, durabilityConcern: true, note: "Camp soreness on heavy '25 usage" }
+  "Isiah Pacheco": { weeksOut: 4, vet: true, eliteTalent: false, ir: true, severity: "Moderate", note: "Back — eligible Wk5" },
+  "Malik Nabers": { weeksOut: 2, vet: false, eliteTalent: true, ir: false, severity: "Serious", note: "ACL recovery — Wk1 questionable" },
+  "Zach Charbonnet": { weeksOut: 4, vet: false, eliteTalent: false, ir: false, severity: "Serious", note: "Torn ACL (PUP) — unlikely Wk1" },
+  "Christian McCaffrey": { weeksOut: 0, vet: true, eliteTalent: true, durabilityConcern: true, severity: "Minor", note: "Camp soreness on heavy '25 usage" },
+  "Jeremiyah Love": { weeksOut: 1, vet: false, eliteTalent: true, ir: false, severity: "Minor", note: "High ankle sprain — hopeful for Wk1" },
+  "Jordyn Tyson": { weeksOut: 8, vet: false, eliteTalent: false, ir: true, severity: "Serious", note: "Hamstring (2nd recurrence) — designated to return, ~8 wks" }
 };
 
 function mockInjuryScoreAdjustment(player) {
@@ -5733,7 +5759,48 @@ function mockInjuryScoreAdjustment(player) {
 function mockInjuryTagHtml(player) {
   const injury = MOCK_INJURY_NOTES[player.player];
   if (!injury) return "";
-  return " &middot; <span class=\"mockdraft-injury-tag\" title=\"" + injury.note + "\">&#9888; " + injury.note + "</span>";
+  const irLabel = injury.ir ? "IR &middot; " : "";
+  const severityLabel = injury.severity ? " (" + injury.severity + ")" : "";
+  const text = irLabel + injury.note + severityLabel;
+  return " &middot; <span class=\"mockdraft-injury-tag\" title=\"" + text + "\">&#9888; " + text + "</span>";
+}
+
+// 2026 NFL Draft rookies present in this pool -- real draft round/pick plus
+// a short, sourced scouting-buzz note (as of the 2026 preseason/Week 1) so
+// a human who doesn't recognize a name can immediately tell it's a rookie,
+// where they were actually picked, and whether analysts are high, low, or
+// mixed on the landing spot and why. Same spirit as the injury/situation
+// notes above -- surface the context driving a bot's evaluation instead of
+// leaving it invisible.
+const MOCK_ROOKIE_NOTES = {
+  "Jeremiyah Love": { round: 1, pick: 3, outlook: "high", note: "Little committee competition in ARI — dynasty RB3-caliber buzz" },
+  "Carnell Tate": { round: 1, pick: 4, outlook: "high", note: "Top-5 draft capital — expected to climb the WR pecking order fast" },
+  "Jordyn Tyson": { round: 1, pick: 8, outlook: "high", note: "Projected Week 1 starter opposite Chris Olave (injury notwithstanding)" },
+  "Makai Lemon": { round: 1, pick: 20, outlook: "mixed", note: "Analytics darling, but A.J. Brown still soaks up the top target share" },
+  "KC Concepcion": { round: 1, pick: 24, outlook: "mixed", note: "Real talent, but a shaky Browns QB situation caps the ceiling" },
+  "Jadarian Price": { round: 1, pick: 32, outlook: "mixed", note: "Round 1 capital, but stuck behind Zach Charbonnet on the depth chart" },
+  "De'Zhaun Stribling": { round: 2, pick: 33, outlook: "mixed", note: "Not a Week 1 starter, but SF's banged-up WR room opens a midseason path" },
+  "Denzel Boston": { round: 2, pick: 39, outlook: "mixed", note: "Size and contested-catch ability, but buried behind Concepcion for targets" },
+  "Ja'Kobi Lane": { round: 3, pick: 80, outlook: "low", note: "Cheap late-round dart — needs to win the WR3 job on a good offense" },
+  "Chris Bell": { round: 3, pick: 94, outlook: "high", note: "Miami's WR room was overhauled — real path to a starting role" },
+  "Caleb Douglas": { round: 3, pick: 75, outlook: "mixed", note: "Landed in a wide-open competition with little proven veteran competition" },
+  "Jonah Coleman": { round: 4, pick: 108, outlook: "low", note: "RJ Harvey is ahead of him on the Denver depth chart" },
+  "Mike Washington Jr.": { round: 4, pick: 122, outlook: "low", note: "Change-of-pace/goal-line role behind Ashton Jeanty, not a lead-back path" },
+  "Emmett Johnson": { round: 5, pick: 161, outlook: "mixed", note: "Kenneth Walker signed ahead of him, but still a real depth/insurance role" },
+  "Cyrus Allen": { round: 5, pick: 176, outlook: "low", note: "Buried in a crowded KC WR room behind Rice and Worthy" }
+};
+
+// Small inline tag identifying a rookie and surfacing the same draft-capital
+// and outlook context a bot's evaluation implicitly weighs, so a human
+// opponent isn't left guessing who an unfamiliar name is.
+function mockRookieTagHtml(player) {
+  const r = MOCK_ROOKIE_NOTES[player.player];
+  if (!r) return "";
+  const cls = r.outlook === "high" ? "positive" : r.outlook === "low" ? "negative" : "neutral";
+  const icon = r.outlook === "high" ? "&#9650;" : r.outlook === "low" ? "&#9660;" : "&#9679;";
+  const title = "2026 NFL Draft — Round " + r.round + ", Pick " + r.pick + ": " + r.note;
+  return " &middot; <span class=\"mockdraft-rookie-badge\" title=\"" + title + "\">ROOKIE</span>" +
+    " <span class=\"mockdraft-rookie-tag " + cls + "\" title=\"" + title + "\">" + icon + " Rd" + r.round + " &middot; " + r.note + "</span>";
 }
 
 // Real-world team-situation context for a curated set of players where the
@@ -6253,7 +6320,7 @@ function renderMockAvailablePlayers() {
     row.className = "mockdraft-player-row";
     const capOk = isUserTurn && mockCapsOk(MOCK_STATE.rosters[MOCK_STATE.userTeam] || [], p.pos);
     row.innerHTML = "<div class=\"mockdraft-player-info\"><span class=\"mockdraft-player-name\">" + p.player + "</span>" +
-      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + mockInjuryTagHtml(p) + mockSituationTagHtml(p) + "</span></div>" +
+      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + mockRookieTagHtml(p) + mockInjuryTagHtml(p) + mockSituationTagHtml(p) + "</span></div>" +
       "<button type=\"button\" class=\"mockdraft-draft-btn\"" + (capOk ? "" : " disabled") + ">Draft</button>";
     if (capOk) {
       row.querySelector(".mockdraft-draft-btn").addEventListener("click", () => humanMockDraft(p));
