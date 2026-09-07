@@ -655,6 +655,32 @@
   }
   .mockdraft-board.view-grid .mockdraft-columns { grid-template-columns: 1fr; }
   .mockdraft-board.view-grid #mockdraft-col-roster { display: none; }
+  /* On wide screens, widen the board past the site's normal 900px column so
+     the round-by-team grid and Available Players can sit side by side. Below
+     this width (including phones/tablets) the layout stays exactly as-is:
+     grid on top, Available Players below it. */
+  @media (min-width: 1350px) {
+    #mockdraft-board.view-grid {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 20px;
+      align-items: start;
+      max-width: 1400px;
+      width: calc(100vw - 40px);
+      margin-left: calc(50% - 50vw + 20px);
+      margin-right: calc(50% - 50vw + 20px);
+    }
+    #mockdraft-board.view-grid > .mockdraft-board-top,
+    #mockdraft-board.view-grid > .mockdraft-begin-bar,
+    #mockdraft-board.view-grid > .mockdraft-view-toggle,
+    #mockdraft-board.view-grid > .mockdraft-otherteams {
+      grid-column: 1 / -1;
+    }
+    #mockdraft-board.view-grid #mockdraft-col-players {
+      position: sticky;
+      top: 12px;
+    }
+  }
   .mockdraft-timer-wrap { display: flex; align-items: center; gap: 8px; flex: none; }
   .mockdraft-timer-bar {
     width: 140px;
