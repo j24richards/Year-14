@@ -154,11 +154,10 @@
       pointer-events: none;
       font-size: 0.9rem;
     }
-    .mobile-nav select {
+    .mobile-nav-toggle {
+      display: block;
       width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
+      text-align: left;
       background: var(--panel);
       border: 1px solid var(--border);
       color: var(--text);
@@ -168,7 +167,38 @@
       font-weight: 600;
       font-family: inherit;
       min-height: 44px;
+      cursor: pointer;
     }
+    .mobile-nav-menu {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 100%;
+      margin-top: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      max-height: 60vh;
+      overflow-y: auto;
+      z-index: 50;
+    }
+    .mobile-nav-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .mobile-nav-item:last-child { border-bottom: none; }
+    .mobile-nav-item.active { background: var(--red); color: #fff; font-weight: 600; }
   }
   nav button.active {
     background: var(--red);
@@ -1369,21 +1399,24 @@
   <button data-tab="admin">Admin</button>
 </nav>
 <div class="mobile-nav">
-  <select id="mobile-nav-select" aria-label="Navigate to section">
-    <option value="home">Home</option>
-    <option value="teams2026">2026 Teams</option>
-    <option value="draft">2026 Draft</option>
-    <option value="keepers">Keepers</option>
-    <option value="draftorder">Draft Order</option>
-    <option value="mockdraft">Mock Draft</option>
-    <option value="trades">Trades</option>
-    <option value="teams">2025 Teams</option>
-    <option value="draft2025">2025 Draft</option>
-    <option value="history">History</option>
-    <option value="export">Export</option>
-    <option value="rules">Rules</option>
-    <option value="admin">Admin</option>
-  </select>
+  <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Navigate to section">
+    <span id="mobile-nav-current">Home</span>
+  </button>
+  <div class="mobile-nav-menu" id="mobile-nav-menu" hidden>
+    <button type="button" class="mobile-nav-item active" data-tab="home">Home</button>
+    <button type="button" class="mobile-nav-item" data-tab="teams2026">2026 Teams</button>
+    <button type="button" class="mobile-nav-item" data-tab="draft">2026 Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="keepers">Keepers</button>
+    <button type="button" class="mobile-nav-item" data-tab="draftorder">Draft Order</button>
+    <button type="button" class="mobile-nav-item" data-tab="mockdraft">Mock Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
+    <button type="button" class="mobile-nav-item" data-tab="teams">2025 Teams</button>
+    <button type="button" class="mobile-nav-item" data-tab="draft2025">2025 Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="history">History</button>
+    <button type="button" class="mobile-nav-item" data-tab="export">Export</button>
+    <button type="button" class="mobile-nav-item" data-tab="rules">Rules</button>
+    <button type="button" class="mobile-nav-item" data-tab="admin">Admin</button>
+  </div>
 </div>
 
 <main>
@@ -6489,21 +6522,44 @@ function render(LEAGUE_DATA) {
   buildAdminForm(LEAGUE_DATA);
 }
 
-document.querySelectorAll("nav button").forEach(btn => {
+// Desktop nav buttons and the mobile dropdown's items both carry a
+// data-tab attribute and share this one handler, so picking a section
+// on either one keeps both in sync.
+document.querySelectorAll("nav button, .mobile-nav-item").forEach(btn => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    const tab = btn.dataset.tab;
+    document.querySelectorAll("nav button, .mobile-nav-item").forEach(b => {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
     document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
-    const mobileSelect = document.getElementById("mobile-nav-select");
-    if (mobileSelect) mobileSelect.value = btn.dataset.tab;
+    document.getElementById(tab).classList.add("active");
+    const currentLabel = document.getElementById("mobile-nav-current");
+    if (currentLabel) currentLabel.textContent = btn.textContent.trim();
+    // Close the mobile dropdown immediately on tap -- a native <select>
+    // on iOS needs "Done" before it navigates, so this is a custom
+    // button-based dropdown instead, which can act on the first tap.
+    const menu = document.getElementById("mobile-nav-menu");
+    const toggle = document.getElementById("mobile-nav-toggle");
+    if (menu) menu.hidden = true;
+    if (toggle) toggle.setAttribute("aria-expanded", "false");
   });
 });
 
-document.getElementById("mobile-nav-select").addEventListener("change", (e) => {
-  const btn = document.querySelector('nav button[data-tab="' + e.target.value + '"]');
-  if (btn) btn.click();
-});
+const mobileNavToggle = document.getElementById("mobile-nav-toggle");
+const mobileNavMenu = document.getElementById("mobile-nav-menu");
+if (mobileNavToggle && mobileNavMenu) {
+  mobileNavToggle.addEventListener("click", () => {
+    const willOpen = mobileNavMenu.hidden;
+    mobileNavMenu.hidden = !willOpen;
+    mobileNavToggle.setAttribute("aria-expanded", String(willOpen));
+  });
+  document.addEventListener("click", (e) => {
+    if (mobileNavMenu.hidden) return;
+    if (mobileNavMenu.contains(e.target) || mobileNavToggle.contains(e.target)) return;
+    mobileNavMenu.hidden = true;
+    mobileNavToggle.setAttribute("aria-expanded", "false");
+  });
+}
 
 document.getElementById("admin-unlock-btn").addEventListener("click", async () => {
   const val = document.getElementById("admin-password").value;
