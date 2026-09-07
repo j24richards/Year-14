@@ -449,6 +449,12 @@
   @media (max-width: 480px) {
     #draftorder .card {
       overflow-x: auto;
+      /* Horizontal padding removed here (and restored as extra cell padding
+         below) so the sticky first column's background fully covers the
+         scroll area -- otherwise the card's own padding leaves a sliver at
+         the left edge that scrolled-past content bleeds through. */
+      padding-left: 0;
+      padding-right: 0;
     }
     #draftorder table {
       table-layout: auto;
@@ -466,6 +472,10 @@
       position: sticky;
       left: 0;
       background: var(--panel);
+      padding-left: 18px;
+    }
+    #draftorder th:last-child, #draftorder td:last-child {
+      padding-right: 18px;
     }
     #draftorder tbody tr:nth-child(even) td:first-child {
       background: var(--panel-2);
@@ -647,10 +657,14 @@
     .mockdraft-grid-table th, .mockdraft-grid-table td { font-size: 0.6rem; padding: 5px 2px; }
   }
   @media (max-width: 480px) {
-    .mockdraft-grid-wrap { overflow-x: auto; }
+    /* Padding moves from the wrap onto the edge cells themselves -- see the
+       matching comment on #draftorder .card -- so the sticky first column
+       has no gap for scrolled-past content to bleed through. */
+    .mockdraft-grid-wrap { overflow-x: auto; padding-left: 0; padding-right: 0; }
     .mockdraft-grid-table { table-layout: auto; width: auto; min-width: 100%; }
     .mockdraft-grid-table th, .mockdraft-grid-table td { white-space: nowrap; overflow-wrap: normal; font-size: 0.76rem; padding: 8px 12px; }
-    .mockdraft-grid-table th:first-child, .mockdraft-grid-table td:first-child { width: auto; position: sticky; left: 0; background: var(--panel); }
+    .mockdraft-grid-table th:first-child, .mockdraft-grid-table td:first-child { width: auto; position: sticky; left: 0; background: var(--panel); padding-left: 18px; }
+    .mockdraft-grid-table th:last-child, .mockdraft-grid-table td:last-child { padding-right: 18px; }
     .mockdraft-grid-table tbody tr:nth-child(even) td:first-child { background: var(--panel-2); }
   }
   .mockdraft-board.view-grid .mockdraft-columns { grid-template-columns: 1fr; }
@@ -736,6 +750,19 @@
     background: var(--gold);
     border-color: var(--gold);
     color: #fff;
+  }
+  /* Bigger touch targets on phones/small tablets for the position filter
+     chips and the List/Board view toggle -- the desktop sizing (24px/29px
+     tall) is comfortable with a mouse but tight to tap accurately. */
+  @media (max-width: 700px) {
+    .mockdraft-filter-chip {
+      padding: 13px 16px;
+      font-size: 0.82rem;
+    }
+    .mockdraft-view-btn {
+      padding: 13px 18px;
+      font-size: 0.85rem;
+    }
   }
   #mockdraft-player-search {
     width: 100%;
@@ -890,7 +917,11 @@
   }
   #draft2025 .card {
     overflow-x: auto;
-    padding: 14px 6px;
+    /* Horizontal padding lives on the edge cells instead (below) so the
+       sticky first column's background fully covers the scroll area --
+       otherwise the card's own padding leaves a sliver at the left edge
+       that scrolled-past content bleeds through. */
+    padding: 14px 0;
   }
   #draft2025 table {
     border-collapse: separate;
@@ -909,6 +940,10 @@
     left: 0;
     background: var(--panel);
     z-index: 1;
+    padding-left: 18px;
+  }
+  #draft2025 th:last-child, #draft2025 td:last-child {
+    padding-right: 18px;
   }
   .history-grid {
     display: grid;
@@ -1470,6 +1505,7 @@
       <div class="export-options">
         <div class="export-option"><input type="checkbox" id="export-teams2026" checked><label for="export-teams2026">2026 Teams</label></div>
         <div class="export-option"><input type="checkbox" id="export-draftResults" checked><label for="export-draftResults">2026 Draft</label></div>
+        <div class="export-option"><input type="checkbox" id="export-keepers" checked><label for="export-keepers">Keepers</label></div>
         <div class="export-option"><input type="checkbox" id="export-draftOrder2026" checked><label for="export-draftOrder2026">Draft Order</label></div>
         <div class="export-option"><input type="checkbox" id="export-trades" checked><label for="export-trades">Trades</label></div>
         <div class="export-option"><input type="checkbox" id="export-teams" checked><label for="export-teams">2025 Teams</label></div>
@@ -6464,6 +6500,23 @@ function flattenTradesForExport(trades) {
   return (trades || []).map(t => ({ Date: t.date || "", Teams: t.teams || "", Details: t.details || "" }));
 }
 
+// Mirrors the Keepers tab: one row per kept player, with the same
+// round-resolution logic (resolveTeamKeeperRounds / getKeeperRound) used
+// there. Returns nothing while keeper selections aren't finalized yet, same
+// as the tab itself.
+function flattenKeepersForExport(data) {
+  const rows = [];
+  if (!data.keepersVisible) return rows;
+  (data.keeperSelections || []).forEach(k => {
+    const resolvedRounds = resolveTeamKeeperRounds(data, k.team);
+    (k.players || []).forEach(p => {
+      const round = resolvedRounds[p] != null ? resolvedRounds[p] : getKeeperRound(data, k.team, p);
+      rows.push({ Team: k.team, Manager: k.manager || "", Player: p, Round: round || "" });
+    });
+  });
+  return rows;
+}
+
 function styleExportSheet(ws, rows, type, opts) {
   opts = opts || {};
   const groupBy = opts.groupBy || null;
@@ -6590,6 +6643,8 @@ document.getElementById("export-download-btn").addEventListener("click", async (
       groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
     { id: "export-draftResults", sheet: "2026 Draft", type: "table", rows: () => flattenDraftResultsFlat(data.draftResults),
       groupBy: r => r.Team, hideColumns: ["Team"] },
+    { id: "export-keepers", sheet: "Keepers", type: "table", rows: () => flattenKeepersForExport(data),
+      groupBy: r => r.Team, groupLabel: rosterGroupLabel, hideColumns: ["Team", "Manager"] },
     { id: "export-draftOrder2026", sheet: "Draft Order", type: "table", rows: () => flattenDraftOrderMatrix(data.draftOrder2026, data),
       cellStyle: (header, value) => header === "Round" ? null : (value === "—" ? { color: "FF4B5B78" } : { color: "FFB82514", bold: true }) },
     { id: "export-trades", sheet: "Trades", type: "table", rows: () => flattenTradesForExport(data.trades) },
