@@ -833,6 +833,9 @@
   .mockdraft-pick-log-team { font-weight: 600; flex: none; width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mockdraft-pick-log-keeper { color: var(--keeper); font-weight: 600; }
   .mockdraft-pick-log-keeper .keeper-icon { margin-left: 3px; font-weight: 400; }
+  .mockdraft-recent-picks { max-height: 200px; margin-bottom: 14px; }
+  .mockdraft-recent-picks .mockdraft-pick-log-rd { width: 52px; }
+  .mockdraft-recent-picks-empty { color: var(--muted); font-size: 0.8rem; padding: 8px 10px; }
   #mockdraft-board-body td, #mockdraft-board-headers { font-size: 0.78rem; }
   .mockdraft-paused-badge {
     display: none;
@@ -1437,7 +1440,9 @@
 
       <div class="mockdraft-columns" id="mockdraft-columns">
         <div class="mockdraft-col" id="mockdraft-col-players">
-          <h3 style="margin-top:0;">Available Players</h3>
+          <h3 style="margin-top:0;">Recent Picks</h3>
+          <div class="mockdraft-pick-log mockdraft-recent-picks" id="mockdraft-recent-picks"></div>
+          <h3>Available Players</h3>
           <div class="mockdraft-filters" id="mockdraft-filters"></div>
           <input type="text" id="mockdraft-player-search" placeholder="Search available players&hellip;" autocomplete="off">
           <div class="mockdraft-player-list" id="mockdraft-player-list"></div>
@@ -5697,6 +5702,7 @@ function startMockDraft() {
   renderMockFilters();
   renderMockMyRoster();
   renderMockPickLog();
+  renderMockRecentPicks();
   renderMockOtherTeamsGrid();
   renderMockOnClock(MOCK_STATE.pickList[0]);
   renderMockAvailablePlayers();
@@ -5952,10 +5958,11 @@ function makeMockPick(team, poolEntry) {
   if (idx !== -1) MOCK_STATE.available.splice(idx, 1);
   MOCK_STATE.rosters[team].push({ player: poolEntry.player, pos: poolEntry.pos, nfl: poolEntry.nfl, kept2025: false, keeperCost: null });
   const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
-  MOCK_STATE.log.push({ round: current.round, team: team, player: poolEntry.player, pos: poolEntry.pos, nfl: poolEntry.nfl, isUser: team === MOCK_STATE.userTeam });
+  MOCK_STATE.log.push({ round: current.round, overall: MOCK_STATE.pickIndex + 1, team: team, player: poolEntry.player, pos: poolEntry.pos, nfl: poolEntry.nfl, isUser: team === MOCK_STATE.userTeam });
   MOCK_STATE.pickIndex++;
   renderMockMyRoster();
   renderMockPickLog();
+  renderMockRecentPicks();
   refreshMockOtherTeamsView();
   advanceMockPick();
 }
@@ -6149,6 +6156,29 @@ function renderMockPickLog() {
       : "<span>" + entry.player + " (" + entry.nfl + " - " + entry.pos + ")</span>";
     row.innerHTML = "<span class=\"mockdraft-pick-log-rd\">Rd " + entry.round + "</span>" +
       "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" + detail;
+    el.appendChild(row);
+  });
+}
+
+// Compact "as it happens" feed of live picks only (no keeper rounds --
+// those aren't being drafted in real time) shown on the LEFT side next to
+// Available Players, so the drafter can watch the run of picks without
+// having to look over at the roster column. Newest pick first, with the
+// overall pick number every entry carries (see makeMockPick).
+function renderMockRecentPicks() {
+  const el = document.getElementById("mockdraft-recent-picks");
+  if (!el) return;
+  el.innerHTML = "";
+  if (!MOCK_STATE.log.length) {
+    el.innerHTML = "<div class=\"mockdraft-recent-picks-empty\">Picks will appear here as the draft goes.</div>";
+    return;
+  }
+  MOCK_STATE.log.slice().reverse().forEach(entry => {
+    const row = document.createElement("div");
+    row.className = "mockdraft-pick-log-row" + (entry.isUser ? " is-user" : "");
+    row.innerHTML = "<span class=\"mockdraft-pick-log-rd\">#" + entry.overall + "</span>" +
+      "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" +
+      "<span>" + entry.player + " &middot; " + entry.pos + "</span>";
     el.appendChild(row);
   });
 }
