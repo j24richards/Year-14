@@ -35,6 +35,7 @@
     --gold-wash: rgba(184, 37, 20, 0.07);
     --keeper: #1a7f37;
     --injury-risk: #a5680a;
+    --injury-risk-wash: rgba(165, 104, 10, 0.1);
     --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
@@ -53,6 +54,7 @@
       --gold-wash: rgba(220, 44, 24, 0.1);
       --keeper: #3fb950;
       --injury-risk: #e8a33d;
+      --injury-risk-wash: rgba(232, 163, 61, 0.14);
     }
   }
   * { box-sizing: border-box; }
@@ -702,6 +704,16 @@
       position: sticky;
       top: 12px;
     }
+    /* List View gets the same wide-screen breakout -- three columns
+       (Recent Picks, Available Players, Your Team) were feeling cramped
+       squeezed into the site's normal 900px column, especially Your Team's
+       roster rows wrapping player name/position/team. */
+    #mockdraft-board:not(.view-grid) {
+      max-width: 1400px;
+      width: calc(100vw - 40px);
+      margin-left: calc(50% - 50vw + 20px);
+      margin-right: calc(50% - 50vw + 20px);
+    }
   }
   .mockdraft-timer-wrap { display: flex; align-items: center; gap: 8px; flex: none; }
   .mockdraft-timer-bar {
@@ -726,7 +738,7 @@
   }
   .mockdraft-columns {
     display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1.1fr);
     gap: 20px;
   }
   @media (max-width: 1050px) {
@@ -882,16 +894,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding: 7px 10px;
+    gap: 10px;
+    padding: 9px 12px;
     border-bottom: 1px solid var(--border);
     font-size: 0.85rem;
+    line-height: 1.35;
   }
   .mockdraft-slot-row:last-child { border-bottom: none; }
   .mockdraft-slot-row.bench { border-radius: 0; }
   .mockdraft-slot-label {
     flex: none;
-    width: 56px;
+    width: 60px;
     color: var(--muted);
     font-weight: 700;
     font-size: 0.72rem;
@@ -899,7 +912,45 @@
   }
   .mockdraft-slot-player { font-weight: 600; text-align: right; }
   .mockdraft-slot-player.mockdraft-slot-empty { color: var(--muted); font-weight: 400; font-style: italic; }
-  .mockdraft-slot-meta { color: var(--muted); font-size: 0.75rem; font-weight: 400; margin-left: 6px; }
+  .mockdraft-slot-meta { color: var(--muted); font-size: 0.75rem; font-weight: 400; margin-left: 6px; white-space: nowrap; }
+  /* "Still needs" summary shown above another team's roster in View Other
+     Teams' Picks -- an at-a-glance chip row so you don't have to scan every
+     slot row hunting for "Empty" ones. */
+  .mockdraft-needs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .mockdraft-needs-label {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+  .mockdraft-needs-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--injury-risk-wash);
+    border: 1px solid var(--injury-risk);
+    color: var(--injury-risk);
+    font-weight: 700;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .mockdraft-needs-complete {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--keeper);
+    font-weight: 700;
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
   .mockdraft-roster-bench-label {
     margin-top: 12px;
     margin-bottom: 6px;
@@ -1419,15 +1470,11 @@
 
   <section id="mockdraft">
     <h2>Mock Draft</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Practice against bots using the real 2026 draft order, trades, and keeper-locked rounds &mdash; ranked by Fantasy Football Calculator's 10-team Half-PPR ADP to match this league's scoring. Nothing here is saved to the actual draft.</p>
 
     <div class="card" id="mockdraft-setup">
       <h3 style="margin-top:0;">Pick your team</h3>
-      <p style="color: var(--muted); font-size: 0.85rem; margin-top:-6px;">There's no login for this site, so just pick whichever team you want to practice drafting for &mdash; bots will run every other team.</p>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-top:-6px;">There's no login for this site, so just pick whichever team you want to practice drafting for &mdash; bots will run every other team, following the real 2026 draft order, trades, and keeper-locked rounds. Max 2 QB, 1 K, 1 DEF. 1:15 per pick, auto-drafts if time runs out &mdash; you can pause anytime. Nothing here is saved to the actual draft. Pick a team below, then hit Start Draft to begin.</p>
       <div class="mockdraft-team-grid" id="mockdraft-team-grid"></div>
-      <div class="mockdraft-rules-note">
-        <strong>Rules:</strong> Linear order matching the Draft Order tab &mdash; trades and keeper rounds honored. Max 2 QB, 1 K, 1 DEF. 1:15 per pick, auto-drafts if time runs out &mdash; you can pause anytime. Pick a team below, then hit Start Draft to begin.
-      </div>
       <button type="button" class="admin-btn" id="mockdraft-start-btn" disabled>Start Mock Draft</button>
     </div>
 
@@ -6139,6 +6186,32 @@ function renderRosterSlots(picks) {
   return html;
 }
 
+// Which starting-lineup slots a team still hasn't filled -- used to give
+// an at-a-glance "still needs" chip row when looking at another team's
+// roster in View Other Teams' Picks, rather than making you scan every
+// slot row for the word "Empty".
+function computeMockRosterNeeds(picks) {
+  const { starters, flex } = assignMockRosterSlots(picks);
+  const needs = [];
+  if (!starters.QB[0]) needs.push("QB");
+  if (!starters.RB[0] || !starters.RB[1]) needs.push("RB");
+  if (!starters.WR[0] || !starters.WR[1] || !starters.WR[2]) needs.push("WR");
+  if (!starters.TE[0]) needs.push("TE");
+  if (!flex) needs.push("FLEX");
+  if (!starters.K[0]) needs.push("K");
+  if (!starters.DEF[0]) needs.push("DEF");
+  return needs;
+}
+
+function renderMockNeedsBadge(picks) {
+  const needs = computeMockRosterNeeds(picks);
+  if (!needs.length) {
+    return "<div class=\"mockdraft-needs-complete\">&#9989; Starting lineup set</div>";
+  }
+  return "<div class=\"mockdraft-needs\"><span class=\"mockdraft-needs-label\">Still needs:</span>" +
+    needs.map(n => "<span class=\"mockdraft-needs-chip\">" + n + "</span>").join("") + "</div>";
+}
+
 function renderMockMyRoster() {
   const el = document.getElementById("mockdraft-my-roster");
   if (!el) return;
@@ -6168,7 +6241,8 @@ function renderMockOtherTeamsGrid() {
 function renderMockOtherTeamRoster(teamName) {
   const el = document.getElementById("mockdraft-otherteams-roster");
   if (!el) return;
-  el.innerHTML = renderRosterSlots(MOCK_STATE.rosters[teamName] || []);
+  const picks = MOCK_STATE.rosters[teamName] || [];
+  el.innerHTML = renderMockNeedsBadge(picks) + renderRosterSlots(picks);
 }
 
 function refreshMockOtherTeamsView() {
