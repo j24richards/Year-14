@@ -469,6 +469,369 @@
       background: var(--panel-2);
     }
   }
+  .mockdraft-team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .mockdraft-team-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    text-align: left;
+  }
+  .mockdraft-team-btn:hover { border-color: var(--gold); }
+  .mockdraft-team-btn.selected {
+    background: var(--gold-wash);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .mockdraft-rules-note {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 14px 0;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border-radius: 8px;
+  }
+  .mockdraft-board-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .mockdraft-onclock {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 1.05rem;
+    color: var(--text);
+    flex: 1 1 auto;
+  }
+  .mockdraft-onclock .mockdraft-onclock-sub {
+    display: block;
+    font-family: inherit;
+    text-transform: none;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .mockdraft-onclock.is-user { color: var(--gold); }
+  .mockdraft-onclock .mockdraft-onclock-next {
+    display: block;
+    font-family: inherit;
+    text-transform: none;
+    font-size: 0.78rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .mockdraft-nextpick-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: center;
+    color: var(--gold);
+    background: var(--gold-wash);
+    border-top: 1px dashed var(--gold);
+    border-bottom: 1px dashed var(--gold);
+  }
+  .mockdraft-begin-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: var(--gold-wash);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .mockdraft-begin-text { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .mockdraft-view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .mockdraft-view-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mockdraft-view-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+  }
+  .mockdraft-grid-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 6px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .mockdraft-grid-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.9rem;
+  }
+  .mockdraft-grid-table th, .mockdraft-grid-table td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 0.72rem;
+    padding: 7px 4px;
+    text-align: center;
+    line-height: 1.25;
+    border-bottom: 1px solid var(--border);
+  }
+  .mockdraft-grid-table th:first-child, .mockdraft-grid-table td:first-child {
+    width: 34px;
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .mockdraft-grid-table tbody tr:nth-child(even) { background: var(--panel-2); }
+  .mockdraft-grid-table th.is-you, .mockdraft-grid-table td.is-you { background: var(--gold-wash); }
+  .mockdraft-grid-table th.is-you { color: var(--gold); }
+  .mockdraft-grid-cell-player {
+    display: block;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockdraft-grid-cell-player + .mockdraft-grid-cell-player {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed var(--border);
+  }
+  .mockdraft-grid-cell-meta { display: block; color: var(--muted); font-size: 0.65rem; }
+  .mockdraft-grid-cell-keeper { color: var(--keeper); font-weight: 600; }
+  .mockdraft-grid-cell-keeper .keeper-icon { margin-left: 2px; font-weight: 400; }
+  .mockdraft-grid-cell-none { color: var(--border); }
+  .mockdraft-grid-cell-onclock {
+    background: var(--gold) !important;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 4px;
+    animation: mockdraft-onclock-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes mockdraft-onclock-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  @media (max-width: 700px) and (min-width: 481px) {
+    .mockdraft-grid-table th, .mockdraft-grid-table td { font-size: 0.6rem; padding: 5px 2px; }
+  }
+  @media (max-width: 480px) {
+    .mockdraft-grid-wrap { overflow-x: auto; }
+    .mockdraft-grid-table { table-layout: auto; width: auto; min-width: 100%; }
+    .mockdraft-grid-table th, .mockdraft-grid-table td { white-space: nowrap; overflow-wrap: normal; font-size: 0.76rem; padding: 8px 12px; }
+    .mockdraft-grid-table th:first-child, .mockdraft-grid-table td:first-child { width: auto; position: sticky; left: 0; background: var(--panel); }
+    .mockdraft-grid-table tbody tr:nth-child(even) td:first-child { background: var(--panel-2); }
+  }
+  .mockdraft-board.view-grid .mockdraft-columns { grid-template-columns: 1fr; }
+  .mockdraft-board.view-grid #mockdraft-col-roster { display: none; }
+  .mockdraft-timer-wrap { display: flex; align-items: center; gap: 8px; flex: none; }
+  .mockdraft-timer-bar {
+    width: 140px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .mockdraft-timer-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--gold);
+    transition: width 1s linear;
+  }
+  .mockdraft-timer-num {
+    font-weight: 700;
+    font-size: 0.85rem;
+    min-width: 38px;
+    text-align: right;
+  }
+  .mockdraft-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 800px) {
+    .mockdraft-columns { grid-template-columns: 1fr; }
+  }
+  .mockdraft-col {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .mockdraft-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .mockdraft-filter-chip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mockdraft-filter-chip.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+  }
+  #mockdraft-player-search {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .mockdraft-player-list {
+    max-height: 420px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .mockdraft-player-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .mockdraft-player-row:last-child { border-bottom: none; }
+  .mockdraft-player-info { display: flex; flex-direction: column; }
+  .mockdraft-player-name { font-weight: 600; }
+  .mockdraft-player-meta { color: var(--muted); font-size: 0.75rem; }
+  .mockdraft-draft-btn {
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex: none;
+  }
+  .mockdraft-draft-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .mockdraft-pick-log {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+  .mockdraft-pick-log-row {
+    display: flex;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+  .mockdraft-pick-log-row:last-child { border-bottom: none; }
+  .mockdraft-pick-log-row.is-user { background: var(--gold-wash); }
+  .mockdraft-pick-log-rd { color: var(--muted); flex: none; width: 60px; }
+  .mockdraft-pick-log-team { font-weight: 600; flex: none; width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #mockdraft-board-body td, #mockdraft-board-headers { font-size: 0.78rem; }
+  .mockdraft-paused-badge {
+    display: none;
+    background: var(--gold);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 4px 12px;
+    flex: none;
+  }
+  .mockdraft-board.is-paused .mockdraft-paused-badge { display: inline-block; }
+  .mockdraft-board.is-paused .mockdraft-player-list { opacity: 0.45; pointer-events: none; }
+  .mockdraft-roster-slots {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mockdraft-slot-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .mockdraft-slot-row:last-child { border-bottom: none; }
+  .mockdraft-slot-row.bench { border-radius: 0; }
+  .mockdraft-slot-label {
+    flex: none;
+    width: 56px;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+  .mockdraft-slot-player { font-weight: 600; text-align: right; }
+  .mockdraft-slot-player.mockdraft-slot-empty { color: var(--muted); font-weight: 400; font-style: italic; }
+  .mockdraft-slot-meta { color: var(--muted); font-size: 0.75rem; font-weight: 400; margin-left: 6px; }
+  .mockdraft-roster-bench-label {
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mockdraft-roster-bench {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mockdraft-roster-bench-empty { color: var(--muted); font-size: 0.82rem; }
+  .mockdraft-otherteams { margin-top: 20px; }
+  .mockdraft-otherteams-summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+  .mockdraft-otherteams-body { padding-top: 10px; }
+  .mockdraft-otherteams-btn.is-you { border-color: var(--gold); }
   .draft-order-list {
     list-style: none;
     counter-reset: pick;
@@ -838,6 +1201,7 @@
   <button data-tab="draft">2026 Draft</button>
   <button data-tab="keepers">Keepers</button>
   <button data-tab="draftorder">Draft Order</button>
+  <button data-tab="mockdraft">Mock Draft</button>
   <button data-tab="trades">Trades</button>
   <button data-tab="teams">2025 Teams</button>
   <button data-tab="draft2025">2025 Draft</button>
@@ -853,6 +1217,7 @@
     <option value="draft">2026 Draft</option>
     <option value="keepers">Keepers</option>
     <option value="draftorder">Draft Order</option>
+    <option value="mockdraft">Mock Draft</option>
     <option value="trades">Trades</option>
     <option value="teams">2025 Teams</option>
     <option value="draft2025">2025 Draft</option>
@@ -937,6 +1302,88 @@
         </thead>
         <tbody id="draftorder-body"></tbody>
       </table>
+    </div>
+  </section>
+
+  <section id="mockdraft">
+    <h2>Mock Draft</h2>
+    <p style="color: var(--muted); margin-top: -6px;">Practice against bots using the real 2026 draft order, trades, and keeper-locked rounds &mdash; ranked by Fantasy Football Calculator's 10-team Half-PPR ADP to match this league's scoring. Nothing here is saved to the actual draft.</p>
+
+    <div class="card" id="mockdraft-setup">
+      <h3 style="margin-top:0;">Pick your team</h3>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-top:-6px;">There's no login for this site, so just pick whichever team you want to practice drafting for &mdash; bots will run every other team.</p>
+      <div class="mockdraft-team-grid" id="mockdraft-team-grid"></div>
+      <div class="mockdraft-rules-note">
+        <strong>Rules:</strong> Linear order (not snake), matching the Draft Order tab exactly &mdash; trades and keeper-locked rounds are honored, so a round with a keeper is skipped entirely. Max 2 QB, 1 K, 1 DEF per roster. You get 1:15 per pick; if time runs out you auto-draft the best player available (skipping anyone who'd bust a position cap). Bots take a few seconds (2&ndash;5) between picks so you can follow along. Picking a team below takes you to the board first &mdash; nothing starts until you hit Start Draft there.
+      </div>
+      <button type="button" class="admin-btn" id="mockdraft-start-btn" disabled>Start Mock Draft</button>
+    </div>
+
+    <div class="mockdraft-board" id="mockdraft-board" style="display:none;">
+      <div class="mockdraft-board-top">
+        <div class="mockdraft-onclock" id="mockdraft-onclock"></div>
+        <span class="mockdraft-paused-badge" id="mockdraft-paused-badge">Paused</span>
+        <div class="mockdraft-timer-wrap" id="mockdraft-timer-wrap" style="display:none;">
+          <div class="mockdraft-timer-bar"><div class="mockdraft-timer-fill" id="mockdraft-timer-fill"></div></div>
+          <div class="mockdraft-timer-num" id="mockdraft-timer-num">1:15</div>
+        </div>
+        <button type="button" class="admin-btn admin-btn-secondary" id="mockdraft-pause-btn">Pause</button>
+        <button type="button" class="admin-btn admin-btn-secondary" id="mockdraft-quit-btn">Quit / Restart</button>
+      </div>
+
+      <div class="mockdraft-begin-bar" id="mockdraft-begin-bar">
+        <div class="mockdraft-begin-text">Rosters are set and the board is ready &mdash; start the draft whenever you are.</div>
+        <button type="button" class="admin-btn" id="mockdraft-begin-btn">Start Draft</button>
+      </div>
+
+      <div class="mockdraft-view-toggle" id="mockdraft-view-toggle">
+        <button type="button" class="mockdraft-view-btn active" data-view="list">List View</button>
+        <button type="button" class="mockdraft-view-btn" data-view="grid">Draft Board View</button>
+      </div>
+
+      <div class="mockdraft-grid-wrap" id="mockdraft-grid-wrap" style="display:none;">
+        <table class="mockdraft-grid-table">
+          <thead><tr id="mockdraft-grid-header"></tr></thead>
+          <tbody id="mockdraft-grid-body"></tbody>
+        </table>
+      </div>
+
+      <div class="mockdraft-columns" id="mockdraft-columns">
+        <div class="mockdraft-col" id="mockdraft-col-players">
+          <h3 style="margin-top:0;">Available Players</h3>
+          <div class="mockdraft-filters" id="mockdraft-filters"></div>
+          <input type="text" id="mockdraft-player-search" placeholder="Search available players&hellip;" autocomplete="off">
+          <div class="mockdraft-player-list" id="mockdraft-player-list"></div>
+        </div>
+        <div class="mockdraft-col" id="mockdraft-col-roster">
+          <h3 style="margin-top:0;">Your Team</h3>
+          <div id="mockdraft-my-roster"></div>
+          <h3>Pick Log</h3>
+          <div class="mockdraft-pick-log" id="mockdraft-pick-log"></div>
+        </div>
+      </div>
+
+      <details class="mockdraft-otherteams" id="mockdraft-otherteams">
+        <summary class="mockdraft-otherteams-summary">View Other Teams' Picks</summary>
+        <div class="mockdraft-otherteams-body">
+          <div class="mockdraft-team-grid" id="mockdraft-otherteams-grid"></div>
+          <div id="mockdraft-otherteams-roster"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="mockdraft-results" id="mockdraft-results" style="display:none;">
+      <h3 style="margin-top:0;">Mock Draft Complete</h3>
+      <button type="button" class="admin-btn" id="mockdraft-restart-btn">Start New Mock Draft</button>
+      <h4>Your Final Roster</h4>
+      <div id="mockdraft-final-roster"></div>
+      <h4>Full Board</h4>
+      <div class="card" style="overflow-x:auto;">
+        <table>
+          <thead><tr id="mockdraft-board-header-row"><th>Round</th></tr></thead>
+          <tbody id="mockdraft-board-body"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -4510,6 +4957,948 @@ function addTradeRow(rowsWrap, date, teams, details) {
   rowsWrap.appendChild(row);
 }
 
+// ---------------------------------------------------------------------
+// Mock Draft
+//
+// A solo practice draft against bots, sourced from the same live data as
+// the Draft Order tab above: the pick sequence is linear (not snake),
+// repeats this league's fixed (flat, non-snake) draft order every round,
+// honors trades (newOwner) and skips any round a team is spending on a
+// keeper. Rosters built here are entirely separate scratch rosters --
+// nothing about a mock run is saved anywhere. Player pool is ranked by
+// Fantasy Football Calculator's 10-team Half-PPR ADP (Sept 2026), to
+// match this league's scoring (Hold My Rings' sibling mock uses full-PPR
+// ADP instead, since that league scores a full point per reception).
+// ---------------------------------------------------------------------
+
+const POS_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+const MOCK_DRAFT_POOL_RAW = [
+["Jahmyr Gibbs","DET","RB"],
+["Bijan Robinson","ATL","RB"],
+["Puka Nacua","LAR","WR"],
+["Ja'Marr Chase","CIN","WR"],
+["Jaxon Smith-Njigba","SEA","WR"],
+["Jonathan Taylor","IND","RB"],
+["Christian McCaffrey","SF","RB"],
+["Amon-Ra St. Brown","DET","WR"],
+["James Cook III","BUF","RB"],
+["Derrick Henry","BAL","RB"],
+["De'Von Achane","MIA","RB"],
+["CeeDee Lamb","DAL","WR"],
+["Justin Jefferson","MIN","WR"],
+["Chase Brown","CIN","RB"],
+["Drake London","ATL","WR"],
+["Saquon Barkley","PHI","RB"],
+["A.J. Brown","NE","WR"],
+["Rashee Rice","KC","WR"],
+["George Pickens","DAL","WR"],
+["Kenneth Walker","KC","RB"],
+["Nico Collins","HOU","WR"],
+["Omarion Hampton","LAC","RB"],
+["Ashton Jeanty","LV","RB"],
+["Zay Flowers","BAL","WR"],
+["Chris Olave","NO","WR"],
+["Malik Nabers","NYG","WR"],
+["Kyren Williams","LAR","RB"],
+["Jeremiyah Love","ARI","RB"],
+["Garrett Wilson","NYJ","WR"],
+["Javonte Williams","DAL","RB"],
+["Josh Allen","BUF","QB"],
+["DeVonta Smith","PHI","WR"],
+["Tetairoa McMillan","CAR","WR"],
+["Breece Hall","NYJ","RB"],
+["Tee Higgins","CIN","WR"],
+["Emeka Egbuka","TB","WR"],
+["Travis Etienne Jr.","NO","RB"],
+["Davante Adams","LAR","WR"],
+["Jameson Williams","DET","WR"],
+["Cam Skattebo","NYG","RB"],
+["Trey McBride","ARI","TE"],
+["Brock Bowers","LV","TE"],
+["Ladd McConkey","LAC","WR"],
+["D'Andre Swift","CHI","RB"],
+["Jaylen Waddle","DEN","WR"],
+["Terry McLaurin","WAS","WR"],
+["Bucky Irving","TB","RB"],
+["DJ Moore","BUF","WR"],
+["Rome Odunze","CHI","WR"],
+["Quinshon Judkins","CLE","RB"],
+["Drake Maye","NE","QB"],
+["Bhayshul Tuten","JAX","RB"],
+["Luther Burden III","CHI","WR"],
+["Christian Watson","GB","WR"],
+["Joe Burrow","CIN","QB"],
+["Mike Evans","SF","WR"],
+["David Montgomery","HOU","RB"],
+["Lamar Jackson","BAL","QB"],
+["Colston Loveland","CHI","TE"],
+["Courtland Sutton","DEN","WR"],
+["Alec Pierce","IND","WR"],
+["Rhamondre Stevenson","NE","RB"],
+["Jaylen Warren","PIT","RB"],
+["Parker Washington","JAX","WR"],
+["DK Metcalf","PIT","WR"],
+["TreVeyon Henderson","NE","RB"],
+["Marvin Harrison Jr.","ARI","WR"],
+["Dak Prescott","DAL","QB"],
+["Jadarian Price","SEA","RB"],
+["Tony Pollard","TEN","RB"],
+["Tyler Warren","IND","TE"],
+["Brian Thomas Jr.","JAX","WR"],
+["Michael Wilson","ARI","WR"],
+["Jayden Daniels","WAS","QB"],
+["Rico Dowdle","PIT","RB"],
+["Josh Jacobs","GB","RB"],
+["Matthew Stafford","LAR","QB"],
+["Carnell Tate","TEN","WR"],
+["Harold Fannin Jr.","CLE","TE"],
+["Chris Godwin Jr.","TB","WR"],
+["J.K. Dobbins","DEN","RB"],
+["Jalen Hurts","PHI","QB"],
+["Michael Pittman Jr.","PIT","WR"],
+["Seahawks","SEA","DEF"],
+["Quentin Johnston","LAC","WR"],
+["Jayden Reed","GB","WR"],
+["Brock Purdy","SF","QB"],
+["Jakobi Meyers","JAX","WR"],
+["Chuba Hubbard","CAR","RB"],
+["Caleb Williams","CHI","QB"],
+["George Kittle","SF","TE"],
+["Jordan Addison","MIN","WR"],
+["Jonathon Brooks","CAR","RB"],
+["Broncos","DEN","DEF"],
+["Trevor Lawrence","JAX","QB"],
+["Tucker Kraft","GB","TE"],
+["Josh Downs","IND","WR"],
+["Wan'Dale Robinson","TEN","WR"],
+["Kyle Pitts Sr.","ATL","TE"],
+["Stefon Diggs","WAS","WR"],
+["Texans","HOU","DEF"],
+["Xavier Worthy","KC","WR"],
+["Romeo Doubs","NE","WR"],
+["Matthew Golden","GB","WR"],
+["Kenny Gainwell","TB","RB"],
+["Jacory Croskey-Merritt","WAS","RB"],
+["Jared Goff","DET","QB"],
+["Rams","LAR","DEF"],
+["Patrick Mahomes","KC","QB"],
+["Aaron Jones Sr.","MIN","RB"],
+["Justin Herbert","LAC","QB"],
+["Khalil Shakir","BUF","WR"],
+["Kyle Monangai","CHI","RB"],
+["RJ Harvey","DEN","RB"],
+["Sam LaPorta","DET","TE"],
+["Deebo Samuel Sr.","SF","WR"],
+["Vikings","MIN","DEF"],
+["Jordan Mason","MIN","RB"],
+["Bo Nix","DEN","QB"],
+["KC Concepcion","CLE","WR"],
+["MarShawn Lloyd","GB","RB"],
+["Jalen Coker","CAR","WR"],
+["Blake Corum","LAR","RB"],
+["Rashid Shaheed","SEA","WR"],
+["Dallas Goedert","PHI","TE"],
+["Patriots","NE","DEF"],
+["Jaxson Dart","NYG","QB"],
+["De'Zhaun Stribling","SF","WR"],
+["Jerry Jeudy","CLE","WR"],
+["Eagles","PHI","DEF"],
+["Rachaad White","WAS","RB"],
+["Tre Tucker","LV","WR"],
+["Brandon Aubrey","DAL","K"],
+["Makai Lemon","PHI","WR"],
+["Lions","DET","DEF"],
+["Jalen McMillan","TB","WR"],
+["Travis Kelce","KC","TE"],
+["Kyler Murray","MIN","QB"],
+["Isaiah Likely","NYG","TE"],
+["Mark Andrews","BAL","TE"],
+["Baker Mayfield","TB","QB"],
+["Woody Marks","HOU","RB"],
+["Tyjae Spears","TEN","RB"],
+["Jason Myers","SEA","K"],
+["Ka'imi Fairbairn","HOU","K"],
+["Denzel Boston","CLE","WR"],
+["Cameron Dicker","LAC","K"],
+["Zach Charbonnet","SEA","RB"],
+["Keenan Allen","IND","WR"],
+["Rashod Bateman","BAL","WR"],
+["Steelers","PIT","DEF"],
+["Harrison Mevis","LAR","K"],
+["Calvin Ridley","TEN","WR"],
+["Jauan Jennings","MIN","WR"],
+["Tyler Shough","NO","QB"],
+["Dalton Kincaid","BUF","TE"],
+["Chargers","LAC","DEF"],
+["Jake Bates","DET","K"],
+["Jake Ferguson","DAL","TE"],
+["Jordan Love","GB","QB"],
+["Cam Little","JAX","K"],
+["Malik Washington","MIA","WR"],
+["Jonah Coleman","DEN","RB"],
+["Chase McLaughlin","TB","K"],
+["Jalen Nailor","LV","WR"],
+["Kayshon Boutte","HOU","WR"],
+["Sam Darnold","SEA","QB"],
+["Tyler Allgeier","ARI","RB"],
+["Cooper Kupp","SEA","WR"],
+["Dalton Schultz","HOU","TE"],
+["Juwan Johnson","NO","TE"],
+["Brenton Strange","JAX","TE"],
+["Will Reichard","MIN","K"],
+["Tyler Loop","BAL","K"],
+["Chris Rodriguez Jr.","JAX","RB"],
+["Keaton Mitchell","LAC","RB"],
+["Braelon Allen","NYJ","RB"],
+["Dontayvion Wicks","PHI","WR"],
+["Ryan Flournoy","DAL","WR"],
+["Trey Smack","GB","K"],
+["Jaguars","JAX","DEF"],
+["Mike Washington Jr.","LV","RB"],
+["Alvin Kamara","NO","RB"],
+["Adonai Mitchell","NYJ","WR"],
+["Jordyn Tyson","NO","WR"],
+["Harrison Butker","KC","K"],
+["Chris Boswell","PIT","K"],
+["Kaelon Black","SF","RB"],
+["Isiah Pacheco","DET","RB"],
+["T.J. Hockenson","MIN","TE"],
+["Ray Davis","BUF","RB"],
+["Hunter Henry","NE","TE"],
+["Tank Bigsby","PHI","RB"],
+["Tyrone Tracy Jr.","NYG","RB"],
+["Ja'Kobi Lane","BAL","WR"],
+["Brian Robinson","ATL","RB"],
+["Travis Hunter","JAX","WR"],
+["C.J. Stroud","HOU","QB"],
+["Devaughn Vele","NO","WR"],
+["Daniel Jones","IND","QB"],
+["Falcons","ATL","DEF"],
+["Ravens","BAL","DEF"],
+["Wil Lutz","DEN","K"],
+["Jaylin Noel","HOU","WR"],
+["Malik Willis","MIA","QB"],
+["Bills","BUF","DEF"],
+["Emmett Johnson","KC","RB"],
+["Dylan Sampson","CLE","RB"],
+["Giants","NYG","DEF"],
+["Cairo Santos","CHI","K"],
+["Jacoby Brissett","ARI","QB"],
+["Eddy Pineiro","SF","K"],
+["Chris Bell","MIA","WR"],
+["Evan McPherson","CIN","K"],
+["Troy Franklin","DEN","WR"],
+["Chig Okonkwo","WAS","TE"],
+["Cyrus Allen","KC","WR"],
+["Justice Hill","BAL","RB"],
+["Caleb Douglas","MIA","WR"],
+["Browns","CLE","DEF"],
+["Tyler Bass","BUF","K"],
+["Terrance Ferguson","LAR","TE"],
+["Buccaneers","TB","DEF"],
+["Andy Borregales","NE","K"],
+["Saints","NO","DEF"],
+["Isaac TeSlaa","DET","WR"],
+["Titans","TEN","DEF"]
+];
+
+const MOCK_DRAFT_POOL = MOCK_DRAFT_POOL_RAW.map(r => ({ player: r[0], nfl: r[1], pos: r[2] }));
+
+const MOCK_STATE = {
+  active: false,
+  started: false,
+  view: "list",
+  userTeam: null,
+  selectedTeam: null,
+  teamNames: [],
+  pickList: [],
+  pickIndex: 0,
+  available: [],
+  rosters: {},
+  log: [],
+  timerHandle: null,
+  timerRemaining: 75,
+  botHandle: null,
+  filterPos: "ALL",
+  searchQuery: "",
+  paused: false,
+  viewingTeam: null
+};
+
+// Builds the linear (non-snake) mock-draft pick sequence directly from the
+// live Draft Order tab's own data. Unlike Hold My Rings, this league's
+// draftOrder2026 is a FLAT array (one entry per team -- same order every
+// round, no per-round nesting), so the round loop repeats that fixed column
+// order numRounds times using the exact same numRounds calculation
+// renderDraftOrderSection uses, resolving trades via newOwner and skipping
+// any round a team is spending on a keeper -- mirroring that tab exactly so
+// the mock always matches what's currently shown on it.
+function buildMockDraftPickList(data) {
+  const order = data.draftOrder2026 || [];
+  const teamNames = order.map(p => p.originalTeam);
+  const keeperMaps = {};
+  if (data.keepersVisible) {
+    teamNames.forEach(n => { keeperMaps[n] = getTeamKeeperRoundMap(data, n); });
+  }
+  const rosterLengths = (data.teams || []).map(t => (t.roster || []).length).filter(n => n > 0);
+  const numRounds = rosterLengths.length ? Math.max.apply(null, rosterLengths) : 16;
+  const picks = [];
+  for (let round = 1; round <= numRounds; round++) {
+    order.forEach(p => {
+      const keeperMap = keeperMaps[p.originalTeam];
+      const keeperPlayers = keeperMap ? keeperMap[round] : null;
+      if (keeperPlayers && keeperPlayers.length) return;
+      const owner = p.newOwner || p.originalTeam;
+      picks.push({ round: round, team: owner });
+    });
+  }
+  return { teamNames, picks };
+}
+
+// All player names currently locked up as a keeper anywhere in the league --
+// these are real rosters, not available for anyone (bots included) to draft
+// in the mock. Gated on keepersVisible the same way the round-skip logic is,
+// so an unfinalized keeper list doesn't prematurely pull players out.
+function getAllKeptPlayerNames(data) {
+  const names = new Set();
+  if (!data.keepersVisible) return names;
+  (data.keeperSelections || []).forEach(sel => {
+    (sel.players || []).forEach(p => { if (p) names.add(p); });
+  });
+  return names;
+}
+
+// Kept players are pulled out of the available pool entirely (see
+// getAllKeptPlayerNames) but they still occupy a real roster spot for their
+// team -- so the mock should seed each team's roster with them up front,
+// same as a real draft where those spots are already spoken for. Seeding
+// them before any picks are made also means they claim their starter/FLEX
+// slot first (assignMockRosterSlots just walks the roster array in order),
+// and count against that team's position caps (e.g. a kept QB leaves room
+// for only one more before the 2-QB cap kicks in).
+function getTeamKeptRosterEntries(data, teamName) {
+  if (!data.keepersVisible) return [];
+  const selection = (data.keeperSelections || []).find(k => k.team === teamName);
+  if (!selection || !selection.players || !selection.players.length) return [];
+  const team = (data.teams || []).find(t => t.team === teamName);
+  const rosterByName = {};
+  (team && team.roster || []).forEach(r => { rosterByName[r.player] = r; });
+  return selection.players.map(name => {
+    const r = rosterByName[name];
+    return { player: name, pos: r ? r.pos : "", nfl: r ? r.nfl : "", kept2025: true, keeperCost: r ? r.keeperCost : null };
+  });
+}
+
+function mockCapsOk(roster, pos) {
+  if (pos === "QB") return roster.filter(p => p.pos === "QB").length < 2;
+  if (pos === "K") return roster.filter(p => p.pos === "K").length < 1;
+  if (pos === "DEF") return roster.filter(p => p.pos === "DEF").length < 1;
+  return true;
+}
+
+function mockBestAvailable(teamName) {
+  const roster = MOCK_STATE.rosters[teamName] || [];
+  for (let i = 0; i < MOCK_STATE.available.length; i++) {
+    if (mockCapsOk(roster, MOCK_STATE.available[i].pos)) return MOCK_STATE.available[i];
+  }
+  return MOCK_STATE.available[0] || null;
+}
+
+function initMockDraftTab(data) {
+  if (MOCK_STATE.active) return;
+  const grid = document.getElementById("mockdraft-team-grid");
+  if (!grid) return;
+  const { teamNames } = buildMockDraftPickList(data);
+  MOCK_STATE.teamNames = teamNames;
+  MOCK_STATE.selectedTeam = null;
+  grid.innerHTML = "";
+  teamNames.forEach(name => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mockdraft-team-btn";
+    btn.textContent = name;
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".mockdraft-team-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      MOCK_STATE.selectedTeam = name;
+      document.getElementById("mockdraft-start-btn").disabled = false;
+    });
+    grid.appendChild(btn);
+  });
+  document.getElementById("mockdraft-start-btn").disabled = true;
+  document.getElementById("mockdraft-setup").style.display = "block";
+  document.getElementById("mockdraft-board").style.display = "none";
+  document.getElementById("mockdraft-results").style.display = "none";
+}
+
+function renderMockFilters() {
+  const wrap = document.getElementById("mockdraft-filters");
+  wrap.innerHTML = "";
+  ["ALL"].concat(POS_ORDER).forEach(pos => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "mockdraft-filter-chip" + (MOCK_STATE.filterPos === pos ? " active" : "");
+    chip.textContent = pos;
+    chip.addEventListener("click", () => {
+      MOCK_STATE.filterPos = pos;
+      renderMockFilters();
+      renderMockAvailablePlayers();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+function startMockDraft() {
+  if (!MOCK_STATE.selectedTeam || !CURRENT_DATA) return;
+  const { teamNames, picks } = buildMockDraftPickList(CURRENT_DATA);
+  if (!picks.length) return;
+  MOCK_STATE.active = true;
+  MOCK_STATE.userTeam = MOCK_STATE.selectedTeam;
+  MOCK_STATE.teamNames = teamNames;
+  MOCK_STATE.pickList = picks;
+  MOCK_STATE.pickIndex = 0;
+  const keptNames = getAllKeptPlayerNames(CURRENT_DATA);
+  MOCK_STATE.available = keptNames.size ? MOCK_DRAFT_POOL.filter(p => !keptNames.has(p.player)) : MOCK_DRAFT_POOL.slice();
+  MOCK_STATE.rosters = {};
+  teamNames.forEach(n => { MOCK_STATE.rosters[n] = getTeamKeptRosterEntries(CURRENT_DATA, n); });
+  MOCK_STATE.log = [];
+  MOCK_STATE.filterPos = "ALL";
+  MOCK_STATE.searchQuery = "";
+  MOCK_STATE.paused = false;
+  MOCK_STATE.viewingTeam = null;
+  // The board is shown as soon as you pick a team, but nothing actually
+  // happens yet -- no bot picks, no countdown -- until you hit the "Start
+  // Draft" button on the board itself (beginMockDraft). This just renders
+  // the ready-to-go state: pick 1's on-clock info, the full player pool,
+  // and everyone's rosters (keepers included) up front.
+  MOCK_STATE.started = false;
+  // Every new mock starts in List View regardless of what was picked last
+  // time, so the board looks the same way each time you start one.
+  MOCK_STATE.view = "list";
+  document.getElementById("mockdraft-board").classList.remove("view-grid");
+  const gridWrap = document.getElementById("mockdraft-grid-wrap");
+  if (gridWrap) gridWrap.style.display = "none";
+  document.querySelectorAll(".mockdraft-view-btn").forEach(b => b.classList.toggle("active", b.dataset.view === "list"));
+  const searchEl = document.getElementById("mockdraft-player-search");
+  if (searchEl) searchEl.value = "";
+  document.getElementById("mockdraft-setup").style.display = "none";
+  document.getElementById("mockdraft-results").style.display = "none";
+  document.getElementById("mockdraft-board").style.display = "block";
+  document.getElementById("mockdraft-board").classList.remove("is-paused");
+  const pauseBtn = document.getElementById("mockdraft-pause-btn");
+  if (pauseBtn) { pauseBtn.textContent = "Pause"; pauseBtn.disabled = true; }
+  const beginBar = document.getElementById("mockdraft-begin-bar");
+  if (beginBar) beginBar.style.display = "flex";
+  const otherTeamsDetails = document.getElementById("mockdraft-otherteams");
+  if (otherTeamsDetails) otherTeamsDetails.open = false;
+  renderMockFilters();
+  renderMockMyRoster();
+  renderMockPickLog();
+  renderMockOtherTeamsGrid();
+  renderMockOnClock(MOCK_STATE.pickList[0]);
+  renderMockAvailablePlayers();
+  renderMockGrid();
+}
+
+// Fired by the board's own "Start Draft" button. This is the moment the
+// draft actually goes live -- bots start picking and, if you're up first,
+// your countdown starts.
+function beginMockDraft() {
+  if (!MOCK_STATE.active || MOCK_STATE.started) return;
+  MOCK_STATE.started = true;
+  const beginBar = document.getElementById("mockdraft-begin-bar");
+  if (beginBar) beginBar.style.display = "none";
+  const pauseBtn = document.getElementById("mockdraft-pause-btn");
+  if (pauseBtn) pauseBtn.disabled = false;
+  advanceMockPick();
+}
+
+function clearMockTimer() {
+  if (MOCK_STATE.timerHandle) { clearInterval(MOCK_STATE.timerHandle); MOCK_STATE.timerHandle = null; }
+}
+function clearMockBotTimeout() {
+  if (MOCK_STATE.botHandle) { clearTimeout(MOCK_STATE.botHandle); MOCK_STATE.botHandle = null; }
+}
+
+// Bots pause for a few seconds before picking (instead of firing almost
+// instantly) so a human watching the board has time to actually see each
+// pick land before the next one shows up.
+const MOCK_BOT_PICK_DELAY_MIN = 2000;
+const MOCK_BOT_PICK_DELAY_MAX = 5000;
+function mockBotPickDelay() {
+  return MOCK_BOT_PICK_DELAY_MIN + Math.floor(Math.random() * (MOCK_BOT_PICK_DELAY_MAX - MOCK_BOT_PICK_DELAY_MIN + 1));
+}
+
+function advanceMockPick() {
+  clearMockTimer();
+  clearMockBotTimeout();
+  if (MOCK_STATE.pickIndex >= MOCK_STATE.pickList.length) {
+    finishMockDraft();
+    return;
+  }
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+  renderMockOnClock(current);
+  renderMockAvailablePlayers();
+  renderMockGrid();
+  if (current.team === MOCK_STATE.userTeam) {
+    startMockTimer();
+  } else {
+    MOCK_STATE.botHandle = setTimeout(() => {
+      const pick = mockBestAvailable(current.team);
+      if (pick) makeMockPick(current.team, pick);
+    }, mockBotPickDelay());
+  }
+}
+
+// Looks ahead in the (already keeper/trade-resolved) pick list to find the
+// next time `team` is due to pick after `fromIndex`. Returns how many total
+// picks (across every team) happen in between, plus that pick's round and
+// overall number -- null if this is their last pick of the draft. Used both
+// for the "next pick" line under the on-the-clock header and to mark roughly
+// where that pick will land in the available-players list.
+function mockNextTurnForTeam(fromIndex, team) {
+  const list = MOCK_STATE.pickList;
+  for (let j = fromIndex + 1; j < list.length; j++) {
+    if (list[j].team === team) {
+      return { picksAway: j - fromIndex, round: list[j].round, overall: j + 1 };
+    }
+  }
+  return null;
+}
+
+function renderMockOnClock(current) {
+  const el = document.getElementById("mockdraft-onclock");
+  const isUser = current.team === MOCK_STATE.userTeam;
+  el.className = "mockdraft-onclock" + (isUser ? " is-user" : "");
+  // The "next pick" line is only ever about YOUR team -- when a bot is on
+  // the clock there's nothing useful to tell you about its next turn, so
+  // skip the lookup entirely rather than showing it for every team in turn.
+  let nextLine = "";
+  if (isUser) {
+    const next = mockNextTurnForTeam(MOCK_STATE.pickIndex, current.team);
+    nextLine = next ?
+      ("Your next pick: Round " + next.round + " &middot; Pick " + next.overall +
+        " (" + next.picksAway + " pick" + (next.picksAway === 1 ? "" : "s") + " away)") :
+      "This is your last pick of the draft";
+  }
+  el.innerHTML = "Round " + current.round + " &mdash; Pick " + (MOCK_STATE.pickIndex + 1) + " of " + MOCK_STATE.pickList.length +
+    "<span class=\"mockdraft-onclock-sub\">" + (isUser ? "You're on the clock" : current.team + " is on the clock") + "</span>" +
+    (nextLine ? "<span class=\"mockdraft-onclock-next\">" + nextLine + "</span>" : "");
+  document.getElementById("mockdraft-timer-wrap").style.display = (isUser && MOCK_STATE.started) ? "flex" : "none";
+}
+
+// Renders "Draft Board View" -- a Draft-Order-tab-style grid (one row per
+// round, one column per team) built live from the mock's own state. Keeper
+// rounds are shown exactly like the real Draft Order tab (they never appear
+// in MOCK_STATE.pickList at all, so their round numbers are pulled in
+// separately here); made picks show the player; the team currently on the
+// clock gets a pulsing highlight even before Start Draft is clicked, to
+// match the on-clock header's own pre-start preview. Cheap enough to just
+// rebuild in full after every pick rather than patch individual cells.
+//
+// A team-column model can't tell apart two picks the SAME team owns in the
+// SAME round (a trade can hand a team an extra pick in a round it already
+// had one in) -- MOCK_STATE.pickList collapses those to identical
+// {round, team} entries with no slot identity to split them into separate
+// columns. Rather than rebuild the pick-slot-column model the real Draft
+// Order tab uses (which would mean threading a slot id through the whole
+// pick list/log), every completed pick for a team+round is kept and shown
+// stacked in that one cell, so a second pick is never silently dropped.
+function renderMockGrid() {
+  const headerRow = document.getElementById("mockdraft-grid-header");
+  const bodyEl = document.getElementById("mockdraft-grid-body");
+  if (!headerRow || !bodyEl || !MOCK_STATE.active) return;
+
+  headerRow.innerHTML = "<th>Rd</th>" + MOCK_STATE.teamNames.map(n =>
+    "<th" + (n === MOCK_STATE.userTeam ? " class=\"is-you\"" : "") + ">" + n + "</th>"
+  ).join("");
+
+  const keeperMapsByTeam = {};
+  if (CURRENT_DATA && CURRENT_DATA.keepersVisible) {
+    MOCK_STATE.teamNames.forEach(n => { keeperMapsByTeam[n] = getTeamKeeperRoundMap(CURRENT_DATA, n); });
+  }
+  const picksByTeamRound = {};
+  MOCK_STATE.log.forEach(entry => {
+    const key = entry.team + "|" + Number(entry.round);
+    (picksByTeamRound[key] = picksByTeamRound[key] || []).push(entry);
+  });
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+
+  const roundSet = new Set();
+  MOCK_STATE.pickList.forEach(p => roundSet.add(Number(p.round)));
+  Object.keys(keeperMapsByTeam).forEach(team => {
+    Object.keys(keeperMapsByTeam[team]).forEach(r => roundSet.add(Number(r)));
+  });
+  const rounds = Array.from(roundSet).sort((a, b) => a - b);
+
+  bodyEl.innerHTML = "";
+  rounds.forEach(round => {
+    const tr = document.createElement("tr");
+    let html = "<td>" + round + "</td>";
+    MOCK_STATE.teamNames.forEach(team => {
+      const isYou = team === MOCK_STATE.userTeam;
+      const keeperMap = keeperMapsByTeam[team];
+      const keeperPlayers = keeperMap ? keeperMap[round] : null;
+      const isOnClock = !!(current && current.team === team && Number(current.round) === round);
+      let cls = isYou ? "is-you" : "";
+      let inner;
+      if (keeperPlayers && keeperPlayers.length) {
+        inner = "<span class=\"mockdraft-grid-cell-keeper\">" + keeperPlayers.join(", ") +
+          "<span class=\"keeper-icon\" title=\"Keeper\" aria-hidden=\"true\">&nbsp;&#128274;</span></span>";
+      } else {
+        const entries = picksByTeamRound[team + "|" + round] || [];
+        const madeHtml = entries.map(entry =>
+          "<span class=\"mockdraft-grid-cell-player\">" + entry.player +
+            "<span class=\"mockdraft-grid-cell-meta\">" + entry.pos + " &middot; " + entry.nfl + "</span></span>"
+        ).join("");
+        if (isOnClock) {
+          cls = (cls + " mockdraft-grid-cell-onclock").trim();
+          inner = madeHtml + "<span>On the clock</span>";
+        } else if (madeHtml) {
+          inner = madeHtml;
+        } else {
+          inner = "<span class=\"mockdraft-grid-cell-none\">&mdash;</span>";
+        }
+      }
+      html += "<td" + (cls ? " class=\"" + cls + "\"" : "") + ">" + inner + "</td>";
+    });
+    tr.innerHTML = html;
+    bodyEl.appendChild(tr);
+  });
+}
+
+function updateMockTimerUI() {
+  const n = Math.max(0, MOCK_STATE.timerRemaining);
+  const mm = Math.floor(n / 60);
+  const ss = String(n % 60).padStart(2, "0");
+  document.getElementById("mockdraft-timer-num").textContent = mm + ":" + ss;
+  document.getElementById("mockdraft-timer-fill").style.width = Math.max(0, (n / 75) * 100) + "%";
+}
+
+function startMockTimer() {
+  MOCK_STATE.timerRemaining = 75;
+  updateMockTimerUI();
+  runMockTimerInterval();
+}
+
+function runMockTimerInterval() {
+  MOCK_STATE.timerHandle = setInterval(() => {
+    MOCK_STATE.timerRemaining--;
+    updateMockTimerUI();
+    if (MOCK_STATE.timerRemaining <= 0) {
+      clearMockTimer();
+      const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+      const pick = mockBestAvailable(current.team);
+      if (pick) makeMockPick(current.team, pick);
+    }
+  }, 1000);
+}
+
+// Pausing just stops whichever clock is currently running (the human's
+// countdown, or the pending bot-pick timeout) without touching any draft
+// state, so the user can sit on the current pick and look around. Resuming
+// picks the same clock back up -- the human's timer continues from wherever
+// it left off rather than resetting to 1:15, and a bot's turn gets a fresh
+// short "thinking" delay.
+function pauseMockDraft() {
+  if (!MOCK_STATE.active || MOCK_STATE.paused) return;
+  MOCK_STATE.paused = true;
+  clearMockTimer();
+  clearMockBotTimeout();
+  document.getElementById("mockdraft-board").classList.add("is-paused");
+  const btn = document.getElementById("mockdraft-pause-btn");
+  if (btn) btn.textContent = "Resume";
+  renderMockAvailablePlayers();
+}
+
+function resumeMockDraft() {
+  if (!MOCK_STATE.active || !MOCK_STATE.paused) return;
+  MOCK_STATE.paused = false;
+  document.getElementById("mockdraft-board").classList.remove("is-paused");
+  const btn = document.getElementById("mockdraft-pause-btn");
+  if (btn) btn.textContent = "Pause";
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+  if (current) {
+    if (current.team === MOCK_STATE.userTeam) {
+      runMockTimerInterval();
+    } else {
+      MOCK_STATE.botHandle = setTimeout(() => {
+        const pick = mockBestAvailable(current.team);
+        if (pick) makeMockPick(current.team, pick);
+      }, mockBotPickDelay());
+    }
+  }
+  renderMockAvailablePlayers();
+}
+
+function togglePauseMockDraft() {
+  if (MOCK_STATE.paused) resumeMockDraft(); else pauseMockDraft();
+}
+
+function humanMockDraft(poolEntry) {
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+  if (!current || current.team !== MOCK_STATE.userTeam) return;
+  if (!mockCapsOk(MOCK_STATE.rosters[MOCK_STATE.userTeam], poolEntry.pos)) return;
+  makeMockPick(MOCK_STATE.userTeam, poolEntry);
+}
+
+function makeMockPick(team, poolEntry) {
+  clearMockTimer();
+  clearMockBotTimeout();
+  const idx = MOCK_STATE.available.indexOf(poolEntry);
+  if (idx !== -1) MOCK_STATE.available.splice(idx, 1);
+  MOCK_STATE.rosters[team].push({ player: poolEntry.player, pos: poolEntry.pos, nfl: poolEntry.nfl, kept2025: false, keeperCost: null });
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+  MOCK_STATE.log.push({ round: current.round, team: team, player: poolEntry.player, pos: poolEntry.pos, nfl: poolEntry.nfl, isUser: team === MOCK_STATE.userTeam });
+  MOCK_STATE.pickIndex++;
+  renderMockMyRoster();
+  renderMockPickLog();
+  refreshMockOtherTeamsView();
+  advanceMockPick();
+}
+
+function renderMockAvailablePlayers() {
+  const listEl = document.getElementById("mockdraft-player-list");
+  if (!listEl) return;
+  listEl.innerHTML = "";
+  const current = MOCK_STATE.pickList[MOCK_STATE.pickIndex];
+  const isUserOnClock = !!(current && current.team === MOCK_STATE.userTeam);
+  const isUserTurn = MOCK_STATE.started && !MOCK_STATE.paused && isUserOnClock;
+  const q = (MOCK_STATE.searchQuery || "").toLowerCase();
+  // Roughly where YOUR next pick will land in this list, assuming players
+  // keep coming off the board top-down (same assumption the bots draft
+  // under). Only shown while you're the one on the clock -- a bot's next
+  // turn isn't something you need marked. `dividerAt` is an index into the
+  // *unfiltered* available pool -- a rank depth, not a row count -- so it
+  // stays in the right neighborhood even while a position filter or search
+  // is applied.
+  const nextTurn = isUserOnClock ? mockNextTurnForTeam(MOCK_STATE.pickIndex, current.team) : null;
+  const dividerAt = nextTurn ? nextTurn.picksAway : -1;
+  const dividerLabel = nextTurn ?
+    "Your next pick (Rd " + nextTurn.round + ", Pick " + nextTurn.overall + ") is likely around here" : "";
+  let dividerShown = false;
+  let shown = 0;
+  for (let i = 0; i < MOCK_STATE.available.length && shown < 150; i++) {
+    if (!dividerShown && dividerAt >= 0 && i === dividerAt) {
+      dividerShown = true;
+      const divider = document.createElement("div");
+      divider.className = "mockdraft-nextpick-divider";
+      divider.innerHTML = "<span>" + dividerLabel + "</span>";
+      listEl.appendChild(divider);
+    }
+    const p = MOCK_STATE.available[i];
+    if (MOCK_STATE.filterPos !== "ALL" && p.pos !== MOCK_STATE.filterPos) continue;
+    if (q && p.player.toLowerCase().indexOf(q) === -1) continue;
+    shown++;
+    const row = document.createElement("div");
+    row.className = "mockdraft-player-row";
+    const capOk = isUserTurn && mockCapsOk(MOCK_STATE.rosters[MOCK_STATE.userTeam] || [], p.pos);
+    row.innerHTML = "<div class=\"mockdraft-player-info\"><span class=\"mockdraft-player-name\">" + p.player + "</span>" +
+      "<span class=\"mockdraft-player-meta\">" + p.pos + " &middot; " + p.nfl + "</span></div>" +
+      "<button type=\"button\" class=\"mockdraft-draft-btn\"" + (capOk ? "" : " disabled") + ">Draft</button>";
+    if (capOk) {
+      row.querySelector(".mockdraft-draft-btn").addEventListener("click", () => humanMockDraft(p));
+    }
+    listEl.appendChild(row);
+  }
+  if (!shown) {
+    listEl.innerHTML = "<div class=\"mockdraft-player-row\" style=\"color:var(--muted);\">No players match.</div>";
+  }
+}
+
+// Starter slots per position, matching the league's real roster format
+// (QB, WR, WR, WR, RB, RB, TE, W/R/T, K, DEF, plus bench). A drafted player
+// fills their own position's next open starter slot first; once that
+// position is full, an RB/WR/TE overflows into the shared FLEX slot; once
+// FLEX is also taken (or for QB/K/DEF, which aren't FLEX-eligible), the
+// pick goes to the bench.
+const MOCK_STARTER_CAPS = { QB: 1, RB: 2, WR: 3, TE: 1, K: 1, DEF: 1 };
+const MOCK_FLEX_ELIGIBLE = ["RB", "WR", "TE"];
+
+function assignMockRosterSlots(picks) {
+  const starters = { QB: [], RB: [], WR: [], TE: [], K: [], DEF: [] };
+  let flex = null;
+  const bench = [];
+  (picks || []).forEach(p => {
+    const cap = MOCK_STARTER_CAPS[p.pos];
+    if (cap === undefined) { bench.push(p); return; }
+    if (starters[p.pos].length < cap) {
+      starters[p.pos].push(p);
+    } else if (MOCK_FLEX_ELIGIBLE.includes(p.pos) && !flex) {
+      flex = p;
+    } else {
+      bench.push(p);
+    }
+  });
+  return { starters, flex, bench };
+}
+
+function renderRosterSlots(picks) {
+  const { starters, flex, bench } = assignMockRosterSlots(picks);
+  const slotRowHtml = (label, player) => {
+    if (player) {
+      return "<div class=\"mockdraft-slot-row\"><span class=\"mockdraft-slot-label\">" + label + "</span>" +
+        "<span class=\"mockdraft-slot-player\">" + player.player + "<span class=\"mockdraft-slot-meta\">" + player.pos + " &middot; " + player.nfl + "</span></span></div>";
+    }
+    return "<div class=\"mockdraft-slot-row\"><span class=\"mockdraft-slot-label\">" + label + "</span>" +
+      "<span class=\"mockdraft-slot-player mockdraft-slot-empty\">Empty</span></div>";
+  };
+  let html = "<div class=\"mockdraft-roster-slots\">";
+  html += slotRowHtml("QB", starters.QB[0]);
+  html += slotRowHtml("RB 1", starters.RB[0]);
+  html += slotRowHtml("RB 2", starters.RB[1]);
+  html += slotRowHtml("WR 1", starters.WR[0]);
+  html += slotRowHtml("WR 2", starters.WR[1]);
+  html += slotRowHtml("WR 3", starters.WR[2]);
+  html += slotRowHtml("TE", starters.TE[0]);
+  html += slotRowHtml("FLEX", flex);
+  html += slotRowHtml("K", starters.K[0]);
+  html += slotRowHtml("DEF", starters.DEF[0]);
+  html += "</div>";
+  html += "<div class=\"mockdraft-roster-bench-label\">Bench (" + bench.length + ")</div>";
+  if (bench.length) {
+    html += "<div class=\"mockdraft-roster-bench\">" + bench.map(p =>
+      "<div class=\"mockdraft-slot-row bench\"><span class=\"mockdraft-slot-player\">" + p.player + "<span class=\"mockdraft-slot-meta\">" + p.pos + " &middot; " + p.nfl + "</span></span></div>"
+    ).join("") + "</div>";
+  } else {
+    html += "<div class=\"mockdraft-roster-bench-empty\">No bench players yet.</div>";
+  }
+  return html;
+}
+
+function renderMockMyRoster() {
+  const el = document.getElementById("mockdraft-my-roster");
+  if (!el) return;
+  el.innerHTML = MOCK_STATE.userTeam ? renderRosterSlots(MOCK_STATE.rosters[MOCK_STATE.userTeam] || []) : "";
+}
+
+function renderMockOtherTeamsGrid() {
+  const grid = document.getElementById("mockdraft-otherteams-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  MOCK_STATE.teamNames.forEach(name => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mockdraft-team-btn mockdraft-otherteams-btn" + (name === MOCK_STATE.userTeam ? " is-you" : "");
+    btn.textContent = name + (name === MOCK_STATE.userTeam ? " (You)" : "");
+    btn.addEventListener("click", () => {
+      grid.querySelectorAll(".mockdraft-otherteams-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      MOCK_STATE.viewingTeam = name;
+      renderMockOtherTeamRoster(name);
+    });
+    grid.appendChild(btn);
+  });
+  document.getElementById("mockdraft-otherteams-roster").innerHTML = "";
+}
+
+function renderMockOtherTeamRoster(teamName) {
+  const el = document.getElementById("mockdraft-otherteams-roster");
+  if (!el) return;
+  el.innerHTML = renderRosterSlots(MOCK_STATE.rosters[teamName] || []);
+}
+
+function refreshMockOtherTeamsView() {
+  if (MOCK_STATE.viewingTeam) renderMockOtherTeamRoster(MOCK_STATE.viewingTeam);
+}
+
+function renderMockPickLog() {
+  const el = document.getElementById("mockdraft-pick-log");
+  if (!el) return;
+  el.innerHTML = "";
+  MOCK_STATE.log.slice().reverse().forEach(entry => {
+    const row = document.createElement("div");
+    row.className = "mockdraft-pick-log-row" + (entry.isUser ? " is-user" : "");
+    row.innerHTML = "<span class=\"mockdraft-pick-log-rd\">Rd " + entry.round + "</span>" +
+      "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" +
+      "<span>" + entry.player + " (" + entry.nfl + " - " + entry.pos + ")</span>";
+    el.appendChild(row);
+  });
+}
+
+function finishMockDraft() {
+  MOCK_STATE.active = false;
+  document.getElementById("mockdraft-board").style.display = "none";
+  document.getElementById("mockdraft-results").style.display = "block";
+  document.getElementById("mockdraft-final-roster").innerHTML = renderRosterSlots(MOCK_STATE.rosters[MOCK_STATE.userTeam] || []);
+
+  const headerRow = document.getElementById("mockdraft-board-header-row");
+  headerRow.innerHTML = "<th>Round</th>" + MOCK_STATE.teamNames.map(n => "<th>" + n + "</th>").join("");
+
+  const picksByTeamRound = {};
+  MOCK_STATE.log.forEach(entry => {
+    picksByTeamRound[entry.team + "|" + entry.round] = entry.player + " (" + entry.nfl + " - " + entry.pos + ")";
+  });
+  const rounds = [];
+  MOCK_STATE.pickList.forEach(p => { if (rounds.indexOf(p.round) === -1) rounds.push(p.round); });
+  const bodyEl = document.getElementById("mockdraft-board-body");
+  bodyEl.innerHTML = "";
+  rounds.forEach(round => {
+    const tr = document.createElement("tr");
+    let html = "<td>" + round + "</td>";
+    MOCK_STATE.teamNames.forEach(team => {
+      const val = picksByTeamRound[team + "|" + round];
+      html += "<td>" + (val || "&mdash;") + "</td>";
+    });
+    tr.innerHTML = html;
+    bodyEl.appendChild(tr);
+  });
+}
+
+function quitMockDraft() {
+  clearMockTimer();
+  clearMockBotTimeout();
+  MOCK_STATE.active = false;
+  MOCK_STATE.paused = false;
+  document.getElementById("mockdraft-board").classList.remove("is-paused");
+  document.getElementById("mockdraft-board").style.display = "none";
+  document.getElementById("mockdraft-results").style.display = "none";
+  if (CURRENT_DATA) initMockDraftTab(CURRENT_DATA);
+}
+
+const mockStartBtn = document.getElementById("mockdraft-start-btn");
+if (mockStartBtn) mockStartBtn.addEventListener("click", startMockDraft);
+
+const mockBeginBtn = document.getElementById("mockdraft-begin-btn");
+if (mockBeginBtn) mockBeginBtn.addEventListener("click", beginMockDraft);
+
+// List View is the roster-and-pick-log layout that's always existed; Draft
+// Board View swaps that side column out for a Draft-Order-tab-style grid of
+// every team's picks (Available Players stays put either way, so you can
+// keep drafting from whichever view you're looking at).
+document.querySelectorAll(".mockdraft-view-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const view = btn.dataset.view;
+    if (MOCK_STATE.view === view) return;
+    MOCK_STATE.view = view;
+    document.querySelectorAll(".mockdraft-view-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.getElementById("mockdraft-board").classList.toggle("view-grid", view === "grid");
+    const gridWrap = document.getElementById("mockdraft-grid-wrap");
+    if (gridWrap) gridWrap.style.display = view === "grid" ? "block" : "none";
+    if (view === "grid") renderMockGrid();
+  });
+});
+
+const mockPauseBtn = document.getElementById("mockdraft-pause-btn");
+if (mockPauseBtn) mockPauseBtn.addEventListener("click", togglePauseMockDraft);
+
+const mockQuitBtn = document.getElementById("mockdraft-quit-btn");
+if (mockQuitBtn) mockQuitBtn.addEventListener("click", quitMockDraft);
+
+const mockRestartBtn = document.getElementById("mockdraft-restart-btn");
+if (mockRestartBtn) mockRestartBtn.addEventListener("click", () => {
+  document.getElementById("mockdraft-results").style.display = "none";
+  if (CURRENT_DATA) initMockDraftTab(CURRENT_DATA);
+});
+
+const mockSearchInput = document.getElementById("mockdraft-player-search");
+if (mockSearchInput) mockSearchInput.addEventListener("input", (e) => {
+  MOCK_STATE.searchQuery = e.target.value;
+  renderMockAvailablePlayers();
+});
+
+
 function render(LEAGUE_DATA) {
   CURRENT_DATA = LEAGUE_DATA;
   const leagueName = LEAGUE_DATA.leagueName || "League";
@@ -4544,6 +5933,8 @@ function render(LEAGUE_DATA) {
 
   renderDraftOrderSection(LEAGUE_DATA);
   renderDraftResults(LEAGUE_DATA);
+
+  initMockDraftTab(LEAGUE_DATA);
 
   const draftResults2025 = LEAGUE_DATA.draftResults2025 || [];
   const d25TeamNames = draftResults2025.length ? draftResults2025[0].picks.map(p => p.team) : [];
