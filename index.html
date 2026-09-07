@@ -1066,7 +1066,16 @@
   }
   .history-card table { font-size: 0.85rem; }
   .history-card th, .history-card td { padding: 6px 4px; }
-  .history-card td:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  /* white-space: nowrap plus the shrink-to-fit width keep the trophy icon
+     glued to its rank number -- a long team name elsewhere in the same
+     card's table can otherwise squeeze this column just enough that the
+     browser wraps the icon onto its own line above the number. */
+  .history-card td:first-child {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    width: 1%;
+  }
   .history-card tr.rank-gold td { color: var(--gold); font-weight: 600; }
   .history-card tr.rank-silver td { color: var(--silver); font-weight: 600; }
   .history-card tr.rank-bronze td { color: var(--bronze); font-weight: 600; }
