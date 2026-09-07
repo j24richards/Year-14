@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="page-title">Year 14 — Fantasy Football History</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a1a33">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Year 14">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Year 14">
 <meta property="og:description" content="Fantasy football league hub — standings, rosters, draft history, and more.">
@@ -1008,6 +1015,10 @@
   .trophy-icon-bronze { color: var(--bronze); }
   .history-card td .trophy-icon { margin-right: 4px; vertical-align: -1px; }
   .table-scroll { overflow-x: auto; }
+  @media (max-width: 700px) {
+    #standings-card { overflow-x: auto; }
+    #standings-card table { min-width: 640px; }
+  }
   #ledger-table { min-width: 640px; font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
   #ledger-table thead th { background: var(--panel); }
   #ledger-table tbody tr:nth-child(even) { background: var(--panel-2); }
@@ -1078,10 +1089,17 @@
   }
   .admin-row {
     display: grid;
-    grid-template-columns: 1fr 110px 100px;
-    gap: 10px;
+    grid-template-columns: 1fr 90px 70px 80px 80px;
+    gap: 8px;
     align-items: center;
     margin-bottom: 8px;
+  }
+  @media (max-width: 560px) {
+    .admin-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 8px;
+    }
+    .admin-row .admin-team-label { grid-column: 1 / -1; }
   }
   .admin-badge-row {
     display: grid;
@@ -1317,10 +1335,10 @@
       <div class="countdown-label" id="countdown-label"></div>
     </div>
     <h2 id="season-heading">Current Season Standings</h2>
-    <div class="card">
+    <div class="card" id="standings-card">
       <table>
         <thead>
-          <tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Points For</th></tr>
+          <tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr>
         </thead>
         <tbody id="standings-body"></tbody>
       </table>
@@ -1549,7 +1567,7 @@
       <details class="card admin-details">
         <summary class="admin-summary">Current Season Standings<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Record and points for, per team.</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Record, streak, points for, and points against, per team.</p>
           <div id="admin-standings"></div>
         </div>
       </details>
@@ -1731,61 +1749,81 @@ const DEFAULT_LEAGUE_DATA = {
         "team": "White Pool Covers",
         "manager": "Tom",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Jimmy Jones Cutlets",
         "manager": "Cory/Kevin",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Terry Glenn",
         "manager": "Rick",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Huge Ditka",
         "manager": "Nick",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Dumpster Fire",
         "manager": "Joe",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "My Ball Zach Ertz",
         "manager": "Eric",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Allen's Wayside Furniture",
         "manager": "Steve",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Leeroy Judkins",
         "manager": "Jordan",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Run CMC",
         "manager": "Mike",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       },
       {
         "team": "Prestige Worldwide",
         "manager": "Ben",
         "record": "0-0",
-        "pointsFor": 0
+        "pointsFor": 0,
+        "pointsAgainst": 0,
+        "streak": "-"
       }
     ]
   },
@@ -3217,7 +3255,7 @@ const DEFAULT_LEAGUE_DATA = {
         },
         {
           "team": "Dumpster Fire",
-          "player": "Kevin Walker III"
+          "player": "Kenneth Walker III"
         },
         {
           "team": "Jimmy Jones Cutlets",
@@ -4438,7 +4476,7 @@ function renderStandingsBody(data) {
   });
   sorted.forEach((row, i) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + (i + 1) + "</td><td class=\"standings-team-cell\">" + teamBadgeHtml(row.team) + "<span>" + row.team + "</span></td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + row.pointsFor + "</td>";
+    tr.innerHTML = "<td>" + (i + 1) + "</td><td class=\"standings-team-cell\">" + teamBadgeHtml(row.team) + "<span>" + row.team + "</span></td><td>" + row.manager + "</td><td>" + row.record + "</td><td>" + (row.streak || "—") + "</td><td>" + row.pointsFor + "</td><td>" + (row.pointsAgainst || 0) + "</td>";
     standingsBody.appendChild(tr);
   });
 }
@@ -4948,7 +4986,9 @@ function buildAdminForm(data) {
     div.className = "admin-row";
     div.innerHTML = "<span class=\"admin-team-label\">" + row.team + "</span>" +
       "<input type=\"text\" data-idx=\"" + i + "\" class=\"admin-record-input\" value=\"" + row.record + "\" placeholder=\"0-0\">" +
-      "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-input\" value=\"" + row.pointsFor + "\">";
+      "<input type=\"text\" data-idx=\"" + i + "\" class=\"admin-streak-input\" value=\"" + (row.streak || "") + "\" placeholder=\"W3\" title=\"Streak\">" +
+      "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-input\" value=\"" + row.pointsFor + "\" title=\"Points For\">" +
+      "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-against-input\" value=\"" + (row.pointsAgainst || 0) + "\" title=\"Points Against\">";
     standingsEl.appendChild(div);
   });
 
@@ -6308,8 +6348,14 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   document.querySelectorAll(".admin-record-input").forEach(input => {
     CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].record = input.value;
   });
+  document.querySelectorAll(".admin-streak-input").forEach(input => {
+    CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].streak = input.value;
+  });
   document.querySelectorAll(".admin-points-input").forEach(input => {
     CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].pointsFor = Number(input.value) || 0;
+  });
+  document.querySelectorAll(".admin-points-against-input").forEach(input => {
+    CURRENT_DATA.currentSeason.standings[Number(input.dataset.idx)].pointsAgainst = Number(input.value) || 0;
   });
 
   const newBadges = {};
