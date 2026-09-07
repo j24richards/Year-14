@@ -1116,6 +1116,37 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .alltime-records {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 4px 0 20px;
+  }
+  .alltime-record {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--red);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .alltime-record-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .alltime-record-value {
+    font-family: var(--font-label);
+    font-size: 1.02rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .alltime-record-sub { color: var(--muted); font-size: 0.76rem; margin-top: 3px; }
   .trophy-icon { color: var(--gold); flex: none; }
   .trophy-icon-silver { color: var(--silver); }
   .trophy-icon-bronze { color: var(--bronze); }
@@ -1614,6 +1645,7 @@
     <h2>Manager Ledger</h2>
     <div class="card">
       <p style="color: var(--muted); margin-top: -8px; font-size: 0.82rem;">Titles, top-3 finishes, and finish history by year. Teams without a recorded manager aren't counted.</p>
+      <div class="alltime-records" id="alltime-records"></div>
       <div class="table-scroll">
         <table id="ledger-table"></table>
       </div>
@@ -4841,6 +4873,58 @@ function renderHistorySection(data) {
   renderManagerLedger(sorted);
 }
 
+// At-a-glance league records pulled from the same per-manager rows the
+// Manager Ledger table already computes -- titles, top-3 finishes, and
+// average finish are the only career stats the history data actually
+// supports (no year-by-year win/loss or weekly results are stored), so
+// those are what this surfaces rather than things like a win streak.
+function renderAllTimeRecords(ledgerRows) {
+  const el = document.getElementById("alltime-records");
+  if (!el) return;
+  const namesJoined = rows => rows.map(r => r.mgr).join(" & ");
+  const cards = [];
+
+  const maxTitles = ledgerRows.reduce((m, r) => Math.max(m, r.titles), 0);
+  if (maxTitles > 0) {
+    const leaders = ledgerRows.filter(r => r.titles === maxTitles);
+    cards.push({
+      label: "Most Championships",
+      value: trophyIconHtml() + namesJoined(leaders),
+      sub: maxTitles + (maxTitles === 1 ? " title" : " titles")
+    });
+  }
+
+  const maxTop3 = ledgerRows.reduce((m, r) => Math.max(m, r.top3), 0);
+  if (maxTop3 > 0) {
+    const leaders = ledgerRows.filter(r => r.top3 === maxTop3);
+    cards.push({
+      label: "Most Top-3 Finishes",
+      value: namesJoined(leaders),
+      sub: maxTop3 + (maxTop3 === 1 ? " finish" : " finishes")
+    });
+  }
+
+  // Best average finish only counts managers with a real sample size --
+  // one great year shouldn't beat someone with a decade of near-titles.
+  const MIN_SEASONS_FOR_AVG = 3;
+  const eligible = ledgerRows.filter(r => r.appearances >= MIN_SEASONS_FOR_AVG);
+  if (eligible.length) {
+    const minAvg = eligible.reduce((m, r) => Math.min(m, r.avg), Infinity);
+    const leaders = eligible.filter(r => r.avg === minAvg);
+    cards.push({
+      label: "Best Avg Finish",
+      value: namesJoined(leaders),
+      sub: minAvg.toFixed(1) + " avg &middot; " + MIN_SEASONS_FOR_AVG + "+ seasons"
+    });
+  }
+
+  el.innerHTML = cards.map(c =>
+    "<div class=\"alltime-record\"><span class=\"alltime-record-label\">" + c.label + "</span>" +
+    "<div class=\"alltime-record-value\">" + c.value + "</div>" +
+    "<div class=\"alltime-record-sub\">" + c.sub + "</div></div>"
+  ).join("");
+}
+
 function renderManagerLedger(sortedHistory) {
   const yearsAsc = sortedHistory.map(r => r.year).slice().reverse();
   const managerMap = {};
@@ -4863,6 +4947,8 @@ function renderManagerLedger(sortedHistory) {
   });
 
   ledgerRows.sort((a, b) => b.titles - a.titles || b.top3 - a.top3 || a.avg - b.avg);
+
+  renderAllTimeRecords(ledgerRows);
 
   const yearHeaderCells = yearsAsc.map(y => "<th>" + String(y).slice(2) + "&#8217;</th>").join("");
   const bodyRows = ledgerRows.map(row => {
