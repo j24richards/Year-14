@@ -840,9 +840,24 @@
   .mockdraft-pick-log-keeper { color: var(--keeper); font-weight: 600; }
   .mockdraft-pick-log-keeper .keeper-icon { margin-left: 3px; font-weight: 400; }
   .mockdraft-recent-picks { max-height: 420px; }
-  .mockdraft-recent-picks .mockdraft-pick-log-rd { width: 52px; }
   .mockdraft-recent-picks-empty { color: var(--muted); font-size: 0.8rem; padding: 8px 10px; }
   @media (max-width: 1050px) { .mockdraft-recent-picks { max-height: 220px; } }
+  /* Recent Picks lives in a narrower standalone column, so its rows wrap
+     onto two lines (pick # + team, then player + position) instead of the
+     wide single-line layout the right-side Pick Log uses -- avoids the row
+     overflowing sideways and forcing a horizontal scrollbar. */
+  .mockdraft-recent-row { flex-wrap: wrap; row-gap: 2px; }
+  .mockdraft-recent-row .mockdraft-pick-log-rd { width: auto; margin-right: 2px; }
+  .mockdraft-recent-row .mockdraft-pick-log-team { width: auto; flex: 1 1 auto; min-width: 0; }
+  .mockdraft-recent-row-detail {
+    flex: 1 1 100%;
+    font-size: 0.78rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mockdraft-recent-row.is-user .mockdraft-recent-row-detail { color: inherit; }
   #mockdraft-board-body td, #mockdraft-board-headers { font-size: 0.78rem; }
   .mockdraft-paused-badge {
     display: none;
@@ -6223,10 +6238,10 @@ function renderMockRecentPicks() {
   }
   MOCK_STATE.log.slice().reverse().forEach(entry => {
     const row = document.createElement("div");
-    row.className = "mockdraft-pick-log-row" + (entry.isUser ? " is-user" : "");
+    row.className = "mockdraft-pick-log-row mockdraft-recent-row" + (entry.isUser ? " is-user" : "");
     row.innerHTML = "<span class=\"mockdraft-pick-log-rd\">#" + entry.overall + "</span>" +
       "<span class=\"mockdraft-pick-log-team\">" + entry.team + "</span>" +
-      "<span>" + entry.player + " &middot; " + entry.pos + "</span>";
+      "<span class=\"mockdraft-recent-row-detail\">" + entry.player + " &middot; " + entry.pos + "</span>";
     el.appendChild(row);
   });
 }
