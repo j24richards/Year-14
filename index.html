@@ -590,6 +590,35 @@
     font-weight: 600;
     margin-top: 4px;
   }
+  /* On phones the board below becomes one long stacked scroll (Recent
+     Picks / Available Players / Your Team), so whose turn it is and how
+     much time is left can easily scroll out of view above everything else.
+     Pin this bar to the top of the viewport while the draft is open, and
+     give the on-clock line and timer their own full-width rows instead of
+     competing with the sound/pause/quit buttons for space in one crowded
+     row -- each piece gets room to actually be read at a glance. */
+  @media (max-width: 800px) {
+    .mockdraft-board-top {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      margin: 0 -20px 16px;
+      padding: 10px 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.45);
+      gap: 6px;
+    }
+    .mockdraft-onclock { order: 1; flex: 1 1 100%; font-size: 1.15rem; }
+    .mockdraft-paused-badge { order: 2; }
+    .mockdraft-timer-wrap { order: 3; flex: 1 1 100%; }
+    #mockdraft-sound-btn, #mockdraft-pause-btn, #mockdraft-quit-btn {
+      order: 4;
+      flex: 1 1 auto;
+      padding: 9px 8px;
+      font-size: 0.72rem;
+    }
+  }
   .mockdraft-nextpick-divider {
     display: flex;
     align-items: center;
