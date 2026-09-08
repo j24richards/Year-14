@@ -1436,6 +1436,30 @@
   @media (max-width: 640px) {
     .admin-draftresult-row, .admin-trade-row, .admin-draftorder-row { grid-template-columns: 1fr; }
   }
+  .admin-roster2026-block {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-roster2026-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .admin-roster2026-block .admin-team-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; display: block; }
+  .admin-roster2026-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 64px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .admin-roster2026-player {
+    font-size: 0.82rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-roster2026-row input { text-align: center; }
+  @media (max-width: 640px) {
+    .admin-roster2026-row { grid-template-columns: 1fr 52px 52px; }
+  }
   .admin-remove-row-btn, .admin-remove-year-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -1569,17 +1593,11 @@
 
   <section id="draft">
     <h2 id="draft-heading">Draft Results</h2>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Round</th><th>Pick</th><th>Team</th><th>Player</th></tr>
-        </thead>
-        <tbody id="draft-body"></tbody>
-      </table>
-      <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
-        Draft results will appear here once the commissioner enters them after the draft.
-      </p>
-    </div>
+    <p style="color: var(--muted); margin-top: -6px;">Every team's picks, round by round.</p>
+    <div class="teams-grid" id="draft-grid"></div>
+    <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
+      Draft results will appear here once the commissioner enters them after the draft.
+    </p>
   </section>
 
   <section id="keepers">
@@ -1882,6 +1900,13 @@
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Once draft results above are filled in, generate next year's rosters from them instead of typing them twice.</p>
           <button type="button" class="admin-btn admin-btn-secondary" id="admin-generate-teams2026-btn">Generate 2026 Teams from Draft Results</button>
           <p id="admin-generate-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">2026 Team Rosters &mdash; Position &amp; NFL Team<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fill in each player's position and NFL team so they show up on the 2026 Teams page. Generate the rosters above first.</p>
+          <div id="admin-teams2026-roster"></div>
         </div>
       </details>
       <button type="button" class="admin-btn admin-btn-secondary" id="admin-export-btn">Download Backup (JSON)</button>
@@ -4659,16 +4684,28 @@ function renderDraftOrderSection(data) {
 
 function renderDraftResults(data) {
   document.getElementById("draft-heading").textContent = data.currentSeason.year + " Draft Results";
-  const draftBody = document.getElementById("draft-body");
-  draftBody.innerHTML = "";
+  const draftGrid = document.getElementById("draft-grid");
+  draftGrid.innerHTML = "";
   const draftEmptyNote = document.getElementById("draft-empty-note");
   const draftResults = data.draftResults || [];
   if (draftResults.length) {
     draftEmptyNote.style.display = "none";
-    draftResults.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + row.round + "</td><td>" + row.pick + "</td><td>" + row.team + "</td><td>" + row.player + "</td>";
-      draftBody.appendChild(tr);
+    // Team order: the site's canonical team list, with any team that only
+    // appears in draftResults (shouldn't normally happen) tacked on the end.
+    const teamOrder = data.teams.map(t => t.team);
+    draftResults.forEach(r => { if (r.team && !teamOrder.includes(r.team)) teamOrder.push(r.team); });
+    teamOrder.forEach(teamName => {
+      const picks = draftResults.filter(r => r.team === teamName).slice().sort((a, b) => Number(a.round) - Number(b.round));
+      if (!picks.length) return;
+      const card = document.createElement("div");
+      card.className = "team-card";
+      let html = "<h3>" + teamName + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
+      picks.forEach(p => {
+        html += "<tr><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
+      });
+      html += "</tbody></table>";
+      card.innerHTML = html;
+      draftGrid.appendChild(card);
     });
   } else {
     draftEmptyNote.style.display = "block";
@@ -5281,6 +5318,7 @@ function buildAdminForm(data) {
     populateMoveRosterControls(data);
     populateRenameTeamControls(data);
     populateRenameManagerControls(data);
+    populateTeams2026RosterEditor(data);
 
     const historyEl = document.getElementById("admin-history");
   historyEl.innerHTML = "";
@@ -5310,6 +5348,31 @@ function buildAdminForm(data) {
   const tradesEl = document.getElementById("admin-trades");
   tradesEl.innerHTML = "";
   (data.trades || []).forEach(t => addTradeRow(tradesEl, t.date, t.teams, t.details));
+}
+
+function populateTeams2026RosterEditor(data) {
+  const el = document.getElementById("admin-teams2026-roster");
+  if (!el) return;
+  el.innerHTML = "";
+  const teams2026 = data.teams2026 || [];
+  if (!teams2026.length) {
+    el.innerHTML = "<p style=\"color: var(--muted); font-size: 0.82rem;\">No 2026 rosters yet &mdash; generate them above first.</p>";
+    return;
+  }
+  teams2026.forEach((t, ti) => {
+    const block = document.createElement("div");
+    block.className = "admin-roster2026-block";
+    let html = "<span class=\"admin-team-label\">" + t.team + "</span>";
+    (t.roster || []).forEach((p, pi) => {
+      html += "<div class=\"admin-roster2026-row\" data-team-idx=\"" + ti + "\" data-player-idx=\"" + pi + "\">" +
+        "<span class=\"admin-roster2026-player\">" + (p.player || "") + "</span>" +
+        "<input type=\"text\" class=\"admin-roster2026-pos\" placeholder=\"Pos\" value=\"" + (p.pos || "") + "\">" +
+        "<input type=\"text\" class=\"admin-roster2026-nfl\" placeholder=\"NFL\" value=\"" + (p.nfl || "") + "\">" +
+        "</div>";
+    });
+    block.innerHTML = html;
+    el.appendChild(block);
+  });
 }
 
 function addDraftResultRow(rowsWrap, round, pick, team, player) {
@@ -6808,11 +6871,24 @@ document.getElementById("admin-generate-teams2026-btn").addEventListener("click"
     statusEl.textContent = "No draft results yet — fill those in first.";
     return;
   }
+  const existingByKey = {};
+  (CURRENT_DATA.teams2026 || []).forEach(t => {
+    (t.roster || []).forEach(p => {
+      existingByKey[t.team + "||" + p.player] = p;
+    });
+  });
   const byTeam = {};
   results.forEach(r => {
     if (!r.team) return;
     if (!byTeam[r.team]) byTeam[r.team] = [];
-    byTeam[r.team].push({ player: r.player || "", pos: "", nfl: "", keeperCost: null, kept: false });
+    const prior = existingByKey[r.team + "||" + (r.player || "")];
+    byTeam[r.team].push({
+      player: r.player || "",
+      pos: prior ? (prior.pos || "") : "",
+      nfl: prior ? (prior.nfl || "") : "",
+      keeperCost: prior && prior.keeperCost != null ? prior.keeperCost : null,
+      kept: prior ? !!prior.kept : false
+    });
   });
   CURRENT_DATA.teams2026 = Object.keys(byTeam).map(teamName => {
     const existing = CURRENT_DATA.teams.find(t => t.team === teamName);
@@ -6823,7 +6899,8 @@ document.getElementById("admin-generate-teams2026-btn").addEventListener("click"
     };
   });
   renderTeams2026(CURRENT_DATA);
-  statusEl.textContent = "Generated " + CURRENT_DATA.teams2026.length + " team(s) from draft results — click Save Changes to publish. (Position, NFL team, and keeper cost are left blank; add those later if you want them shown.)";
+  populateTeams2026RosterEditor(CURRENT_DATA);
+  statusEl.textContent = "Generated " + CURRENT_DATA.teams2026.length + " team(s) from draft results — click Save Changes to publish. (Any position/NFL team already filled in below was kept.)";
 });
 
 document.getElementById("admin-move-player-btn").addEventListener("click", () => {
@@ -7018,6 +7095,17 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     if (team || player) newDraftResults.push({ round: round, pick: pick, team: team, player: player });
   });
   CURRENT_DATA.draftResults = newDraftResults;
+
+  document.querySelectorAll("#admin-teams2026-roster .admin-roster2026-row").forEach(row => {
+    const ti = Number(row.dataset.teamIdx);
+    const pi = Number(row.dataset.playerIdx);
+    const team = CURRENT_DATA.teams2026 && CURRENT_DATA.teams2026[ti];
+    const player = team && team.roster && team.roster[pi];
+    if (player) {
+      player.pos = row.querySelector(".admin-roster2026-pos").value.trim().toUpperCase();
+      player.nfl = row.querySelector(".admin-roster2026-nfl").value.trim().toUpperCase();
+    }
+  });
 
   const newTrades = [];
   document.querySelectorAll("#admin-trades .admin-trade-row").forEach(row => {
