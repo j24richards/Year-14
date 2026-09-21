@@ -1460,6 +1460,28 @@
   @media (max-width: 640px) {
     .admin-roster2026-row { grid-template-columns: 1fr 52px 52px; }
   }
+  .admin-roster-history-entry { margin-bottom: 8px; }
+  .admin-history-toggle-btn {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .admin-history-toggle-btn .admin-history-current-tag {
+    color: var(--red);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .admin-roster-history-detail {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 6px;
+  }
+  .admin-roster-history-detail .teams-grid { margin-top: 0; }
   .admin-remove-row-btn, .admin-remove-year-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -1909,6 +1931,13 @@
           <div id="admin-teams2026-roster"></div>
         </div>
       </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Roster History<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Every time you click Save Changes below with a changed 2026 roster, a timestamped snapshot is recorded here automatically. The 2026 Teams page always shows the newest one &mdash; click a date to view an older snapshot (read-only).</p>
+          <div id="admin-roster-history"></div>
+        </div>
+      </details>
       <button type="button" class="admin-btn admin-btn-secondary" id="admin-export-btn">Download Backup (JSON)</button>
       <button class="admin-btn" id="admin-save-btn">Save Changes</button>
       <p id="admin-status"></p>
@@ -1947,6 +1976,10 @@ let CURRENT_DATA = null;
 let FIRESTORE_DB = null;
 let FIRESTORE_AUTH = null;
 let FIRESTORE_REF = null;
+// Baseline snapshot of teams2026 as of the last load/save, so the Save
+// Changes handler can tell whether the roster actually changed and only
+// then record a new timestamped entry in teams2026History.
+let LAST_SAVED_TEAMS2026_JSON = null;
 
 /* ============================================================
    DEFAULT DATA — used the very first time the site loads (it
@@ -1973,6 +2006,10 @@ let FIRESTORE_REF = null;
      - teams2026          next year's rosters — leave empty until
                           after the draft, then fill in (same
                           shape as "teams")
+     - teams2026History   auto-maintained — a timestamped snapshot
+                          is appended here by the admin Save
+                          Changes handler whenever teams2026
+                          actually changes; don't hand-edit
      - currentSeason      standings for the year in progress
      - history            add a new entry once a season ends
    ============================================================ */
@@ -3373,6 +3410,7 @@ const DEFAULT_LEAGUE_DATA = {
     }
   ],
   "teams2026": [],
+  "teams2026History": [],
   "draftOrder2026": [
     { "originalTeam": "White Pool Covers", "newOwner": null },
     { "originalTeam": "Jimmy Jones Cutlets", "newOwner": null },
@@ -5319,6 +5357,7 @@ function buildAdminForm(data) {
     populateRenameTeamControls(data);
     populateRenameManagerControls(data);
     populateTeams2026RosterEditor(data);
+    populateRosterHistoryList(data);
 
     const historyEl = document.getElementById("admin-history");
   historyEl.innerHTML = "";
@@ -5372,6 +5411,61 @@ function populateTeams2026RosterEditor(data) {
     });
     block.innerHTML = html;
     el.appendChild(block);
+  });
+}
+
+// Renders the "Roster History" admin list: one button per stored
+// teams2026History snapshot (newest first), each expanding in place to a
+// read-only team-card grid built with the same buildTeamCard() used by the
+// live 2026 Teams page, so an old snapshot looks exactly like it did then.
+function populateRosterHistoryList(data) {
+  const el = document.getElementById("admin-roster-history");
+  if (!el) return;
+  el.innerHTML = "";
+  const history = data.teams2026History || [];
+  if (!history.length) {
+    el.innerHTML = "<p style=\"color: var(--muted); font-size: 0.82rem;\">No snapshots yet &mdash; one is recorded automatically the next time you save a change to the 2026 rosters.</p>";
+    return;
+  }
+  const escHtmlAdmin = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // Newest first; the most recent entry is what's currently live on the
+  // 2026 Teams page, so it gets an explicit "Current" tag.
+  const ordered = history.map((snap, origIdx) => ({ snap, origIdx })).reverse();
+  ordered.forEach(({ snap, origIdx }, displayIdx) => {
+    const isCurrent = origIdx === history.length - 1;
+    const d = new Date(snap.timestamp);
+    const label = isNaN(d.getTime()) ? String(snap.timestamp) : d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+    const entry = document.createElement("div");
+    entry.className = "admin-roster-history-entry";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "admin-btn admin-btn-secondary admin-history-toggle-btn";
+    btn.innerHTML = "<span>" + escHtmlAdmin(label) + "</span>" + (isCurrent ? "<span class=\"admin-history-current-tag\">Current</span>" : "");
+    const detail = document.createElement("div");
+    detail.className = "admin-roster-history-detail";
+    detail.style.display = "none";
+    let built = false;
+    btn.addEventListener("click", () => {
+      const opening = detail.style.display === "none";
+      // Collapse any other open snapshot first so the list stays scannable.
+      el.querySelectorAll(".admin-roster-history-detail").forEach(d2 => { if (d2 !== detail) d2.style.display = "none"; });
+      if (opening) {
+        if (!built) {
+          const grid = document.createElement("div");
+          grid.className = "teams-grid";
+          (snap.teams || []).forEach(t => grid.appendChild(buildTeamCard(t)));
+          detail.appendChild(grid);
+          built = true;
+        }
+        detail.style.display = "block";
+      } else {
+        detail.style.display = "none";
+      }
+    });
+    entry.appendChild(btn);
+    entry.appendChild(detail);
+    el.appendChild(entry);
   });
 }
 
@@ -6727,6 +6821,7 @@ if (mockSearchInput) mockSearchInput.addEventListener("input", (e) => {
 
 function render(LEAGUE_DATA) {
   CURRENT_DATA = LEAGUE_DATA;
+  LAST_SAVED_TEAMS2026_JSON = JSON.stringify(LEAGUE_DATA.teams2026 || []);
   const leagueName = LEAGUE_DATA.leagueName || "League";
   document.getElementById("page-title").textContent = leagueName + " — Fantasy Football History";
   const pageHeadingEl = document.getElementById("page-heading");
@@ -7116,9 +7211,31 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   });
   CURRENT_DATA.trades = newTrades;
 
+  // Record a timestamped snapshot of the 2026 rosters whenever this save
+  // actually changes them, so past uploads can be recalled later from the
+  // Roster History section below. Comparing against LAST_SAVED_TEAMS2026_JSON
+  // (set at load time and after every save) avoids piling up duplicate
+  // snapshots on saves that don't touch the roster at all.
+  const teams2026Json = JSON.stringify(CURRENT_DATA.teams2026 || []);
+  const rosterChanged = teams2026Json !== LAST_SAVED_TEAMS2026_JSON;
+  if (rosterChanged) {
+    if (!Array.isArray(CURRENT_DATA.teams2026History)) CURRENT_DATA.teams2026History = [];
+    CURRENT_DATA.teams2026History.push({
+      timestamp: new Date().toISOString(),
+      teams: JSON.parse(teams2026Json)
+    });
+    // Cap history length so the Firestore document doesn't grow without
+    // bound over a season of edits — oldest snapshots roll off first.
+    const MAX_ROSTER_HISTORY = 50;
+    if (CURRENT_DATA.teams2026History.length > MAX_ROSTER_HISTORY) {
+      CURRENT_DATA.teams2026History = CURRENT_DATA.teams2026History.slice(-MAX_ROSTER_HISTORY);
+    }
+  }
+
   statusEl.textContent = "Saving…";
   try {
     await setDoc(FIRESTORE_REF, CURRENT_DATA);
+    if (rosterChanged) LAST_SAVED_TEAMS2026_JSON = teams2026Json;
     statusEl.textContent = "Saved! The site is now showing your changes.";
     document.getElementById("commish-note").textContent = CURRENT_DATA.commissionerNote;
     document.getElementById("updated-date").textContent = CURRENT_DATA.lastUpdated;
@@ -7131,6 +7248,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     renderTradesSection(CURRENT_DATA);
     renderTeamsGrid(CURRENT_DATA);
     renderTeams2026(CURRENT_DATA);
+    populateRosterHistoryList(CURRENT_DATA);
   } catch (err) {
     statusEl.textContent = "Save failed: " + err.message;
   }
