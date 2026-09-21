@@ -1445,20 +1445,29 @@
   .admin-roster2026-block .admin-team-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; display: block; }
   .admin-roster2026-row {
     display: grid;
-    grid-template-columns: 1fr 64px 64px;
-    gap: 8px;
+    grid-template-columns: 1fr 56px 56px 24px;
+    gap: 6px;
     align-items: center;
     margin-bottom: 6px;
   }
-  .admin-roster2026-player {
-    font-size: 0.82rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .admin-roster2026-row input { text-align: center; font-size: 0.82rem; }
+  .admin-roster2026-player-input { text-align: left !important; }
+  .admin-roster2026-remove-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    width: 24px;
+    height: 28px;
+    line-height: 1;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
   }
-  .admin-roster2026-row input { text-align: center; }
+  .admin-roster2026-remove-btn:hover { color: var(--red); border-color: var(--red); }
+  .admin-roster2026-add-btn { margin-top: 4px; }
   @media (max-width: 640px) {
-    .admin-roster2026-row { grid-template-columns: 1fr 52px 52px; }
+    .admin-roster2026-row { grid-template-columns: 1fr 46px 46px 22px; }
   }
   .admin-roster-history-entry { margin-bottom: 8px; }
   .admin-history-toggle-btn {
@@ -1927,7 +1936,7 @@
       <details class="card admin-details">
         <summary class="admin-summary">2026 Team Rosters &mdash; Position &amp; NFL Team<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fill in each player's position and NFL team so they show up on the 2026 Teams page. Generate the rosters above first.</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fill in each player's position and NFL team so they show up on the 2026 Teams page. Generate the rosters above first. Use the &times; to drop a player (waiver drop, bye trade-away, etc.) and &ldquo;+ Add Player&rdquo; to pick one up &mdash; this is also where you keep a roster current after waiver moves and trades, not just after the draft.</p>
           <div id="admin-teams2026-roster"></div>
         </div>
       </details>
@@ -5389,6 +5398,26 @@ function buildAdminForm(data) {
   (data.trades || []).forEach(t => addTradeRow(tradesEl, t.date, t.teams, t.details));
 }
 
+// Builds one editable roster row. keeperCost/kept ride along as data
+// attributes (not visible inputs) purely so a save can carry them forward
+// unchanged for a player who was already on the roster; a row added via
+// "+ Add Player" simply has neither, so it saves as a non-keeper addition
+// (waiver pickup, trade-in, etc.) — exactly what a roster move actually is.
+function buildRoster2026Row(p) {
+  const escAttr = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const row = document.createElement("div");
+  row.className = "admin-roster2026-row";
+  if (p.keeperCost != null) row.dataset.keeperCost = p.keeperCost;
+  if (p.kept) row.dataset.kept = "1";
+  row.innerHTML =
+    "<input type=\"text\" class=\"admin-roster2026-player-input\" placeholder=\"Player name\" value=\"" + escAttr(p.player) + "\">" +
+    "<input type=\"text\" class=\"admin-roster2026-pos\" placeholder=\"Pos\" value=\"" + escAttr(p.pos) + "\">" +
+    "<input type=\"text\" class=\"admin-roster2026-nfl\" placeholder=\"NFL\" value=\"" + escAttr(p.nfl) + "\">" +
+    "<button type=\"button\" class=\"admin-roster2026-remove-btn\" title=\"Remove player\">&times;</button>";
+  row.querySelector(".admin-roster2026-remove-btn").addEventListener("click", () => row.remove());
+  return row;
+}
+
 function populateTeams2026RosterEditor(data) {
   const el = document.getElementById("admin-teams2026-roster");
   if (!el) return;
@@ -5401,15 +5430,23 @@ function populateTeams2026RosterEditor(data) {
   teams2026.forEach((t, ti) => {
     const block = document.createElement("div");
     block.className = "admin-roster2026-block";
-    let html = "<span class=\"admin-team-label\">" + t.team + "</span>";
-    (t.roster || []).forEach((p, pi) => {
-      html += "<div class=\"admin-roster2026-row\" data-team-idx=\"" + ti + "\" data-player-idx=\"" + pi + "\">" +
-        "<span class=\"admin-roster2026-player\">" + (p.player || "") + "</span>" +
-        "<input type=\"text\" class=\"admin-roster2026-pos\" placeholder=\"Pos\" value=\"" + (p.pos || "") + "\">" +
-        "<input type=\"text\" class=\"admin-roster2026-nfl\" placeholder=\"NFL\" value=\"" + (p.nfl || "") + "\">" +
-        "</div>";
+    block.dataset.teamIdx = ti;
+    const label = document.createElement("span");
+    label.className = "admin-team-label";
+    label.textContent = t.team;
+    block.appendChild(label);
+    const rowsWrap = document.createElement("div");
+    rowsWrap.className = "admin-roster2026-rows";
+    (t.roster || []).forEach(p => rowsWrap.appendChild(buildRoster2026Row(p)));
+    block.appendChild(rowsWrap);
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "admin-btn admin-btn-secondary admin-roster2026-add-btn";
+    addBtn.textContent = "+ Add Player";
+    addBtn.addEventListener("click", () => {
+      rowsWrap.appendChild(buildRoster2026Row({ player: "", pos: "", nfl: "" }));
     });
-    block.innerHTML = html;
+    block.appendChild(addBtn);
     el.appendChild(block);
   });
 }
@@ -7191,15 +7228,25 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   });
   CURRENT_DATA.draftResults = newDraftResults;
 
-  document.querySelectorAll("#admin-teams2026-roster .admin-roster2026-row").forEach(row => {
-    const ti = Number(row.dataset.teamIdx);
-    const pi = Number(row.dataset.playerIdx);
+  // Rebuild each 2026 team's roster from its editor block rather than
+  // patching pos/nfl by index — the block now supports adding a player
+  // (waiver pickup / trade-in) and removing one (drop / trade-away), so the
+  // roster composition itself can change here, not just position/NFL text.
+  document.querySelectorAll("#admin-teams2026-roster .admin-roster2026-block").forEach(block => {
+    const ti = Number(block.dataset.teamIdx);
     const team = CURRENT_DATA.teams2026 && CURRENT_DATA.teams2026[ti];
-    const player = team && team.roster && team.roster[pi];
-    if (player) {
-      player.pos = row.querySelector(".admin-roster2026-pos").value.trim().toUpperCase();
-      player.nfl = row.querySelector(".admin-roster2026-nfl").value.trim().toUpperCase();
-    }
+    if (!team) return;
+    const newRoster = [];
+    block.querySelectorAll(".admin-roster2026-row").forEach(row => {
+      const player = row.querySelector(".admin-roster2026-player-input").value.trim();
+      if (!player) return; // an "+ Add Player" row left blank — ignore it
+      const pos = row.querySelector(".admin-roster2026-pos").value.trim().toUpperCase();
+      const nfl = row.querySelector(".admin-roster2026-nfl").value.trim().toUpperCase();
+      const keeperCost = row.dataset.keeperCost != null && row.dataset.keeperCost !== "" ? Number(row.dataset.keeperCost) : null;
+      const kept = row.dataset.kept === "1";
+      newRoster.push({ player: player, pos: pos, nfl: nfl, keeperCost: keeperCost, kept: kept });
+    });
+    team.roster = newRoster;
   });
 
   const newTrades = [];
