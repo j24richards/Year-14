@@ -5796,7 +5796,8 @@ const MOCK_STATE = {
   searchQuery: "",
   paused: false,
   viewingTeam: null,
-  soundEnabled: true
+  soundEnabled: true,
+  archetypes: {}
 };
 
 // Lightweight "you're on the clock" chime built with the Web Audio API --
@@ -6079,6 +6080,64 @@ function mockNeedWeight(round) {
   return Math.min(3.2, 1 + (Math.max(1, round) - 1) * 0.17);
 }
 
+// Real managers don't all draft the same way. Each bot gets assigned one of
+// these personality archetypes fresh at the start of every mock draft (see
+// mockAssignArchetypes, called from startMockDraft) so the ten teams pull in
+// different directions all the way through a single run -- and a different
+// mix from one mock to the next -- instead of every bot following the exact
+// same strategy. "bonus" is an additive score nudge per position, the same
+// scale as the round-based need bonus above, so a real lean can tip a close
+// call but never override an actual roster hole or a true elite talent.
+// "noise" scales how much per-pick luck (mockNoise, below) that team's
+// picks carry -- a "Value Hunter" sticks close to the model's evaluation, a
+// "Boom or Bust" manager gambles harder on upside and occasionally reaches.
+const MOCK_ARCHETYPES = {
+  "Balanced":     { bonus: {}, noise: 1 },
+  "Robust RB":    { bonus: { RB: 4, WR: -1.5 }, noise: 1 },
+  "Zero RB":      { bonus: { WR: 4, RB: -2 }, noise: 1 },
+  "QB Early":     { bonus: { QB: 5 }, noise: 1 },
+  "TE Premium":   { bonus: { TE: 5 }, noise: 1 },
+  "WR Hoarder":   { bonus: { WR: 3, TE: -1.5 }, noise: 1 },
+  "RB Hoarder":   { bonus: { RB: 3, WR: -1 }, noise: 1 },
+  "Value Hunter": { bonus: {}, noise: 0.6 },
+  "Boom or Bust": { bonus: {}, noise: 1.6 }
+};
+
+// Assigns every team one archetype for the whole draft. Called once per
+// mock draft start (never mid-draft), so a team's tendencies stay
+// consistent from pick 1 to the final round of that run.
+function mockAssignArchetypes(teamNames) {
+  const keys = Object.keys(MOCK_ARCHETYPES);
+  const map = {};
+  teamNames.forEach(name => { map[name] = keys[Math.floor(Math.random() * keys.length)]; });
+  return map;
+}
+
+// Sum of three uniforms, re-centered and scaled, approximates a bell curve
+// (Irwin-Hall) -- most picks land close to 0 (the model's raw evaluation
+// stands), with the occasional bigger reach or fall out in the tails,
+// instead of a flat coin-flip where every outcome from "spot on" to "way
+// off" is equally likely. This replaces the old uniform multiplicative
+// swing, which shook a top-ranked player around by more raw points than a
+// marginal one -- backwards from how real draft-day variance behaves.
+function mockNoise(scale) {
+  const u = Math.random() + Math.random() + Math.random();
+  return ((u - 1.5) / 1.5) * scale;
+}
+
+// Real drafts get "runs" -- once a couple of teams grab the same position
+// back to back, others start to worry it's drying up and follow suit, even
+// if it's a slight reach. Only looks at the last few picks actually made,
+// so a run fades back out once the position cools off again, same as a
+// real board.
+const MOCK_RUN_LOOKBACK = 4;
+const MOCK_RUN_THRESHOLD = 2;
+function mockPositionRunBonus(pos) {
+  const recent = MOCK_STATE.log.slice(-MOCK_RUN_LOOKBACK);
+  const count = recent.filter(r => r.pos === pos).length;
+  return count >= MOCK_RUN_THRESHOLD ? count * 1.5 : 0;
+}
+
 // Real drafters treat K/DEF as pure end-of-draft roster filler, no matter
 // where a raw ADP snapshot happens to rank a top option -- taking one early
 // costs a bench-depth pick at RB/WR/FLEX that's worth far more the rest of
@@ -6098,6 +6157,7 @@ function mockBestAvailable(teamName, round) {
   const lastPick = MOCK_STATE.pickList[MOCK_STATE.pickList.length - 1];
   const totalRounds = lastPick ? lastPick.round : (round || 1);
   const roundsRemaining = Math.max(0, totalRounds - (round || 1));
+  const archetype = MOCK_ARCHETYPES[(MOCK_STATE.archetypes || {})[teamName]] || MOCK_ARCHETYPES["Balanced"];
   const eligible = [];
   for (let i = 0; i < MOCK_STATE.available.length && eligible.length < MOCK_PICK_WINDOW; i++) {
     const p = MOCK_STATE.available[i];
@@ -6122,8 +6182,11 @@ function mockBestAvailable(teamName, round) {
       score += (have < target ? (target - have) * 3 : -5) * needWeight;
     }
 
-    // League-winner talents rarely fall far past their real draft slot.
-    if (entry.boardIndex < MOCK_ELITE_TIER) score += 6;
+    // League-winner talents rarely fall far past their real draft slot --
+    // and the closer to the very top of the board, the steeper that
+    // protection gets (a consensus top-5 player essentially never falls;
+    // a back-of-top-24 player occasionally does).
+    score += entry.boardIndex < 5 ? 14 : entry.boardIndex < 12 ? 9 : entry.boardIndex < MOCK_ELITE_TIER ? 5 : 0;
 
     // Real injury/availability risk-reward (see mockInjuryScoreAdjustment).
     score += mockInjuryScoreAdjustment(p);
@@ -6138,11 +6201,19 @@ function mockBestAvailable(teamName, round) {
     // depth in the middle-late rounds.
     score += mockPuntAdjustment(p.pos, roundsRemaining);
 
-    // Upside/downside and general human unpredictability: a multiplicative
-    // per-pick swing rather than a flat bonus, so it scales with how much
-    // is already riding on this pick instead of always moving the needle
-    // by the same fixed amount.
-    score = Math.max(0.5, score) * (0.5 + Math.random());
+    // This team's draft-day personality (see MOCK_ARCHETYPES) and whether
+    // the room is currently running on this position (see
+    // mockPositionRunBonus).
+    score += archetype.bonus[p.pos] || 0;
+    score += mockPositionRunBonus(p.pos);
+
+    // Upside/downside and general human unpredictability -- an additive,
+    // bell-shaped swing (see mockNoise) rather than a flat multiplier, and
+    // damped near the very top of the board so a true stud's evaluation
+    // barely moves pick to pick while two similarly-ranked fringe options
+    // can genuinely go either way. Scaled by this team's own archetype, so
+    // a "Boom or Bust" manager gambles harder than a "Value Hunter" does.
+    score += mockNoise((entry.boardIndex < 5 ? 2 : 5) * (archetype.noise || 1));
 
     if (score > bestScore) { bestScore = score; best = p; }
   });
@@ -6200,6 +6271,7 @@ function startMockDraft() {
   MOCK_STATE.active = true;
   MOCK_STATE.userTeam = MOCK_STATE.selectedTeam;
   MOCK_STATE.teamNames = teamNames;
+  MOCK_STATE.archetypes = mockAssignArchetypes(teamNames);
   MOCK_STATE.pickList = picks;
   MOCK_STATE.pickIndex = 0;
   const keptNames = getAllKeptPlayerNames(CURRENT_DATA);
