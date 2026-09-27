@@ -391,6 +391,12 @@
   .draft-grade-good { background: #1a8f3f; }
   .draft-grade-mid { background: #56637d; }
   .draft-grade-bad { background: #b3401a; }
+  .draft-grade-keeper { margin-left: 4px; }
+  .draft-grade-keeper .keeper-icon { font-size: 0.78em; margin-right: 3px; }
+  /* Left accent bar only -- marks a team's best value and biggest reach
+     without adding another word to the card. */
+  .draft-pick-best td:first-child { box-shadow: inset 3px 0 0 var(--keeper); }
+  .draft-pick-reach td:first-child { box-shadow: inset 3px 0 0 var(--injury-risk); }
   .team-badge {
     display: inline-flex;
     align-items: center;
@@ -4778,61 +4784,222 @@ function renderDraftOrderSection(data) {
   }
 }
 
-// Grades the real draft against this year's own ADP order (MOCK_DRAFT_POOL
-// is already ADP-sorted -- see mockBestAvailable's comment above it -- so a
-// player's index there doubles as their ADP rank with no separate lookup
-// table to keep in sync). A pick's "value" is adpRank minus the overall
-// pick number it was actually taken at: positive means it fell past where
-// ADP expected (good value), negative means it went earlier (a reach).
-// Skips any pick whose player isn't in this year's pool (e.g. a rookie
-// added after the pool was generated) rather than guessing at their ADP.
+// Draft and keeper grading.
+//
+// Two separate grades, because they measure two different skills:
+//   * Draft grade  -- did your live picks beat what was actually still on
+//                     the board at that point in the draft?
+//   * Keeper grade -- did keeping each player beat what that same draft
+//                     slot would otherwise have returned?
+//
+// Both are graded against the rest of the league rather than an absolute
+// number, and that isn't a cop-out -- it's the only way the number means
+// anything here. Nobody keeps a player who isn't worth his keeper cost, so
+// on an absolute scale every team's keepers grade out spectacular and the
+// grade says nothing. Same story on the draft side: a keeper league draws
+// from a shrunken player pool, so there's no outside yardstick it can be
+// honestly measured against. Comparing managers to each other is the
+// measurement that actually carries information.
+const DRAFT_GRADE_SMOOTHING = 12;
+const DRAFT_GRADE_BALANCE_WEIGHT = 0.015;
+const DRAFT_GRADE_MIN_PICKS = 5;
+const DRAFT_GRADE_MIN_KEEPERS = 2;
+
+function draftGradeMedian(values) {
+  const sorted = values.slice().sort((a, b) => a - b);
+  const n = sorted.length;
+  if (!n) return 0;
+  return n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+}
+
+// Median absolute deviation, rescaled to sit on the same footing as a
+// standard deviation. Used instead of a plain standard deviation so one
+// wild team can't stretch the curve for everyone else.
+function draftGradeSpread(values) {
+  const center = draftGradeMedian(values);
+  return draftGradeMedian(values.map(v => Math.abs(v - center))) * 1.4826;
+}
+
+// Drops each team's single best and single worst pick before averaging, so
+// one fluke steal (or one disaster) can't decide a grade by itself.
+function draftGradeTrimmedMean(values) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  const kept = sorted.length >= 5 ? sorted.slice(1, -1) : sorted;
+  return kept.reduce((a, b) => a + b, 0) / kept.length;
+}
+
+function draftGradeLetter(relative, spread) {
+  // The floor on the spread keeps a league where everyone drafted about
+  // the same from being blown up into fake A+s and Fs over nothing.
+  const z = relative / Math.max(spread, 0.02);
+  if (z >= 1.5) return "A+";
+  if (z >= 1.0) return "A";
+  if (z >= 0.5) return "B+";
+  if (z >= 0.15) return "B";
+  if (z >= -0.15) return "C";
+  if (z >= -0.5) return "D";
+  if (z >= -1.0) return "D-";
+  return "F";
+}
+
+function draftGradeClass(letter) {
+  if (letter === "A+" || letter === "A" || letter === "B+") return "good";
+  if (letter === "B" || letter === "C") return "mid";
+  return "bad";
+}
+
 function computeDraftGrades(data) {
-  const results = data.draftResults || [];
+  const results = (data.draftResults || []).filter(r => r && r.team && r.player);
   if (!results.length) return null;
-  const adpRankByName = {};
-  MOCK_DRAFT_POOL.forEach((p, i) => { adpRankByName[p.player] = i + 1; });
 
-  const picks = [];
-  results.forEach(r => {
-    if (!r.team || !r.player) return;
-    const round = Number(r.round);
-    // "pick" is already the overall pick number (1, 11, 21, ... for a
-    // 10-team league), not a pick-within-round -- this admin form has
-    // always stored it that way, so it's used as-is rather than
-    // recomputed from round + a within-round position.
-    const overallPick = Number(r.pick);
-    const adpRank = adpRankByName[parseDraftPlayerField(r.player).name];
-    if (!round || !overallPick || !adpRank) return;
-    picks.push({ team: r.team, player: r.player, round: round, overallPick: overallPick, adpRank: adpRank, value: adpRank - overallPick });
+  const norm = s => String(s || "").trim().toLowerCase();
+
+  const rawRankByName = {};
+  MOCK_DRAFT_POOL.forEach((p, i) => { rawRankByName[norm(p.player)] = i + 1; });
+
+  // Every player kept anywhere in the league is off the board before this
+  // draft starts, so they're stripped out and whoever is left is re-ranked.
+  // Without this every pick looks like a steal, because the ADP slots ahead
+  // of it are full of players who were never actually available.
+  const keptNames = new Set();
+  (data.keeperSelections || []).forEach(k => {
+    (k.players || []).forEach(p => keptNames.add(norm(p)));
   });
-  if (!picks.length) return null;
+  const draftablePool = MOCK_DRAFT_POOL.filter(p => !keptNames.has(norm(p.player)));
+  const adjRankByName = {};
+  const rawRankByAdjSlot = [];
+  draftablePool.forEach((p, i) => {
+    adjRankByName[norm(p.player)] = i + 1;
+    rawRankByAdjSlot[i] = rawRankByName[norm(p.player)];
+  });
+  const UNRANKED_ADJ = draftablePool.length + 1;
+  const UNRANKED_RAW = MOCK_DRAFT_POOL.length + 1;
 
-  const byTeam = {};
-  picks.forEach(p => { (byTeam[p.team] = byTeam[p.team] || []).push(p); });
+  // Value runs on a log curve rather than a straight difference in ADP
+  // slots, because those slots aren't worth the same amount. Landing the
+  // 2nd-ranked player instead of the 4th is a real gap; landing the 151st
+  // instead of the 153rd is nothing, and a plain subtraction calls them
+  // both "2". The curve also means early picks carry more weight than late
+  // ones on their own, with no separate round weighting bolted on top.
+  // The smoothing constant keeps the very top of the board from behaving
+  // like a cliff -- the best dozen or so players are effectively one tier,
+  // and taking the 3rd-ranked guy first overall isn't a blunder.
+  const C = DRAFT_GRADE_SMOOTHING;
+  const ordered = results.slice().sort((a, b) => Number(a.pick) - Number(b.pick));
 
-  // Bands tuned to a ~15-round draft, where most teams land within a few
-  // ADP-rank slots of neutral on average and only a consistent pattern of
-  // reaches or steals pushes a team to the extremes.
-  function letterGrade(avgValue) {
-    if (avgValue >= 8) return "A+";
-    if (avgValue >= 5) return "A";
-    if (avgValue >= 3) return "B+";
-    if (avgValue >= 1) return "B";
-    if (avgValue >= -1) return "C";
-    if (avgValue >= -3) return "D";
-    if (avgValue >= -5) return "D-";
-    return "F";
+  const livePicks = [];
+  const keeperPicks = [];
+  const rosterByTeam = {};
+  // Keepers sit in the draft results at the slot they cost, so live picks
+  // are only some of the pick numbers. Charging a live pick for its overall
+  // pick number would bill it for all the keeper slots too -- it gets
+  // measured against how many draftable players are actually gone instead.
+  let liveOrdinal = 0;
+  ordered.forEach(r => {
+    const parsed = parseDraftPlayerField(r.player);
+    const key = norm(parsed.name);
+    const pos = parsed.pos || "?";
+    rosterByTeam[r.team] = rosterByTeam[r.team] || {};
+    rosterByTeam[r.team][pos] = (rosterByTeam[r.team][pos] || 0) + 1;
+
+    if (keptNames.has(key)) {
+      // A keeper is judged on opportunity cost: what that slot would have
+      // returned had it been spent drafting instead of keeping.
+      const alternativeRaw = rawRankByAdjSlot[liveOrdinal] || UNRANKED_RAW;
+      const ownRaw = rawRankByName[key] || UNRANKED_RAW;
+      keeperPicks.push({
+        team: r.team,
+        player: r.player,
+        round: Number(r.round),
+        value: Math.log(alternativeRaw + C) - Math.log(ownRaw + C)
+      });
+    } else {
+      liveOrdinal++;
+      const adj = adjRankByName[key] || UNRANKED_ADJ;
+      livePicks.push({
+        team: r.team,
+        player: r.player,
+        round: Number(r.round),
+        value: Math.log(liveOrdinal + C) - Math.log(adj + C)
+      });
+    }
+  });
+  if (!livePicks.length) return null;
+
+  const liveByTeam = {};
+  livePicks.forEach(p => { (liveByTeam[p.team] = liveByTeam[p.team] || []).push(p); });
+  const keeperByTeam = {};
+  keeperPicks.forEach(p => { (keeperByTeam[p.team] = keeperByTeam[p.team] || []).push(p); });
+
+  // Roster shape counts for a little too: a team that spent everything on
+  // one position can grade out fine on value alone, which isn't a good
+  // draft. Targets are scaled to the roster actually drafted, and only
+  // shortfalls are counted, since a surplus somewhere is already showing up
+  // as a shortfall somewhere else.
+  const targetTotal = Object.keys(MOCK_ROSTER_TARGETS)
+    .reduce((s, pos) => s + MOCK_ROSTER_TARGETS[pos], 0);
+  function positionalDeficit(team) {
+    const counts = rosterByTeam[team] || {};
+    const size = Object.keys(counts).reduce((s, pos) => s + counts[pos], 0);
+    if (!size) return 0;
+    let deficit = 0;
+    Object.keys(MOCK_ROSTER_TARGETS).forEach(pos => {
+      const scaled = MOCK_ROSTER_TARGETS[pos] * size / targetTotal;
+      deficit += Math.max(0, scaled - (counts[pos] || 0));
+    });
+    return deficit;
   }
+
+  const teams = Object.keys(liveByTeam);
+  const draftScore = {};
+  teams.forEach(team => {
+    draftScore[team] = draftGradeTrimmedMean(liveByTeam[team].map(p => p.value))
+      - DRAFT_GRADE_BALANCE_WEIGHT * positionalDeficit(team);
+  });
+  // Centered on the median rather than the average so a couple of standout
+  // drafts don't drag the midpoint up and bury everyone else in Ds.
+  const draftCenter = draftGradeMedian(teams.map(t => draftScore[t]));
+  const draftSpread = draftGradeSpread(teams.map(t => draftScore[t]));
+
+  const keeperTeams = Object.keys(keeperByTeam)
+    .filter(t => keeperByTeam[t].length >= DRAFT_GRADE_MIN_KEEPERS);
+  const keeperScore = {};
+  keeperTeams.forEach(team => {
+    keeperScore[team] = draftGradeTrimmedMean(keeperByTeam[team].map(p => p.value));
+  });
+  const keeperCenter = draftGradeMedian(keeperTeams.map(t => keeperScore[t]));
+  const keeperSpread = draftGradeSpread(keeperTeams.map(t => keeperScore[t]));
+
+  // A team with only a couple of live picks left after keepers doesn't have
+  // enough of a sample to grade fairly, so it just doesn't get one.
   const teamGrades = {};
-  Object.keys(byTeam).forEach(team => {
-    const teamPicks = byTeam[team];
-    const avgValue = teamPicks.reduce((s, p) => s + p.value, 0) / teamPicks.length;
-    teamGrades[team] = { avgValue: avgValue, grade: letterGrade(avgValue), picks: teamPicks };
+  teams.forEach(team => {
+    const picks = liveByTeam[team];
+    if (picks.length < DRAFT_GRADE_MIN_PICKS) return;
+    const byValue = picks.slice().sort((a, b) => b.value - a.value);
+    teamGrades[team] = {
+      grade: draftGradeLetter(draftScore[team] - draftCenter, draftSpread),
+      avgValue: draftScore[team] - draftCenter,
+      pickCount: picks.length,
+      bestPick: byValue[0],
+      worstPick: byValue[byValue.length - 1]
+    };
   });
 
-  return {
-    teamGrades: teamGrades
-  };
+  const keeperGrades = {};
+  keeperTeams.forEach(team => {
+    const picks = keeperByTeam[team];
+    const byValue = picks.slice().sort((a, b) => b.value - a.value);
+    keeperGrades[team] = {
+      grade: draftGradeLetter(keeperScore[team] - keeperCenter, keeperSpread),
+      avgValue: keeperScore[team] - keeperCenter,
+      keeperCount: picks.length,
+      bestKeeper: byValue[0]
+    };
+  });
+
+  return { teamGrades: teamGrades, keeperGrades: keeperGrades };
 }
 
 function renderDraftResults(data) {
@@ -4854,12 +5021,22 @@ function renderDraftResults(data) {
       const card = document.createElement("div");
       card.className = "team-card";
       const teamGrade = grades && grades.teamGrades[teamName];
+      const keeperGrade = grades && grades.keeperGrades && grades.keeperGrades[teamName];
       const gradeBadge = teamGrade
-        ? " <span class=\"draft-grade draft-grade-" + (teamGrade.avgValue >= 1 ? "good" : teamGrade.avgValue <= -1 ? "bad" : "mid") + "\">" + teamGrade.grade + "</span>"
+        ? " <span class=\"draft-grade draft-grade-" + draftGradeClass(teamGrade.grade) + "\" title=\"Draft grade, against the rest of the league\">" + teamGrade.grade + "</span>"
         : "";
-      let html = "<h3>" + teamName + gradeBadge + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
+      const keeperBadge = keeperGrade
+        ? " <span class=\"draft-grade draft-grade-keeper draft-grade-" + draftGradeClass(keeperGrade.grade) + "\" title=\"Keeper grade, against the rest of the league\"><span class=\"keeper-icon\" aria-hidden=\"true\">&#128274;</span>" + keeperGrade.grade + "</span>"
+        : "";
+      let html = "<h3>" + teamName + gradeBadge + keeperBadge + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
       picks.forEach(p => {
-        html += "<tr><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
+        let rowAttr = "";
+        if (teamGrade && teamGrade.bestPick && teamGrade.bestPick.player === p.player) {
+          rowAttr = " class=\"draft-pick-best\" title=\"Best value of this team's picks\"";
+        } else if (teamGrade && teamGrade.worstPick && teamGrade.worstPick.player === p.player) {
+          rowAttr = " class=\"draft-pick-reach\" title=\"Biggest reach of this team's picks\"";
+        }
+        html += "<tr" + rowAttr + "><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
       });
       html += "</tbody></table>";
       card.innerHTML = html;
