@@ -1,0 +1,59 @@
+name: Refresh ADP from Yahoo
+
+# The draft grades score every pick against MOCK_DRAFT_POOL_RAW in index.html,
+# so that list is the yardstick -- if it goes stale, every grade quietly skews.
+# This refreshes it from Yahoo's current average draft position data.
+#
+# Scheduled for the preseason only, on purpose. Once your draft has happened,
+# refreshing ADP would move the yardstick underneath grades that are already
+# published, and last year's grades would change on their own. Let it lapse
+# after draft day; it picks back up next June.
+
+on:
+  schedule:
+    # 08:00 UTC every Monday, June through September.
+    - cron: "0 8 * 6-9 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Report what would change without committing"
+        type: boolean
+        default: true
+      pool_size:
+        description: "How many players to keep"
+        default: "250"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Refresh the ADP pool
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          POOL_SIZE: ${{ github.event.inputs.pool_size || '250' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: node scripts/refresh-adp.mjs
+
+      - name: Commit if the list changed
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          if [[ -z "$(git status --porcelain index.html)" ]]; then
+            echo "No change to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Refresh ADP pool from Yahoo"
+          git push
