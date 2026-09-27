@@ -1959,6 +1959,9 @@
           <p style="color: var(--muted); margin-top: 14px; font-size: 0.82rem;">Once this year's draft results below are filled in, archive them so the bots can start learning from this season too. Safe to click more than once -- it only adds picks that aren't archived yet.</p>
           <button type="button" class="admin-btn admin-btn-secondary" id="admin-archive-draft-btn">Archive This Year's Draft</button>
           <p id="admin-archive-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
+          <p style="color: var(--muted); margin-top: 14px; font-size: 0.82rem;">One-time fix: picks archived before this site correctly separated a player's name from their team/position were saved without a position, which silently blocks mimic mode. Safe to click any time -- it only touches picks that still need it.</p>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-repair-archive-btn">Repair Archived Positions</button>
+          <p id="admin-repair-archive-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
         </div>
       </details>
       <details class="card admin-details">
@@ -4783,7 +4786,6 @@ function renderDraftOrderSection(data) {
 function computeDraftGrades(data) {
   const results = data.draftResults || [];
   if (!results.length) return null;
-  const teamCount = (data.teams || []).length || 10;
   const adpRankByName = {};
   MOCK_DRAFT_POOL.forEach((p, i) => { adpRankByName[p.player] = i + 1; });
 
@@ -4791,10 +4793,13 @@ function computeDraftGrades(data) {
   results.forEach(r => {
     if (!r.team || !r.player) return;
     const round = Number(r.round);
-    const pickInRound = Number(r.pick);
-    const adpRank = adpRankByName[r.player];
-    if (!round || !pickInRound || !adpRank) return;
-    const overallPick = (round - 1) * teamCount + pickInRound;
+    // "pick" is already the overall pick number (1, 11, 21, ... for a
+    // 10-team league), not a pick-within-round -- this admin form has
+    // always stored it that way, so it's used as-is rather than
+    // recomputed from round + a within-round position.
+    const overallPick = Number(r.pick);
+    const adpRank = adpRankByName[parseDraftPlayerField(r.player).name];
+    if (!round || !overallPick || !adpRank) return;
     picks.push({ team: r.team, player: r.player, round: round, overallPick: overallPick, adpRank: adpRank, value: adpRank - overallPick });
   });
   if (!picks.length) return null;
@@ -6230,13 +6235,23 @@ function recordManagerChange(data, teamName, newManager, sinceYear) {
 // seasons -- draftResults2025 has no position data recorded and its team
 // names don't reliably map onto this year's teams, so guessing either
 // would risk attributing a tendency to the wrong person.
+// Draft results (and this site's own admin draft-entry form) store each
+// pick's player as "Name (Team - Pos)", not a bare name -- pulls the
+// pieces back apart. Falls back to treating the whole string as just the
+// name if it doesn't match that shape, so a hand-typed or older entry that
+// doesn't follow the pattern degrades gracefully instead of throwing.
+function parseDraftPlayerField(raw) {
+  const s = String(raw || "").trim();
+  const m = /^(.*)\s\(([^-()]+)\s-\s([^()]+)\)\s*$/.exec(s);
+  if (m) return { name: m[1].trim(), team: m[2].trim(), pos: m[3].trim() };
+  return { name: s, team: "", pos: "" };
+}
+
 function mockArchiveDraft(data, year) {
   const results = data.draftResults || [];
   if (!results.length) return { added: 0, message: "No draft results to archive yet." };
   data.draftArchive = data.draftArchive || [];
   const already = new Set(data.draftArchive.filter(e => e.year === year).map(e => e.team + "|" + e.round));
-  const posByName = {};
-  MOCK_DRAFT_POOL.forEach(p => { posByName[p.player] = p.pos; });
   let added = 0;
   results.forEach(r => {
     if (!r.team || !r.player) return;
@@ -6244,13 +6259,14 @@ function mockArchiveDraft(data, year) {
     if (already.has(key)) return;
     const manager = managerForTeamInYear(data, r.team, year);
     if (!manager) return;
+    const parsed = parseDraftPlayerField(r.player);
     data.draftArchive.push({
       year: year,
       team: r.team,
       manager: manager,
       round: Number(r.round) || r.round,
-      player: r.player,
-      pos: posByName[r.player] || ""
+      player: parsed.name,
+      pos: parsed.pos
     });
     already.add(key);
     added++;
@@ -6261,6 +6277,19 @@ function mockArchiveDraft(data, year) {
       ? ("Archived " + added + " pick(s) for " + year + " — click \"Save Changes\" at the bottom to publish.")
       : "Nothing new to archive."
   };
+}
+
+function mockRepairArchivePositions(data) {
+  const archive = data.draftArchive || [];
+  let fixed = 0;
+  archive.forEach(e => {
+    if (e.pos && !/\(.+\)/.test(e.player || "")) return;
+    const parsed = parseDraftPlayerField(e.player);
+    e.player = parsed.name;
+    if (parsed.pos) e.pos = parsed.pos;
+    fixed++;
+  });
+  return { fixed: fixed, message: fixed ? ("Repaired " + fixed + " archived pick(s) -- click \"Save Changes\" at the bottom to publish.") : "Nothing needed repair." };
 }
 
 // A manager's real draft-day positional lean, derived only from their own
@@ -7483,6 +7512,13 @@ document.getElementById("admin-archive-draft-btn").addEventListener("click", () 
   const statusEl = document.getElementById("admin-archive-status");
   if (!CURRENT_DATA) return;
   const result = mockArchiveDraft(CURRENT_DATA, MOCK_CURRENT_SEASON_YEAR);
+  statusEl.textContent = result.message;
+});
+
+document.getElementById("admin-repair-archive-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-repair-archive-status");
+  if (!CURRENT_DATA) return;
+  const result = mockRepairArchivePositions(CURRENT_DATA);
   statusEl.textContent = result.message;
 });
 
