@@ -1320,6 +1320,19 @@
     margin-bottom: 8px;
   }
   .admin-badge-row input { text-align: center; }
+  .admin-managerhistory-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-managerhistory-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .admin-managerhistory-row .admin-team-label { flex: 0 0 140px; }
+  .admin-managerhistory-row .admin-manager-history-text { flex: 1 1 200px; color: var(--muted); font-size: 0.82rem; }
+  .admin-managerhistory-row input { flex: 1 1 120px; }
   .admin-keeper-block {
     margin-bottom: 14px;
     padding-bottom: 14px;
@@ -1916,6 +1929,17 @@
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Add each pick once the draft happens.</p>
           <div id="admin-draftresults"></div>
           <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-draftresult-btn">+ Add Pick</button>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Mock Draft &mdash; Manager History<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">The mock draft bots learn a manager's real draft-day tendencies from their own past drafts once there are two or more seasons on file for them. If a team gets a genuinely new manager (not just a name correction -- use "Rename a Manager" above for that), record it here so their old picks stay with the old manager and the new person's bot starts fresh instead of inheriting someone else's habits.</p>
+          <div id="admin-managerhistory"></div>
+          <p id="admin-managerhistory-status" style="color: var(--muted); font-size: 0.82rem;"></p>
+          <p style="color: var(--muted); margin-top: 14px; font-size: 0.82rem;">Once this year's draft results below are filled in, archive them so the bots can start learning from this season too. Safe to click more than once -- it only adds picks that aren't archived yet.</p>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-archive-draft-btn">Archive This Year's Draft</button>
+          <p id="admin-archive-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
         </div>
       </details>
       <details class="card admin-details">
@@ -5321,7 +5345,14 @@ function populateRenameManagerControls(data) {
 // (not past seasons in history, which are a record of who managed at the
 // time).
 function renameManagerEverywhere(data, oldName, newName) {
-  (data.teams || []).forEach(t => { if (t.manager === oldName) t.manager = newName; });
+  (data.teams || []).forEach(t => {
+    if (t.manager === oldName) t.manager = newName;
+    // Same-person name correction, not an ownership change -- relabel
+    // every existing managerHistory entry that used the old name so the
+    // mock draft's manager-tendency lookups (keyed by name) still match
+    // this person's archived picks after the fix.
+    (t.managerHistory || []).forEach(h => { if (h.manager === oldName) h.manager = newName; });
+  });
   (data.teams2026 || []).forEach(t => { if (t.manager === oldName) t.manager = newName; });
 
   if (data.currentSeason && data.currentSeason.standings) {
@@ -5329,6 +5360,52 @@ function renameManagerEverywhere(data, oldName, newName) {
   }
 
   (data.keeperSelections || []).forEach(k => { if (k.manager === oldName) k.manager = newName; });
+
+  (data.draftArchive || []).forEach(e => { if (e.manager === oldName) e.manager = newName; });
+}
+
+// Renders the "Mock Draft -- Manager History" admin section: one row per
+// team showing who's drafted for them and since when (getManagerHistory),
+// plus a name + starting-year input and a "Record Change" button for
+// recording a genuine ownership change (a new person taking over the
+// team). This is deliberately separate from "Rename a Manager" above --
+// that tool corrects a name without touching history; this one adds a new
+// history entry and leaves every earlier one (and that manager's archived
+// picks) untouched, which is what lets the old manager's draft tendencies
+// stay on file even after someone else takes the team.
+function populateManagerHistoryControls(data) {
+  const el = document.getElementById("admin-managerhistory");
+  if (!el) return;
+  el.innerHTML = "";
+  data.teams.forEach(t => {
+    const history = getManagerHistory(data, t.team);
+    const historyText = history
+      .slice()
+      .sort((a, b) => a.sinceYear - b.sinceYear)
+      .map(h => h.manager + " (since " + h.sinceYear + ")")
+      .join(" → ");
+    const div = document.createElement("div");
+    div.className = "admin-managerhistory-row";
+    div.innerHTML = "<span class=\"admin-team-label\">" + t.team + "</span>" +
+      "<span class=\"admin-manager-history-text\">" + historyText + "</span>" +
+      "<input type=\"text\" class=\"admin-managerhistory-name-input\" placeholder=\"New manager name\">" +
+      "<input type=\"number\" class=\"admin-managerhistory-year-input\" placeholder=\"Year\" value=\"" + MOCK_CURRENT_SEASON_YEAR + "\" style=\"flex: 0 0 90px;\">" +
+      "<button type=\"button\" class=\"admin-btn admin-btn-secondary admin-managerhistory-record-btn\">Record Change</button>";
+    const nameInput = div.querySelector(".admin-managerhistory-name-input");
+    const yearInput = div.querySelector(".admin-managerhistory-year-input");
+    div.querySelector(".admin-managerhistory-record-btn").addEventListener("click", () => {
+      const statusEl = document.getElementById("admin-managerhistory-status");
+      const newManager = nameInput.value.trim();
+      const sinceYear = parseInt(yearInput.value, 10);
+      if (!newManager) { statusEl.textContent = "Enter the new manager's name first."; return; }
+      if (!sinceYear) { statusEl.textContent = "Enter the year they took over."; return; }
+      recordManagerChange(data, t.team, newManager, sinceYear);
+      buildAdminForm(data);
+      const statusEl2 = document.getElementById("admin-managerhistory-status");
+      statusEl2.textContent = "Recorded " + newManager + " as " + t.team + "'s manager starting " + sinceYear + " — click \"Save Changes\" at the bottom to publish. " + t.team + "'s mock draft bot will start fresh until " + newManager + " has two seasons of their own archived picks.";
+    });
+    el.appendChild(div);
+  });
 }
 
 function buildAdminForm(data) {
@@ -5365,6 +5442,7 @@ function buildAdminForm(data) {
     populateMoveRosterControls(data);
     populateRenameTeamControls(data);
     populateRenameManagerControls(data);
+    populateManagerHistoryControls(data);
     populateTeams2026RosterEditor(data);
     populateRosterHistoryList(data);
 
@@ -5911,6 +5989,124 @@ function mockCapsOk(roster, pos) {
 // mockCapsOk above, which this never overrides.
 const MOCK_ROSTER_TARGETS = { QB: 2, RB: 5, WR: 6, TE: 2, K: 1, DEF: 1 };
 
+// This season's year as a plain number -- seeds a team's manager history
+// the first time it's needed, and is the year a completed draft gets
+// archived under. Update this once each year alongside the other
+// hardcoded 2026 field names already throughout this file (draftOrder2026,
+// teams2026, etc.).
+const MOCK_CURRENT_SEASON_YEAR = 2026;
+
+// A team's manager history: who was actually drafting for this team, and
+// starting what year. Falls back to a single entry for the team's current
+// manager if none is recorded yet, so nothing needs a one-time migration
+// before this works. A genuine ownership change (a new person taking over
+// a team) is recorded from the Admin panel's "Mock Draft -- Manager
+// History" section; a same-person name correction should use "Rename a
+// Manager" instead, which now also relabels any existing history entries
+// (see renameManagerEverywhere).
+function getManagerHistory(data, teamName) {
+  const team = (data.teams || []).find(t => t.team === teamName);
+  if (!team) return [];
+  if (team.managerHistory && team.managerHistory.length) return team.managerHistory;
+  return [{ manager: team.manager, sinceYear: MOCK_CURRENT_SEASON_YEAR }];
+}
+
+// Which manager was actually drafting for a team in a given year -- the
+// most recent managerHistory entry whose sinceYear is at or before that
+// year. This is how an archived pick from a past season stays correctly
+// attributed even after the team has since changed hands.
+function managerForTeamInYear(data, teamName, year) {
+  const history = getManagerHistory(data, teamName).slice().sort((a, b) => a.sinceYear - b.sinceYear);
+  let manager = history.length ? history[0].manager : null;
+  history.forEach(h => { if (h.sinceYear <= year) manager = h.manager; });
+  return manager;
+}
+
+// Records a genuine ownership change: appends a new managerHistory entry
+// (keeping every earlier one intact, so past picks stay with whoever
+// actually made them) and updates the team's current-facing manager name
+// everywhere else on the site.
+function recordManagerChange(data, teamName, newManager, sinceYear) {
+  const team = (data.teams || []).find(t => t.team === teamName);
+  if (!team) return;
+  const history = getManagerHistory(data, teamName).slice();
+  history.push({ manager: newManager, sinceYear: sinceYear });
+  team.managerHistory = history;
+  team.manager = newManager;
+}
+
+// One-click admin action: turns this year's finished draftResults
+// (round/team/player) into permanent draftArchive entries, one per pick,
+// tagged with whichever manager actually drafted for that team this year
+// (see managerForTeamInYear) and that player's position (looked up live
+// from this year's own MOCK_DRAFT_POOL, since draftResults itself doesn't
+// store position). Skips any round/team already archived for this year,
+// so it's safe to run again later in the season without duplicating
+// picks. Deliberately never runs automatically or backfills older
+// seasons -- draftResults2025 has no position data recorded and its team
+// names don't reliably map onto this year's teams, so guessing either
+// would risk attributing a tendency to the wrong person.
+function mockArchiveDraft(data, year) {
+  const results = data.draftResults || [];
+  if (!results.length) return { added: 0, message: "No draft results to archive yet." };
+  data.draftArchive = data.draftArchive || [];
+  const already = new Set(data.draftArchive.filter(e => e.year === year).map(e => e.team + "|" + e.round));
+  const posByName = {};
+  MOCK_DRAFT_POOL.forEach(p => { posByName[p.player] = p.pos; });
+  let added = 0;
+  results.forEach(r => {
+    if (!r.team || !r.player) return;
+    const key = r.team + "|" + r.round;
+    if (already.has(key)) return;
+    const manager = managerForTeamInYear(data, r.team, year);
+    if (!manager) return;
+    data.draftArchive.push({
+      year: year,
+      team: r.team,
+      manager: manager,
+      round: Number(r.round) || r.round,
+      player: r.player,
+      pos: posByName[r.player] || ""
+    });
+    already.add(key);
+    added++;
+  });
+  return {
+    added: added,
+    message: added
+      ? ("Archived " + added + " pick(s) for " + year + " — click \"Save Changes\" at the bottom to publish.")
+      : "Nothing new to archive."
+  };
+}
+
+// A manager's real draft-day positional lean, derived only from their own
+// archived picks (see mockArchiveDraft above) -- never a guess. Requires
+// picks spanning at least MOCK_MANAGER_MIN_YEARS distinct archived
+// draft-years before it kicks in, since one draft alone can't separate a
+// genuine tendency from that year's noise. Until a manager clears that
+// bar, their team's bot falls back to a random archetype (see
+// MOCK_ARCHETYPES below) same as any team with no history on file yet.
+const MOCK_MANAGER_MIN_YEARS = 2;
+function mockManagerProfile(data, manager) {
+  const entries = (data.draftArchive || []).filter(e => e.manager === manager && e.pos);
+  const years = new Set(entries.map(e => e.year));
+  if (years.size < MOCK_MANAGER_MIN_YEARS) return null;
+  const counts = {};
+  entries.forEach(e => { counts[e.pos] = (counts[e.pos] || 0) + 1; });
+  const total = entries.length;
+  const targetTotal = Object.values(MOCK_ROSTER_TARGETS).reduce((a, b) => a + b, 0);
+  const bonus = {};
+  Object.keys(MOCK_ROSTER_TARGETS).forEach(pos => {
+    const actual = (counts[pos] || 0) / total;
+    const expected = MOCK_ROSTER_TARGETS[pos] / targetTotal;
+    // Scaled to land in the same range as a hand-picked MOCK_ARCHETYPES
+    // bonus -- a manager who drafts a position roughly twice as often as
+    // baseline gets about the same nudge "Robust RB" gives by hand.
+    bonus[pos] = Math.max(-4, Math.min(6, (actual - expected) * 20));
+  });
+  return { bonus: bonus, noise: 1 };
+}
+
 // Bots don't draft pure best-ADP-available -- real people don't either.
 // Each pick is scored on a mix of ADP, this team's positional need, and a
 // bit of per-pick unpredictability standing in for a player's upside/
@@ -6105,11 +6301,21 @@ const MOCK_ARCHETYPES = {
 
 // Assigns every team one archetype for the whole draft. Called once per
 // mock draft start (never mid-draft), so a team's tendencies stay
-// consistent from pick 1 to the final round of that run.
-function mockAssignArchetypes(teamNames) {
+// consistent from pick 1 to the final round of that run. When the team's
+// current manager has two or more archived draft-years on file, their own
+// learned positional profile (mockManagerProfile) is used in place of a
+// random archetype -- that's the "bots start to mimic certain managers"
+// behavior. Everyone else (no manager set, or not enough history yet)
+// still gets a random archetype, same as before.
+function mockAssignArchetypes(teamNames, data) {
   const keys = Object.keys(MOCK_ARCHETYPES);
   const map = {};
-  teamNames.forEach(name => { map[name] = keys[Math.floor(Math.random() * keys.length)]; });
+  teamNames.forEach(name => {
+    const team = data && (data.teams || []).find(t => t.team === name);
+    const manager = team ? team.manager : null;
+    const learned = manager ? mockManagerProfile(data, manager) : null;
+    map[name] = learned || MOCK_ARCHETYPES[keys[Math.floor(Math.random() * keys.length)]];
+  });
   return map;
 }
 
@@ -6157,7 +6363,7 @@ function mockBestAvailable(teamName, round) {
   const lastPick = MOCK_STATE.pickList[MOCK_STATE.pickList.length - 1];
   const totalRounds = lastPick ? lastPick.round : (round || 1);
   const roundsRemaining = Math.max(0, totalRounds - (round || 1));
-  const archetype = MOCK_ARCHETYPES[(MOCK_STATE.archetypes || {})[teamName]] || MOCK_ARCHETYPES["Balanced"];
+  const archetype = (MOCK_STATE.archetypes || {})[teamName] || MOCK_ARCHETYPES["Balanced"];
   const eligible = [];
   for (let i = 0; i < MOCK_STATE.available.length && eligible.length < MOCK_PICK_WINDOW; i++) {
     const p = MOCK_STATE.available[i];
@@ -6271,7 +6477,7 @@ function startMockDraft() {
   MOCK_STATE.active = true;
   MOCK_STATE.userTeam = MOCK_STATE.selectedTeam;
   MOCK_STATE.teamNames = teamNames;
-  MOCK_STATE.archetypes = mockAssignArchetypes(teamNames);
+  MOCK_STATE.archetypes = mockAssignArchetypes(teamNames, CURRENT_DATA);
   MOCK_STATE.pickList = picks;
   MOCK_STATE.pickIndex = 0;
   const keptNames = getAllKeptPlayerNames(CURRENT_DATA);
@@ -7065,6 +7271,13 @@ document.getElementById("admin-add-draftresult-btn").addEventListener("click", (
 
 document.getElementById("admin-add-trade-btn").addEventListener("click", () => {
   addTradeRow(document.getElementById("admin-trades"), "", "", "");
+});
+
+document.getElementById("admin-archive-draft-btn").addEventListener("click", () => {
+  const statusEl = document.getElementById("admin-archive-status");
+  if (!CURRENT_DATA) return;
+  const result = mockArchiveDraft(CURRENT_DATA, MOCK_CURRENT_SEASON_YEAR);
+  statusEl.textContent = result.message;
 });
 
 document.getElementById("admin-generate-teams2026-btn").addEventListener("click", () => {
