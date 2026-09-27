@@ -376,17 +376,20 @@
   }
   .draft-grade {
     font-family: var(--font-display);
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    padding: 1px 7px;
+    padding: 2px 10px;
     border-radius: 999px;
-    border: 1px solid currentColor;
     text-transform: none;
     letter-spacing: 0.02em;
+    color: #fff;
+    line-height: 1.4;
+    display: inline-block;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   }
-  .draft-grade-good { color: var(--keeper); }
-  .draft-grade-mid { color: var(--muted); }
-  .draft-grade-bad { color: var(--injury-risk); }
+  .draft-grade-good { background: #1a8f3f; }
+  .draft-grade-mid { background: #56637d; }
+  .draft-grade-bad { background: #b3401a; }
   .team-badge {
     display: inline-flex;
     align-items: center;
@@ -1656,7 +1659,6 @@
   <section id="draft">
     <h2 id="draft-heading">Draft Results</h2>
     <p style="color: var(--muted); margin-top: -6px;">Every team's picks, round by round.</p>
-    <p id="draft-grades-callout" style="display:none; color: var(--muted); font-size: 0.88rem; margin: 0 0 14px;"></p>
     <div class="teams-grid" id="draft-grid"></div>
     <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
       Draft results will appear here once the commissioner enters them after the draft.
@@ -4827,11 +4829,8 @@ function computeDraftGrades(data) {
     teamGrades[team] = { avgValue: avgValue, grade: letterGrade(avgValue), picks: teamPicks };
   });
 
-  const sortedByValue = picks.slice().sort((a, b) => b.value - a.value);
   return {
-    teamGrades: teamGrades,
-    bestValue: sortedByValue[0],
-    biggestReach: sortedByValue[sortedByValue.length - 1]
+    teamGrades: teamGrades
   };
 }
 
@@ -4841,22 +4840,9 @@ function renderDraftResults(data) {
   draftGrid.innerHTML = "";
   const draftEmptyNote = document.getElementById("draft-empty-note");
   const draftResults = data.draftResults || [];
-  const draftGradesCallout = document.getElementById("draft-grades-callout");
   if (draftResults.length) {
     draftEmptyNote.style.display = "none";
     const grades = computeDraftGrades(data);
-    if (draftGradesCallout) {
-      if (grades && grades.bestValue && grades.biggestReach) {
-        draftGradesCallout.style.display = "block";
-        draftGradesCallout.innerHTML =
-          "<strong>Best value:</strong> " + grades.bestValue.player + " to " + grades.bestValue.team +
-          " (Rd " + grades.bestValue.round + ", ADP rank " + grades.bestValue.adpRank + ") &nbsp;&nbsp; " +
-          "<strong>Biggest reach:</strong> " + grades.biggestReach.player + " to " + grades.biggestReach.team +
-          " (Rd " + grades.biggestReach.round + ", ADP rank " + grades.biggestReach.adpRank + ")";
-      } else {
-        draftGradesCallout.style.display = "none";
-      }
-    }
     // Team order: the site's canonical team list, with any team that only
     // appears in draftResults (shouldn't normally happen) tacked on the end.
     const teamOrder = data.teams.map(t => t.team);
@@ -4880,7 +4866,6 @@ function renderDraftResults(data) {
     });
   } else {
     draftEmptyNote.style.display = "block";
-    if (draftGradesCallout) draftGradesCallout.style.display = "none";
   }
 }
 
