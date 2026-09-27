@@ -374,29 +374,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .draft-grade-row {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin: 0 0 12px;
-  }
   .draft-grade {
     font-family: var(--font-display);
-    font-size: 1.05rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    padding: 3px 14px;
+    padding: 2px 10px;
     border-radius: 999px;
     text-transform: none;
     letter-spacing: 0.02em;
     color: #fff;
     line-height: 1.4;
     display: inline-block;
-    flex-shrink: 0;
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
-  }
-  .draft-grade-caption {
-    font-size: 0.78rem;
-    color: var(--muted);
   }
   .draft-grade-good { background: #1a8f3f; }
   .draft-grade-mid { background: #56637d; }
@@ -4864,10 +4853,10 @@ function renderDraftResults(data) {
       const card = document.createElement("div");
       card.className = "team-card";
       const teamGrade = grades && grades.teamGrades[teamName];
-      const gradeRow = teamGrade
-        ? "<div class=\"draft-grade-row\"><span class=\"draft-grade draft-grade-" + (teamGrade.avgValue >= 1 ? "good" : teamGrade.avgValue <= -1 ? "bad" : "mid") + "\">" + teamGrade.grade + "</span><span class=\"draft-grade-caption\">Draft grade &middot; avg ADP value " + (teamGrade.avgValue >= 0 ? "+" : "") + teamGrade.avgValue.toFixed(1) + "</span></div>"
+      const gradeBadge = teamGrade
+        ? " <span class=\"draft-grade draft-grade-" + (teamGrade.avgValue >= 1 ? "good" : teamGrade.avgValue <= -1 ? "bad" : "mid") + "\">" + teamGrade.grade + "</span>"
         : "";
-      let html = "<h3>" + teamName + "</h3>" + gradeRow + "<table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
+      let html = "<h3>" + teamName + gradeBadge + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
       picks.forEach(p => {
         html += "<tr><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
       });
