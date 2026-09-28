@@ -1509,6 +1509,13 @@
     align-items: center;
     margin-bottom: 8px;
   }
+  .admin-waiver-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr 1.4fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
   .admin-draftorder-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1517,7 +1524,7 @@
     margin-bottom: 8px;
   }
   @media (max-width: 640px) {
-    .admin-draftresult-row, .admin-trade-row, .admin-draftorder-row { grid-template-columns: 1fr; }
+    .admin-draftresult-row, .admin-trade-row, .admin-waiver-row, .admin-draftorder-row { grid-template-columns: 1fr; }
   }
   .admin-roster2026-block {
     margin-bottom: 14px;
@@ -1720,6 +1727,7 @@
       <button data-tab="draftorder">Draft Order</button>
       <button data-tab="mockdraft">Mock Draft</button>
       <button data-tab="trades">Trades</button>
+      <button data-tab="waivers">Waivers</button>
     </div>
   </div>
   <button data-tab="tradeanalyzer">Trade Analyzer</button>
@@ -1754,6 +1762,7 @@
     <button type="button" class="mobile-nav-item" data-tab="draftorder">Draft Order</button>
     <button type="button" class="mobile-nav-item" data-tab="mockdraft">Mock Draft</button>
     <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
+    <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
     <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
     <div class="mobile-nav-group-label">2025 Archive</div>
     <button type="button" class="mobile-nav-item" data-tab="teams">2025 Teams</button>
@@ -1931,6 +1940,18 @@
           <tr><th>Date</th><th>Teams Involved</th><th>Details</th></tr>
         </thead>
         <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="waivers">
+    <h2>Waivers</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Team</th><th>Added</th><th>Dropped</th></tr>
+        </thead>
+        <tbody id="waivers-body"></tbody>
       </table>
     </div>
   </section>
@@ -2174,6 +2195,13 @@
         <div class="admin-body">
           <div id="admin-trades"></div>
           <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-trade-btn">+ Add Trade</button>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Waivers<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <div id="admin-waivers"></div>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-waiver-btn">+ Add Waiver Move</button>
         </div>
       </details>
       <details class="card admin-details">
@@ -4429,6 +4457,7 @@ const DEFAULT_LEAGUE_DATA = {
     }
   ],
   "trades2025": [],
+  "waivers": [],
   "rulesGroups": [
     {
       "title": "League Settings",
@@ -6147,6 +6176,12 @@ function buildAdminForm(data) {
     trades2025El.innerHTML = "";
     (data.trades2025 || []).forEach(t => addTradeRow(trades2025El, t.date, t.teams, t.details));
   }
+
+  const waiversEl = document.getElementById("admin-waivers");
+  if (waiversEl) {
+    waiversEl.innerHTML = "";
+    (data.waivers || []).forEach(w => addWaiverRow(waiversEl, w.date, w.team, w.added, w.dropped));
+  }
 }
 
 // Builds one editable roster row. keeperCost/kept ride along as data
@@ -6275,6 +6310,29 @@ function addTradeRow(rowsWrap, date, teams, details) {
   row.innerHTML = "<input type=\"text\" class=\"admin-trade-date\" placeholder=\"Date\" value=\"" + (date || "") + "\">" +
     "<input type=\"text\" class=\"admin-trade-teams\" placeholder=\"Teams involved\" value=\"" + (teams || "") + "\">" +
     "<input type=\"text\" class=\"admin-trade-details\" placeholder=\"Details\" value=\"" + (details || "") + "\">" +
+    "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
+  row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
+  rowsWrap.appendChild(row);
+}
+
+function renderWaiversSection(data) {
+  const waiversBody = document.getElementById("waivers-body");
+  if (!waiversBody) return;
+  waiversBody.innerHTML = "";
+  (data.waivers || []).forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + row.date + "</td><td>" + row.team + "</td><td>" + row.added + "</td><td>" + row.dropped + "</td>";
+    waiversBody.appendChild(tr);
+  });
+}
+
+function addWaiverRow(rowsWrap, date, team, added, dropped) {
+  const row = document.createElement("div");
+  row.className = "admin-waiver-row";
+  row.innerHTML = "<input type=\"text\" class=\"admin-waiver-date\" placeholder=\"Date\" value=\"" + (date || "") + "\">" +
+    "<input type=\"text\" class=\"admin-waiver-team\" placeholder=\"Team\" value=\"" + (team || "") + "\">" +
+    "<input type=\"text\" class=\"admin-waiver-added\" placeholder=\"Added\" value=\"" + (added || "") + "\">" +
+    "<input type=\"text\" class=\"admin-waiver-dropped\" placeholder=\"Dropped\" value=\"" + (dropped || "") + "\">" +
     "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
   row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
   rowsWrap.appendChild(row);
@@ -7906,6 +7964,7 @@ function render(LEAGUE_DATA) {
   });
 
   renderTradesSection(LEAGUE_DATA);
+  renderWaiversSection(LEAGUE_DATA);
   renderTradeAnalyzer(LEAGUE_DATA);
 
   const rulesGrid = document.getElementById("rules-grid");
@@ -8037,6 +8096,10 @@ document.getElementById("admin-add-trade-btn").addEventListener("click", () => {
 
 document.getElementById("admin-add-trade2025-btn").addEventListener("click", () => {
   addTradeRow(document.getElementById("admin-trades2025"), "", "", "");
+});
+
+document.getElementById("admin-add-waiver-btn").addEventListener("click", () => {
+  addWaiverRow(document.getElementById("admin-waivers"), "", "", "", "");
 });
 
 document.getElementById("admin-archive-draft-btn").addEventListener("click", () => {
@@ -8327,6 +8390,16 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   });
   CURRENT_DATA.trades2025 = newTrades2025;
 
+  const newWaivers = [];
+  document.querySelectorAll("#admin-waivers .admin-waiver-row").forEach(row => {
+    const date = row.querySelector(".admin-waiver-date").value.trim();
+    const team = row.querySelector(".admin-waiver-team").value.trim();
+    const added = row.querySelector(".admin-waiver-added").value.trim();
+    const dropped = row.querySelector(".admin-waiver-dropped").value.trim();
+    if (team || added || dropped) newWaivers.push({ date: date, team: team, added: added, dropped: dropped });
+  });
+  CURRENT_DATA.waivers = newWaivers;
+
   // Record a timestamped snapshot of the 2026 rosters whenever this save
   // actually changes them, so past uploads can be recalled later from the
   // Roster History section below. Comparing against LAST_SAVED_TEAMS2026_JSON
@@ -8363,6 +8436,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     renderDraftOrderSection(CURRENT_DATA);
     renderDraftResults(CURRENT_DATA);
     renderTradesSection(CURRENT_DATA);
+    renderWaiversSection(CURRENT_DATA);
     renderTradeAnalyzer(CURRENT_DATA);
     renderTeamsGrid(CURRENT_DATA);
     renderTeams2026(CURRENT_DATA);
@@ -8666,7 +8740,15 @@ async function loadAndRender() {
   } catch (err) {
     console.error("Firebase load failed, using built-in defaults:", err);
     render(DEFAULT_LEAGUE_DATA);
-    syncNote.textContent = "Showing built-in defaults (couldn't reach the live data).";
+    syncNote.innerHTML = "Showing built-in defaults (couldn't reach the live data). <a href=\"#\" id=\"sync-retry-link\" style=\"color: var(--red); text-decoration: underline;\">Retry</a>";
+    const retryLink = document.getElementById("sync-retry-link");
+    if (retryLink) {
+      retryLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        syncNote.textContent = "Retrying…";
+        loadAndRender();
+      });
+    }
   }
 }
 
