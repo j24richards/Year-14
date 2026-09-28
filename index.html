@@ -505,6 +505,21 @@
     border-radius: 999px;
     padding: 1px 8px;
   }
+  .matchup-cell {
+    font-size: 0.76rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .matchup-opp {
+    display: block;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .matchup-weather {
+    display: block;
+    color: var(--muted);
+  }
+  .matchup-empty { color: var(--border); }
   .team-card .pos-group td {
     font-size: 0.7rem;
     font-weight: 700;
@@ -4805,6 +4820,64 @@ function renderCountdown() {
   document.getElementById("countdown-label").textContent = countdown.label;
 }
 
+// Live "this week's NFL matchup + weather" for each 2026 roster, from
+// ESPN's public scoreboard endpoint (no API key). null = not fetched yet,
+// {} = fetch attempted and failed (browser CORS block, ESPN down, etc.) --
+// either way, matchup cells just stay blank rather than erroring.
+let NFL_WEEK_MATCHUPS = null;
+
+// ESPN's team abbreviations mostly match what's already stored on each
+// roster (CHI, KC, LAC, ...), but a couple differ -- add to this map if
+// another team ever fails to show a matchup.
+const NFL_ABBR_TO_ESPN = { WAS: "WSH" };
+
+async function fetchWeeklyMatchups() {
+  try {
+    const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const map = {};
+    (data.events || []).forEach(event => {
+      const comp = (event.competitions || [])[0];
+      if (!comp) return;
+      const competitors = comp.competitors || [];
+      const home = competitors.find(c => c.homeAway === "home");
+      const away = competitors.find(c => c.homeAway === "away");
+      if (!home || !away || !home.team || !away.team) return;
+      const weather = comp.weather || null;
+      map[home.team.abbreviation] = { opponent: away.team.abbreviation, homeAway: "vs", weather: weather };
+      map[away.team.abbreviation] = { opponent: home.team.abbreviation, homeAway: "@", weather: weather };
+    });
+    NFL_WEEK_MATCHUPS = map;
+  } catch (err) {
+    console.error("Weekly matchup/weather fetch failed:", err);
+    NFL_WEEK_MATCHUPS = {};
+  }
+  applyWeeklyMatchups();
+}
+
+function matchupCellHtml(nflTeam) {
+  if (!NFL_WEEK_MATCHUPS) return "";
+  const abbr = NFL_ABBR_TO_ESPN[nflTeam] || nflTeam;
+  const info = NFL_WEEK_MATCHUPS[abbr];
+  if (!info) return "<span class=\"matchup-empty\">&mdash;</span>";
+  let html = "<span class=\"matchup-opp\">" + info.homeAway + " " + info.opponent + "</span>";
+  if (info.weather && info.weather.temperature != null) {
+    html += "<span class=\"matchup-weather\">" + Math.round(info.weather.temperature) + "&deg;F, " + (info.weather.displayValue || "") + "</span>";
+  } else {
+    html += "<span class=\"matchup-weather\">Indoor</span>";
+  }
+  return html;
+}
+
+// Called once the live fetch resolves, to fill in matchup cells that were
+// rendered blank while the fetch was still in flight.
+function applyWeeklyMatchups() {
+  document.querySelectorAll(".matchup-cell[data-nfl-team]").forEach(cell => {
+    cell.innerHTML = matchupCellHtml(cell.dataset.nflTeam);
+  });
+}
+
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -4910,7 +4983,7 @@ document.getElementById("player-search-input").addEventListener("input", (e) => 
   searchPlayers(e.target.value);
 });
 
-function buildTeamCard(t) {
+function buildTeamCard(t, includeMatchup) {
   const card = document.createElement("div");
   card.className = "team-card";
   let html = "<h3>" + teamBadgeHtml(t.team) + "<span class=\"team-card-name\">" + t.team + "</span></h3>" +
@@ -4931,19 +5004,21 @@ function buildTeamCard(t) {
         otherGroup.push(p);
       }
     });
-    html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th></tr></thead><tbody>";
+    const colCount = includeMatchup ? 5 : 4;
+    html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th>" + (includeMatchup ? "<th>This Week</th>" : "") + "</tr></thead><tbody>";
     const renderRow = p => {
       const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
-      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td></tr>";
+      const matchupCell = includeMatchup ? "<td class=\"matchup-cell\" data-nfl-team=\"" + (p.nfl || "") + "\">" + matchupCellHtml(p.nfl) + "</td>" : "";
+      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td>" + matchupCell + "</tr>";
     };
     posOrder.forEach(pos => {
       if (groups[pos] && groups[pos].length) {
-        html += "<tr class=\"pos-group\"><td colspan=\"4\">" + pos + "</td></tr>";
+        html += "<tr class=\"pos-group\"><td colspan=\"" + colCount + "\">" + pos + "</td></tr>";
         groups[pos].forEach(p => { html += renderRow(p); });
       }
     });
     if (otherGroup.length) {
-      html += "<tr class=\"pos-group\"><td colspan=\"4\">Other</td></tr>";
+      html += "<tr class=\"pos-group\"><td colspan=\"" + colCount + "\">Other</td></tr>";
       otherGroup.forEach(p => { html += renderRow(p); });
     }
     html += "</tbody></table>";
@@ -4980,7 +5055,7 @@ function renderTeams2026(data) {
   if (teams2026.length) {
     teams2026EmptyNote.style.display = "none";
     teams2026.forEach(t => {
-      teams2026Grid.appendChild(buildTeamCard(t));
+      teams2026Grid.appendChild(buildTeamCard(t, true));
     });
   } else {
     teams2026EmptyNote.style.display = "block";
@@ -8816,6 +8891,11 @@ function loadAndRender() {
 }
 
 loadAndRender();
+
+// Independent of the league-data subscription above -- this week's NFL
+// matchups/weather come from ESPN, not Firestore, so it fetches on its own
+// and just fills in blank cells whenever it resolves.
+fetchWeeklyMatchups();
 </script>
 
 </body>
