@@ -4845,8 +4845,13 @@ async function fetchWeeklyMatchups() {
       const away = competitors.find(c => c.homeAway === "away");
       if (!home || !away || !home.team || !away.team) return;
       const weather = comp.weather || null;
-      map[home.team.abbreviation] = { opponent: away.team.abbreviation, homeAway: "vs", weather: weather };
-      map[away.team.abbreviation] = { opponent: home.team.abbreviation, homeAway: "@", weather: weather };
+      // venue.indoor is the real dome/no-dome signal -- a missing weather
+      // object on its own just means ESPN hasn't posted a forecast for
+      // that game yet (it only shows up within roughly a week of kickoff),
+      // not that the stadium is a dome.
+      const indoor = comp.venue ? !!comp.venue.indoor : false;
+      map[home.team.abbreviation] = { opponent: away.team.abbreviation, homeAway: "vs", weather: weather, indoor: indoor };
+      map[away.team.abbreviation] = { opponent: home.team.abbreviation, homeAway: "@", weather: weather, indoor: indoor };
     });
     NFL_WEEK_MATCHUPS = map;
   } catch (err) {
@@ -4862,10 +4867,10 @@ function matchupCellHtml(nflTeam) {
   const info = NFL_WEEK_MATCHUPS[abbr];
   if (!info) return "<span class=\"matchup-empty\">&mdash;</span>";
   let html = "<span class=\"matchup-opp\">" + info.homeAway + " " + info.opponent + "</span>";
-  if (info.weather && info.weather.temperature != null) {
-    html += "<span class=\"matchup-weather\">" + Math.round(info.weather.temperature) + "&deg;F, " + (info.weather.displayValue || "") + "</span>";
-  } else {
+  if (info.indoor) {
     html += "<span class=\"matchup-weather\">Indoor</span>";
+  } else if (info.weather && info.weather.temperature != null) {
+    html += "<span class=\"matchup-weather\">" + Math.round(info.weather.temperature) + "&deg;F, " + (info.weather.displayValue || "") + "</span>";
   }
   return html;
 }
