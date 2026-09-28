@@ -393,10 +393,6 @@
   .draft-grade-bad { background: #b3401a; }
   .draft-grade-keeper { margin-left: 4px; }
   .draft-grade-keeper .keeper-icon { font-size: 0.78em; margin-right: 3px; }
-  /* Left accent bar only -- marks a team's best value and biggest reach
-     without adding another word to the card. */
-  .draft-pick-best td:first-child { box-shadow: inset 3px 0 0 var(--keeper); }
-  .draft-pick-reach td:first-child { box-shadow: inset 3px 0 0 var(--injury-risk); }
   .team-badge {
     display: inline-flex;
     align-items: center;
@@ -4849,6 +4845,17 @@ function draftGradeClass(letter) {
   return "bad";
 }
 
+// The set of players kept anywhere in the league this year, normalized for
+// name matching. Shared so grading and the "this was a keeper" marker in the
+// draft results can never disagree about who was kept.
+function leagueKeptPlayerSet(data) {
+  const kept = new Set();
+  ((data && data.keeperSelections) || []).forEach(k => {
+    (k.players || []).forEach(p => kept.add(String(p || "").trim().toLowerCase()));
+  });
+  return kept;
+}
+
 function computeDraftGrades(data) {
   const results = (data.draftResults || []).filter(r => r && r.team && r.player);
   if (!results.length) return null;
@@ -4862,10 +4869,7 @@ function computeDraftGrades(data) {
   // draft starts, so they're stripped out and whoever is left is re-ranked.
   // Without this every pick looks like a steal, because the ADP slots ahead
   // of it are full of players who were never actually available.
-  const keptNames = new Set();
-  (data.keeperSelections || []).forEach(k => {
-    (k.players || []).forEach(p => keptNames.add(norm(p)));
-  });
+  const keptNames = leagueKeptPlayerSet(data);
   const draftablePool = MOCK_DRAFT_POOL.filter(p => !keptNames.has(norm(p.player)));
   const adjRankByName = {};
   const rawRankByAdjSlot = [];
@@ -5011,6 +5015,7 @@ function renderDraftResults(data) {
   if (draftResults.length) {
     draftEmptyNote.style.display = "none";
     const grades = computeDraftGrades(data);
+    const keptPlayers = leagueKeptPlayerSet(data);
     // Team order: the site's canonical team list, with any team that only
     // appears in draftResults (shouldn't normally happen) tacked on the end.
     const teamOrder = data.teams.map(t => t.team);
@@ -5030,13 +5035,10 @@ function renderDraftResults(data) {
         : "";
       let html = "<h3>" + teamName + gradeBadge + keeperBadge + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
       picks.forEach(p => {
-        let rowAttr = "";
-        if (teamGrade && teamGrade.bestPick && teamGrade.bestPick.player === p.player) {
-          rowAttr = " class=\"draft-pick-best\" title=\"Best value of this team's picks\"";
-        } else if (teamGrade && teamGrade.worstPick && teamGrade.worstPick.player === p.player) {
-          rowAttr = " class=\"draft-pick-reach\" title=\"Biggest reach of this team's picks\"";
-        }
-        html += "<tr" + rowAttr + "><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
+        const keptMark = keptPlayers.has(parseDraftPlayerField(p.player).name.trim().toLowerCase())
+          ? " <span class=\"keeper-icon\" title=\"Keeper\" aria-label=\"kept player\">&#128274;</span>"
+          : "";
+        html += "<tr><td>" + p.round + "</td><td>" + p.player + keptMark + "</td></tr>";
       });
       html += "</tbody></table>";
       card.innerHTML = html;
