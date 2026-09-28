@@ -5009,12 +5009,17 @@ function buildTeamCard(t, includeMatchup) {
         otherGroup.push(p);
       }
     });
-    const colCount = includeMatchup ? 5 : 4;
-    html += "<table><thead><tr><th>Player</th><th>NFL</th><th>Cost</th><th>Kept</th>" + (includeMatchup ? "<th>This Week</th>" : "") + "</tr></thead><tbody>";
+    // Keeper cost doesn't mean anything yet on the current (2026) roster --
+    // it's next year's keeper price, which only becomes relevant once this
+    // season is archived. Show it for archive rosters; show the live
+    // matchup/weather column instead for the current season.
+    const colCount = 4;
+    html += "<table><thead><tr><th>Player</th><th>NFL</th>" + (includeMatchup ? "" : "<th>Cost</th>") + "<th>Kept</th>" + (includeMatchup ? "<th>This Week</th>" : "") + "</tr></thead><tbody>";
     const renderRow = p => {
       const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
+      const costCell = includeMatchup ? "" : "<td>" + cost + "</td>";
       const matchupCell = includeMatchup ? "<td class=\"matchup-cell\" data-nfl-team=\"" + (p.nfl || "") + "\">" + matchupCellHtml(p.nfl) + "</td>" : "";
-      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td><td>" + cost + "</td><td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td>" + matchupCell + "</tr>";
+      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td>" + costCell + "<td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td>" + matchupCell + "</tr>";
     };
     posOrder.forEach(pos => {
       if (groups[pos] && groups[pos].length) {
