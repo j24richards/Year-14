@@ -393,6 +393,21 @@
     font-size: 0.85rem;
     margin-top: 4px;
   }
+  .countdown-card .countdown-yahoo-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--red);
+    text-decoration: none;
+    border: 1px solid var(--red);
+    border-radius: 6px;
+    padding: 6px 14px;
+  }
+  .countdown-card .countdown-yahoo-link:hover {
+    background: var(--red);
+    color: var(--panel);
+  }
   .teams-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1799,6 +1814,7 @@
         <span class="countdown-unit"><span class="countdown-num" id="countdown-seconds"></span><span class="countdown-suffix">s</span></span>
       </div>
       <div class="countdown-label" id="countdown-label"></div>
+      <a class="countdown-yahoo-link" href="https://football.fantasysports.yahoo.com/" target="_blank" rel="noopener noreferrer">Open Yahoo Fantasy Football &rarr;</a>
     </div>
     <h2 id="season-heading">Current Season Standings</h2>
     <div class="card" id="standings-card">
