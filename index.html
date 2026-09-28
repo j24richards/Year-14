@@ -1736,6 +1736,14 @@
     color: var(--text);
   }
   .ta-empty-note { color: var(--muted); font-style: italic; font-size: 0.85rem; }
+  .ta-suggest-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .ta-suggest-note { color: var(--muted); font-size: 0.85rem; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
@@ -2002,6 +2010,10 @@
           <select id="ta-team-b"></select>
           <div class="trade-analyzer-roster" id="ta-roster-b"></div>
         </div>
+      </div>
+      <div class="ta-suggest-row">
+        <button type="button" class="admin-btn admin-btn-secondary" id="ta-suggest-btn">Suggest a fair trade</button>
+        <span class="ta-suggest-note" id="ta-suggest-note"></span>
       </div>
       <div class="trade-analyzer-result" id="ta-result">
         <p class="ta-empty-note" id="ta-empty-note">Check at least one player on each side to see how the trade leans.</p>
@@ -5492,13 +5504,80 @@ function renderTradeAnalyzer(data) {
     document.getElementById("ta-verdict").textContent = lean;
   }
 
+  // Suggest a fair trade: try every reasonable 1-or-2-player package from
+  // each roster and pick whichever pairing brings the value gap closest to
+  // zero, using the same tradeAnalyzerPlayerValue scale as the manual tool.
+  function combosForRoster(roster) {
+    const combos = [];
+    roster.forEach(p => combos.push([p]));
+    for (let i = 0; i < roster.length; i++) {
+      for (let j = i + 1; j < roster.length; j++) {
+        combos.push([roster[i], roster[j]]);
+      }
+    }
+    return combos;
+  }
+
+  function suggestFairTrade() {
+    const note = document.getElementById("ta-suggest-note");
+    const teamAName = teamSelA.value, teamBName = teamSelB.value;
+    if (!teamAName || !teamBName || teamAName === teamBName) {
+      note.textContent = "Pick two different teams first.";
+      return;
+    }
+    const rosterA = rosterFor(teamAName);
+    const rosterB = rosterFor(teamBName);
+    if (!rosterA.length || !rosterB.length) {
+      note.textContent = "One of these teams doesn't have a roster on file.";
+      return;
+    }
+    const combosA = combosForRoster(rosterA);
+    const combosB = combosForRoster(rosterB);
+    let best = null;
+    combosA.forEach(subA => {
+      const valA = subA.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
+      combosB.forEach(subB => {
+        const valB = subB.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
+        const net = valB - valA; // from Team A's perspective: what A receives minus what A gives up
+        const score = Math.abs(net) + (subA.length + subB.length) * 0.01; // tiny nudge toward smaller packages when value is close
+        if (!best || score < best.score) best = { subA, subB, net, score };
+      });
+    });
+    if (!best) {
+      note.textContent = "Couldn't find a workable swap between these rosters.";
+      return;
+    }
+    const rosterAEl = document.getElementById("ta-roster-a");
+    const rosterBEl = document.getElementById("ta-roster-b");
+    const namesA = best.subA.map(p => p.player);
+    const namesB = best.subB.map(p => p.player);
+    function applyChecks(container, names) {
+      const roster = JSON.parse(container.dataset.roster || "[]");
+      container.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        const match = names.includes(roster[Number(cb.dataset.idx)].player);
+        cb.checked = match;
+        cb.closest(".ta-player-row").classList.toggle("checked", match);
+      });
+    }
+    applyChecks(rosterAEl, namesA);
+    applyChecks(rosterBEl, namesB);
+    updateResult();
+    const mag = Math.abs(best.net);
+    const quality = mag < 0.15 ? "a nearly dead-even swap" : mag < 0.4 ? "the closest balanced swap available" : "the closest match available, though it still leans one way";
+    note.textContent = teamAName + "'s " + namesA.join(" & ") + " for " + teamBName + "'s " + namesB.join(" & ") + " — " + quality + ".";
+  }
+
   function refreshBoth() {
     renderRoster(document.getElementById("ta-roster-a"), teamSelA.value);
     renderRoster(document.getElementById("ta-roster-b"), teamSelB.value);
     updateResult();
+    const note = document.getElementById("ta-suggest-note");
+    if (note) note.textContent = "";
   }
   teamSelA.addEventListener("change", refreshBoth);
   teamSelB.addEventListener("change", refreshBoth);
+  const suggestBtn = document.getElementById("ta-suggest-btn");
+  if (suggestBtn) suggestBtn.addEventListener("click", suggestFairTrade);
   refreshBoth();
 }
 
