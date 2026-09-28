@@ -5531,8 +5531,17 @@ function renderTradeAnalyzer(data) {
       note.textContent = "One of these teams doesn't have a roster on file.";
       return;
     }
-    const combosA = combosForRoster(rosterA);
-    const combosB = combosForRoster(rosterB);
+    // Kickers and defenses do get thrown into real trades, but never as the
+    // whole return -- nobody trades a TE straight-up for a kicker. So every
+    // package must include at least one skill-position player; a K/DEF can
+    // only ride along as the second piece.
+    const isSkillPos = p => p.pos !== "K" && p.pos !== "DEF" && p.pos !== "DST";
+    const combosA = combosForRoster(rosterA).filter(c => c.some(isSkillPos));
+    const combosB = combosForRoster(rosterB).filter(c => c.some(isSkillPos));
+    if (!combosA.length || !combosB.length) {
+      note.textContent = "Not enough skill-position players on one of these rosters to suggest a trade.";
+      return;
+    }
     let best = null;
     combosA.forEach(subA => {
       const valA = subA.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
@@ -5547,6 +5556,42 @@ function renderTradeAnalyzer(data) {
       note.textContent = "Couldn't find a workable swap between these rosters.";
       return;
     }
+    // Real trades aren't capped at two-for-two -- starting from that best core
+    // pairing, keep adding whichever remaining player (from either roster)
+    // tightens the value gap the most, for as long as it keeps helping. This
+    // lets the package grow to three, four, or more players a side when a
+    // bigger, more complex trade is what it actually takes to even things out.
+    const usedA = new Set(best.subA.map(p => p.player));
+    const usedB = new Set(best.subB.map(p => p.player));
+    let subA = best.subA.slice();
+    let subB = best.subB.slice();
+    let net = best.net;
+    let improved = true;
+    while (improved) {
+      improved = false;
+      let move = null;
+      rosterA.forEach(p => {
+        if (usedA.has(p.player)) return;
+        const newNet = net - tradeAnalyzerPlayerValue(data, p);
+        if (Math.abs(newNet) < Math.abs(net) && (!move || Math.abs(newNet) < Math.abs(move.newNet))) {
+          move = { side: "A", player: p, newNet };
+        }
+      });
+      rosterB.forEach(p => {
+        if (usedB.has(p.player)) return;
+        const newNet = net + tradeAnalyzerPlayerValue(data, p);
+        if (Math.abs(newNet) < Math.abs(net) && (!move || Math.abs(newNet) < Math.abs(move.newNet))) {
+          move = { side: "B", player: p, newNet };
+        }
+      });
+      if (move) {
+        if (move.side === "A") { subA.push(move.player); usedA.add(move.player.player); }
+        else { subB.push(move.player); usedB.add(move.player.player); }
+        net = move.newNet;
+        improved = true;
+      }
+    }
+    best = { subA: subA, subB: subB, net: net };
     const rosterAEl = document.getElementById("ta-roster-a");
     const rosterBEl = document.getElementById("ta-roster-b");
     const namesA = best.subA.map(p => p.player);
