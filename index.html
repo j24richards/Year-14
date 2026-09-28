@@ -2245,7 +2245,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -8242,6 +8242,31 @@ document.getElementById("admin-export-btn").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+// Re-renders every public-facing (non-admin-form) section from fresh data,
+// without touching the admin form itself -- used after a save, and by the
+// live Firestore subscription below so other open tabs/devices pick up a
+// commissioner's changes without needing a manual refresh. Deliberately
+// narrower than render(): render() also does one-time setup (an interval
+// timer, rules/settings cards appended without clearing first) that isn't
+// safe to repeat on every live update.
+function refreshPublicSections(data) {
+  document.getElementById("commish-note").textContent = data.commissionerNote;
+  document.getElementById("updated-date").textContent = data.lastUpdated;
+  document.getElementById("header-last-updated").textContent = formatLastUpdated(data.lastUpdated);
+  renderStandingsBody(data);
+  renderPowerRankings(data);
+  renderKeepersGrid(data);
+  renderHistorySection(data);
+  renderDraftOrderSection(data);
+  renderDraftResults(data);
+  renderTradesSection(data);
+  renderWaiversSection(data);
+  renderTradeAnalyzer(data);
+  renderTeamsGrid(data);
+  renderTeams2026(data);
+  populateRosterHistoryList(data);
+}
+
 document.getElementById("admin-save-btn").addEventListener("click", async () => {
   const statusEl = document.getElementById("admin-status");
   if (!CURRENT_DATA || !FIRESTORE_REF) {
@@ -8426,21 +8451,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     await setDoc(FIRESTORE_REF, CURRENT_DATA);
     if (rosterChanged) LAST_SAVED_TEAMS2026_JSON = teams2026Json;
     statusEl.textContent = "Saved! The site is now showing your changes.";
-    document.getElementById("commish-note").textContent = CURRENT_DATA.commissionerNote;
-    document.getElementById("updated-date").textContent = CURRENT_DATA.lastUpdated;
-    document.getElementById("header-last-updated").textContent = formatLastUpdated(CURRENT_DATA.lastUpdated);
-    renderStandingsBody(CURRENT_DATA);
-    renderPowerRankings(CURRENT_DATA);
-    renderKeepersGrid(CURRENT_DATA);
-    renderHistorySection(CURRENT_DATA);
-    renderDraftOrderSection(CURRENT_DATA);
-    renderDraftResults(CURRENT_DATA);
-    renderTradesSection(CURRENT_DATA);
-    renderWaiversSection(CURRENT_DATA);
-    renderTradeAnalyzer(CURRENT_DATA);
-    renderTeamsGrid(CURRENT_DATA);
-    renderTeams2026(CURRENT_DATA);
-    populateRosterHistoryList(CURRENT_DATA);
+    refreshPublicSections(CURRENT_DATA);
   } catch (err) {
     statusEl.textContent = "Save failed: " + err.message;
   }
@@ -8716,39 +8727,75 @@ document.getElementById("export-download-btn").addEventListener("click", async (
   }
 });
 
-async function loadAndRender() {
+let FIRESTORE_APP = null;
+let unsubscribeLeagueData = null;
+let hasLoadedOnce = false;
+
+// Subscribes to the live league-data document instead of fetching it once,
+// so any change a commissioner saves from the Admin panel shows up on
+// every other open tab/device without a manual refresh. The first snapshot
+// does a full render() (same as before); later snapshots only refresh the
+// public-facing sections via refreshPublicSections() -- never the admin
+// form itself, so nobody mid-edit there loses unsaved typing when someone
+// else's save comes in.
+function loadAndRender() {
   const syncNote = document.getElementById("sync-note");
   try {
-    const app = initializeApp(firebaseConfig);
-    FIRESTORE_DB = getFirestore(app);
-    FIRESTORE_AUTH = getAuth(app);
+    if (!FIRESTORE_APP) {
+      FIRESTORE_APP = initializeApp(firebaseConfig);
+      FIRESTORE_DB = getFirestore(FIRESTORE_APP);
+      FIRESTORE_AUTH = getAuth(FIRESTORE_APP);
+    }
     FIRESTORE_REF = doc(FIRESTORE_DB, "site", "leagueData");
-    const snap = await getDoc(FIRESTORE_REF);
 
-    if (snap.exists()) {
-      // Merge so any field added to DEFAULT_LEAGUE_DATA later (like
-      // draftOrder2026 / draftResults2025) shows up immediately even
-      // though the live Firestore document predates it. Anything the
-      // live document already has still wins.
-      render({ ...DEFAULT_LEAGUE_DATA, ...snap.data() });
-      syncNote.textContent = "Live data — synced.";
-    } else {
-      await setDoc(FIRESTORE_REF, DEFAULT_LEAGUE_DATA);
-      render(DEFAULT_LEAGUE_DATA);
-      syncNote.textContent = "Live data — synced (just initialized).";
-    }
+    if (unsubscribeLeagueData) unsubscribeLeagueData();
+    hasLoadedOnce = false;
+
+    unsubscribeLeagueData = onSnapshot(FIRESTORE_REF, async (snap) => {
+      try {
+        if (snap.exists()) {
+          // Merge so any field added to DEFAULT_LEAGUE_DATA later (like
+          // draftOrder2026 / draftResults2025) shows up immediately even
+          // though the live Firestore document predates it. Anything the
+          // live document already has still wins.
+          const merged = { ...DEFAULT_LEAGUE_DATA, ...snap.data() };
+          if (!hasLoadedOnce) {
+            render(merged);
+            hasLoadedOnce = true;
+          } else {
+            CURRENT_DATA = merged;
+            refreshPublicSections(merged);
+          }
+          syncNote.textContent = "Live data — synced.";
+        } else if (!hasLoadedOnce) {
+          await setDoc(FIRESTORE_REF, DEFAULT_LEAGUE_DATA);
+          render(DEFAULT_LEAGUE_DATA);
+          hasLoadedOnce = true;
+          syncNote.textContent = "Live data — synced (just initialized).";
+        }
+      } catch (err) {
+        console.error("Live data render failed:", err);
+      }
+    }, (err) => {
+      console.error("Firebase load failed, using built-in defaults:", err);
+      if (!hasLoadedOnce) {
+        render(DEFAULT_LEAGUE_DATA);
+        hasLoadedOnce = true;
+      }
+      syncNote.innerHTML = "Showing built-in defaults (couldn't reach the live data). <a href=\"#\" id=\"sync-retry-link\" style=\"color: var(--red); text-decoration: underline;\">Retry</a>";
+      const retryLink = document.getElementById("sync-retry-link");
+      if (retryLink) {
+        retryLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          syncNote.textContent = "Retrying…";
+          loadAndRender();
+        });
+      }
+    });
   } catch (err) {
-    console.error("Firebase load failed, using built-in defaults:", err);
+    console.error("Firebase setup failed, using built-in defaults:", err);
     render(DEFAULT_LEAGUE_DATA);
-    syncNote.innerHTML = "Showing built-in defaults (couldn't reach the live data). <a href=\"#\" id=\"sync-retry-link\" style=\"color: var(--red); text-decoration: underline;\">Retry</a>";
-    const retryLink = document.getElementById("sync-retry-link");
-    if (retryLink) {
-      retryLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        syncNote.textContent = "Retrying…";
-        loadAndRender();
-      });
-    }
+    syncNote.textContent = "Showing built-in defaults (couldn't reach the live data).";
   }
 }
 
