@@ -1804,6 +1804,7 @@
     </div>
   </div>
   <button data-tab="tradeanalyzer">Trade Analyzer</button>
+  <button data-tab="keeperplanner">Keeper Planner</button>
   <div class="nav-group">
     <button type="button" class="nav-group-toggle" data-group="archive2025" aria-haspopup="true" aria-expanded="false">2025 Archive <span aria-hidden="true">&#9662;</span></button>
     <div class="nav-group-menu" data-group-menu="archive2025">
@@ -1837,6 +1838,7 @@
     <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
     <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
     <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
+    <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
     <div class="mobile-nav-group-label">2025 Archive</div>
     <button type="button" class="mobile-nav-item" data-tab="teams">2025 Teams</button>
     <button type="button" class="mobile-nav-item" data-tab="draft2025">2025 Draft</button>
@@ -2031,9 +2033,25 @@
     </div>
   </section>
 
+  <section id="keeperplanner">
+    <h2>Keeper Planner</h2>
+    <p style="color: var(--muted); margin-top: -6px;">What each player on a roster would cost to keep next year, based on this season's draft, plus a picker that applies the league's same-round rule. Tick the players you'd keep and the costs update. Nothing here is saved.</p>
+    <div class="card">
+      <div class="admin-field">
+        <label for="kp-team">Team</label>
+        <select id="kp-team"></select>
+      </div>
+      <p id="kp-empty-note" style="color: var(--muted); font-style: italic; display: none;">Rosters haven't been loaded yet.</p>
+      <div style="overflow-x: auto;"><table id="kp-table"></table></div>
+      <div id="kp-summary" style="margin-top: 12px;"></div>
+      <p style="color: var(--muted); font-size: 0.82rem; margin-bottom: 0;">Market round and edge use the Trade Analyzer's preseason ranking, so they're a rough guide until next year's ADP is in. Always double-check a close call against the Rules page.</p>
+    </div>
+  </section>
+
   <section id="tradeanalyzer">
     <h2>Trade Analyzer</h2>
     <p style="color: var(--muted); margin-top: -6px;">Pick two teams and put players on the table for each side &mdash; this is a what-if tool, nothing here is saved. It values each player by how highly he's ranked, plus a bonus when his keeper slot is cheap for that ranking, so a star is never treated as equal to a bench player just because neither has a keeper discount.</p>
+    <p id="ta-live-note" style="color: var(--muted); font-size: 0.85rem; margin-top: -6px; display: none;"></p>
     <div class="card">
       <div class="trade-analyzer-sides">
         <div class="trade-analyzer-side">
@@ -2178,6 +2196,14 @@
             <button type="button" class="admin-btn" id="admin-standings-apply-btn" style="display: none;">Fill in the boxes above</button>
           </div>
           <div id="admin-standings-preview" style="margin-top: 10px; overflow-x: auto; font-size: 0.85rem;"></div>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">In-Season Points Per Game<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Optional. One player per line as <em>Player Name, points per game</em> (a tab between them works too). Paste as many rostered players as you can &mdash; the Trade Analyzer ranks each player against others at his position and blends that with the preseason ranking. Leave it empty to use preseason rankings only.</p>
+          <textarea id="admin-ppg" rows="8" placeholder="Saquon Barkley, 18.4&#10;CeeDee Lamb, 16.9"></textarea>
+          <p id="admin-ppg-status" style="color: var(--muted); font-size: 0.82rem;"></p>
         </div>
       </details>
       <details class="card admin-details">
@@ -5502,20 +5528,266 @@ function tradeAnalyzerRank(data, entry) {
   const round = entry.keeperCost != null ? entry.keeperCost : 15;
   return round <= 12 ? tradeAnalyzerKeeperMid(data, entry) : MOCK_DRAFT_POOL.length + 1;
 }
+// In-season points per game (optional, pasted in Admin as data.playerPpg).
+// Each player is ranked by ppg among the pasted players at his position, and
+// that positional rank is mapped onto the preseason ranking list: the 5th-best
+// RB by ppg is treated like the 5th-best RB on the preseason board. The result
+// is blended with the preseason rank (TRADE_LIVE_WEIGHT) so a hot or cold
+// stretch moves a player without erasing what the preseason market thought.
+// No ppg data (or too few players at a position) leaves everything unchanged.
+const TRADE_LIVE_WEIGHT = 0.4;
+const TRADE_LIVE_MIN_AT_POS = 6;
+let TRADE_LIVE_CACHE = null;
+function tradeLiveIndex(data) {
+  const src = data && data.playerPpg;
+  if (!src) return null;
+  if (TRADE_LIVE_CACHE && TRADE_LIVE_CACHE.src === src) return TRADE_LIVE_CACHE;
+  const key = n => String(n || "").trim().toLowerCase();
+  const posOf = {};
+  MOCK_DRAFT_POOL.forEach(p => { posOf[key(p.player)] = p.pos; });
+  (data.teams || []).forEach(t => (t.roster || []).forEach(p => { if (p.pos) posOf[key(p.player)] = p.pos; }));
+  const byPos = {};
+  Object.keys(src).forEach(name => {
+    const v = Number(src[name]);
+    const pos = posOf[key(name)];
+    if (!isFinite(v) || !pos || pos === "K" || pos === "DEF" || pos === "DST") return;
+    (byPos[pos] = byPos[pos] || []).push({ k: key(name), v: v });
+  });
+  const poolByPos = {};
+  MOCK_DRAFT_POOL.forEach((p, i) => { (poolByPos[p.pos] = poolByPos[p.pos] || []).push(i + 1); });
+  const liveRank = {};
+  Object.keys(byPos).forEach(pos => {
+    const list = byPos[pos].sort((a, b) => b.v - a.v);
+    if (list.length < TRADE_LIVE_MIN_AT_POS || !poolByPos[pos]) return;
+    list.forEach((e, i) => {
+      const slot = poolByPos[pos][Math.min(i, poolByPos[pos].length - 1)];
+      liveRank[e.k] = i < poolByPos[pos].length ? slot : MOCK_DRAFT_POOL.length + 1;
+    });
+  });
+  TRADE_LIVE_CACHE = { src: src, liveRank: liveRank, count: Object.keys(liveRank).length };
+  return TRADE_LIVE_CACHE;
+}
+function tradeAnalyzerEffRank(data, entry) {
+  const pre = tradeAnalyzerRank(data, entry);
+  const idx = tradeLiveIndex(data);
+  const live = idx && idx.liveRank[String(entry.player || "").trim().toLowerCase()];
+  if (!live) return pre;
+  const C = DRAFT_GRADE_SMOOTHING;
+  return Math.exp((1 - TRADE_LIVE_WEIGHT) * Math.log(pre + C) + TRADE_LIVE_WEIGHT * Math.log(live + C)) - C;
+}
 function tradeAnalyzerTalent(data, entry) {
   const C = DRAFT_GRADE_SMOOTHING;
-  return Math.log(MOCK_DRAFT_POOL.length + C) - Math.log(tradeAnalyzerRank(data, entry) + C);
+  return Math.log(MOCK_DRAFT_POOL.length + C) - Math.log(tradeAnalyzerEffRank(data, entry) + C);
 }
 function tradeAnalyzerPlayerValue(data, entry) {
   const C = DRAFT_GRADE_SMOOTHING;
-  const rank = tradeAnalyzerRank(data, entry);
+  const rank = tradeAnalyzerEffRank(data, entry);
   const surplus = Math.log(tradeAnalyzerKeeperMid(data, entry) + C) - Math.log(rank + C);
   let value = Math.max(0, tradeAnalyzerTalent(data, entry) + TRADE_KEEPER_WEIGHT * surplus);
   if (entry.pos === "K" || entry.pos === "DEF" || entry.pos === "DST") value *= 0.25;
   return value;
 }
 
+// ---- Keeper planner ---------------------------------------------------------
+// Next season's keeper cost for every player on a team's current roster, and
+// a picker that shows what a chosen set of keepers would really cost once the
+// league's same-round rule is applied. Costs come from this season's draft
+// results: a player keeps the round he was drafted in; a player kept this
+// year costs one round more; a waiver pickup costs the league's waiver round
+// (a player drafted by another team only keeps his draft round if he came by
+// trade -- logged trades are detected, otherwise tick "came by trade").
+// The market round uses the Trade Analyzer's preseason ranking, so treat the
+// "edge" column as a rough guide until next year's ADP is loaded.
+const KEEPER_PLANNER = { cap: 4, waiverRound: 15 };
+const KP_VIA_TRADE = new Set();
+const KP_PICKED = {};
+
+function kpNorm(s) {
+  return String(s || "").toLowerCase().replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim();
+}
+function kpOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// items: [{ key, base, rank }] -> same items plus final (round), moved, stuck.
+// Same-round claims: the better-ADP player moves up a round and anyone already
+// sitting there is bumped up one more; at round 1 the better player keeps it
+// and the other drops to the next free round.
+function keeperPlannerResolve(items) {
+  const out = items.map(i => ({ key: i.key, base: i.base, rank: i.rank, final: i.base, moved: false, stuck: false }));
+  const occ = {};
+  const bases = Array.from(new Set(out.map(i => i.base))).sort((a, b) => a - b);
+  const placeUp = (it, r) => {
+    if (r < 1) { it.stuck = true; it.final = 1; return; }
+    const prev = occ[r];
+    occ[r] = it;
+    if (it.final !== r) it.moved = true;
+    it.final = r;
+    if (prev && prev !== it) placeUp(prev, r - 1);
+  };
+  bases.forEach(r => {
+    const group = out.filter(i => i.base === r).sort((a, b) => a.rank - b.rank);
+    if (r === 1 && group.length > 1) {
+      occ[1] = group[0];
+      group[0].final = 1;
+      const reserved = new Set(out.map(i => i.base));
+      group.slice(1).forEach(it => {
+        let next = 2;
+        while (occ[next] || (reserved.has(next) && next !== r)) next++;
+        occ[next] = it;
+        it.final = next;
+        it.moved = true;
+      });
+      return;
+    }
+    const worst = group[group.length - 1];
+    placeUp(worst, r);
+    const rest = group.slice(0, -1);
+    // smallest move first so each lands on its own round
+    for (let j = rest.length - 1; j >= 0; j--) placeUp(rest[j], r - (rest.length - j));
+  });
+  return out;
+}
+
+function keeperPlannerContext(data) {
+  const draft = {};
+  const rows = data.draftArchive || [];
+  const year = rows.reduce((m, r) => Math.max(m, Number(r.year) || 0), 0);
+  rows.forEach(r => {
+    if ((Number(r.year) || 0) === year) draft[kpNorm(r.player)] = { round: Number(r.round), team: r.team };
+  });
+  const kept = new Set();
+  (data.keeperSelections || []).forEach(k => (k.players || []).forEach(p => kept.add(kpNorm(p))));
+  const traded = new Set();
+  (data.trades || []).forEach(t => (t.sendA || []).concat(t.sendB || []).forEach(p => traded.add(kpNorm(p))));
+  return { draft: draft, kept: kept, traded: traded };
+}
+function keeperPlannerCost(ctx, teamName, entry) {
+  const key = kpNorm(entry.player);
+  const d = ctx.draft[key];
+  const waiver = KEEPER_PLANNER.waiverRound;
+  const wasKept = ctx.kept.has(key);
+  let base, note = "", askTrade = false;
+  if (d && (d.team === teamName || ctx.traded.has(key) || KP_VIA_TRADE.has(key))) {
+    base = d.round;
+  } else if (d) {
+    base = wasKept ? d.round : waiver;
+    if (!wasKept) { note = "Drafted by " + d.team + " — counts as a waiver pickup unless it came by trade."; askTrade = true; }
+  } else {
+    base = waiver;
+    note = "Not drafted — waiver pickup.";
+  }
+  if (wasKept) {
+    base = Math.max(1, base - 1);
+    note = "Kept this year, so one round more expensive." + (note ? " " + note : "");
+  }
+  return { base: base, note: note, askTrade: askTrade };
+}
+
+function renderKeeperPlanner(data) {
+  const sel = document.getElementById("kp-team");
+  const table = document.getElementById("kp-table");
+  const summary = document.getElementById("kp-summary");
+  const empty = document.getElementById("kp-empty-note");
+  if (!sel || !table || !summary) return;
+  const teams = data.teams2026 || [];
+  const prevTeam = sel.value;
+  sel.innerHTML = "";
+  teams.forEach(t => {
+    const o = document.createElement("option");
+    o.value = t.team;
+    o.textContent = t.team;
+    sel.appendChild(o);
+  });
+  if (prevTeam && teams.some(t => t.team === prevTeam)) sel.value = prevTeam;
+  if (empty) empty.style.display = teams.length ? "none" : "";
+  const teamCount = (data.teams || []).length || 10;
+
+  function draw() {
+    table.innerHTML = "";
+    summary.innerHTML = "";
+    const team = teams.find(t => t.team === sel.value);
+    if (!team) return;
+    const ctx = keeperPlannerContext(data);
+    const picked = KP_PICKED[team.team] || (KP_PICKED[team.team] = new Set());
+    const rows = (team.roster || []).map(p => {
+      const c = keeperPlannerCost(ctx, team.team, p);
+      const ranked = !!tradeRankMap()[kpNorm(p.player)];
+      const rank = tradeAnalyzerRank(data, { player: p.player, keeperCost: c.base });
+      const market = ranked ? Math.ceil(rank / teamCount) : null;
+      return { p: p, key: kpNorm(p.player), base: c.base, note: c.note, askTrade: c.askTrade, rank: rank, market: market, edge: market == null ? null : c.base - market };
+    }).sort((a, b) => (b.edge == null ? -99 : b.edge) - (a.edge == null ? -99 : a.edge) || a.base - b.base);
+
+    const head = document.createElement("tr");
+    ["Keep", "Player", "Pos", "Cost next year", "Market round", "Edge", "Notes"].forEach(h => { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); });
+    table.appendChild(head);
+    const chosen = rows.filter(r => picked.has(r.key));
+    const resolved = keeperPlannerResolve(chosen.map(r => ({ key: r.key, base: r.base, rank: r.rank })));
+    const finalByKey = {};
+    resolved.forEach(r => { finalByKey[r.key] = r; });
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      const tdPick = document.createElement("td");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = picked.has(r.key);
+      cb.addEventListener("change", () => { if (cb.checked) picked.add(r.key); else picked.delete(r.key); draw(); });
+      tdPick.appendChild(cb);
+      tr.appendChild(tdPick);
+      const fin = finalByKey[r.key];
+      const costText = fin && fin.final !== r.base ? kpOrdinal(r.base) + " → " + kpOrdinal(fin.final) : kpOrdinal(r.base);
+      [r.p.player, r.p.pos || "", costText, r.market == null ? "—" : kpOrdinal(r.market), r.edge == null ? "—" : (r.edge > 0 ? "+" : "") + r.edge].forEach(v => { const td = document.createElement("td"); td.textContent = String(v); tr.appendChild(td); });
+      const tdNote = document.createElement("td");
+      tdNote.style.cssText = "font-size: 0.82rem; color: var(--muted);";
+      tdNote.textContent = r.note;
+      if (r.askTrade) {
+        const lab = document.createElement("label");
+        lab.style.cssText = "display: block; margin-top: 4px;";
+        const tcb = document.createElement("input");
+        tcb.type = "checkbox";
+        tcb.checked = KP_VIA_TRADE.has(r.key);
+        tcb.addEventListener("change", () => { if (tcb.checked) KP_VIA_TRADE.add(r.key); else KP_VIA_TRADE.delete(r.key); draw(); });
+        lab.appendChild(tcb);
+        lab.appendChild(document.createTextNode(" came by trade"));
+        tdNote.appendChild(lab);
+      }
+      tr.appendChild(tdNote);
+      table.appendChild(tr);
+    });
+
+    const cap = KEEPER_PLANNER.cap;
+    const p1 = document.createElement("p");
+    const edgeTotal = chosen.reduce((t, r) => t + (r.edge == null ? 0 : r.edge), 0);
+    p1.textContent = "Keepers picked: " + chosen.length + " of " + cap + (chosen.length > cap ? " — over the limit, drop " + (chosen.length - cap) + "." : ".") +
+      (chosen.length ? " Market edge on ranked picks: " + (edgeTotal > 0 ? "+" : "") + edgeTotal + " rounds." : "");
+    summary.appendChild(p1);
+    if (resolved.some(r => r.moved)) {
+      const p2 = document.createElement("p");
+      p2.style.color = "var(--muted)";
+      p2.textContent = "Some picks share a round, so the league's same-round rule moves them (shown as old → new in the cost column).";
+      summary.appendChild(p2);
+    }
+    if (resolved.some(r => r.stuck)) {
+      const p3 = document.createElement("p");
+      p3.style.color = "var(--muted)";
+      p3.textContent = "Two or more picks ran out of earlier rounds to move into — check the Rules page for how the league handles that.";
+      summary.appendChild(p3);
+    }
+  }
+  sel.onchange = draw;
+  draw();
+}
+
 function renderTradeAnalyzer(data) {
+  const liveNote = document.getElementById("ta-live-note");
+  if (liveNote) {
+    const idx = tradeLiveIndex(data);
+    liveNote.style.display = idx && idx.count ? "" : "none";
+    if (idx && idx.count) liveNote.textContent = "Values include in-season points per game for " + idx.count + " players, blended with the preseason ranking.";
+  }
   const teamSelA = document.getElementById("ta-team-a");
   const teamSelB = document.getElementById("ta-team-b");
   if (!teamSelA || !teamSelB) return;
@@ -6572,6 +6844,8 @@ let STANDINGS_IMPORT_PENDING = null;
 
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
+  const ppgEl = document.getElementById("admin-ppg");
+  if (ppgEl) ppgEl.value = Object.keys(data.playerPpg || {}).map(n => n + ", " + data.playerPpg[n]).join("\n");
   document.getElementById("admin-draftdate").value = data.draftDate || "";
   document.getElementById("admin-keepers-visible").checked = !!data.keepersVisible;
 
@@ -8743,6 +9017,7 @@ function render(LEAGUE_DATA) {
   renderTradesSection(LEAGUE_DATA);
   renderWaiversSection(LEAGUE_DATA);
   renderTradeAnalyzer(LEAGUE_DATA);
+  renderKeeperPlanner(LEAGUE_DATA);
 
   const rulesGrid = document.getElementById("rules-grid");
   LEAGUE_DATA.rulesGroups.forEach(group => {
@@ -9039,6 +9314,7 @@ function refreshPublicSections(data) {
   renderTradesSection(data);
   renderWaiversSection(data);
   renderTradeAnalyzer(data);
+  renderKeeperPlanner(data);
   renderTeamsGrid(data);
   renderTeams2026(data);
   populateRosterHistoryList(data);
@@ -9052,6 +9328,19 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     return;
   }
   CURRENT_DATA.commissionerNote = document.getElementById("admin-note").value;
+  const ppgBox = document.getElementById("admin-ppg");
+  if (ppgBox) {
+    const parsedPpg = {};
+    let skippedPpg = 0;
+    ppgBox.value.split(/\r?\n/).forEach(line => {
+      if (!line.trim()) return;
+      const m = line.match(/^(.+?)[,\t]\s*(-?\d+(?:\.\d+)?)\s*$/);
+      if (m) parsedPpg[m[1].trim()] = Number(m[2]); else skippedPpg++;
+    });
+    CURRENT_DATA.playerPpg = parsedPpg;
+    const ppgStatus = document.getElementById("admin-ppg-status");
+    if (ppgStatus) ppgStatus.textContent = Object.keys(parsedPpg).length + " players saved" + (skippedPpg ? "; " + skippedPpg + " line(s) skipped (use Name, number)." : ".");
+  }
   CURRENT_DATA.draftDate = document.getElementById("admin-draftdate").value;
   CURRENT_DATA.lastUpdated = new Date().toISOString().slice(0, 10);
 
