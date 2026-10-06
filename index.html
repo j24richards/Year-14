@@ -6827,7 +6827,7 @@ function populateManagerHistoryControls(data) {
 //           (Pct has 3 decimals and Games Back has 1, so they are skipped)
 //   streak  a W3 / L2 / T1 token, otherwise "-"
 function parseYahooStandings(text, standings) {
-  const norm = s => String(s || "").toLowerCase().replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim();
+  const norm = s => String(s || "").toLowerCase().replace(/['‘’`]/g, "").replace(/\s+/g, " ").trim();
   const teams = standings.map((row, idx) => ({ idx: idx, name: row.team, key: norm(row.team) }))
     .sort((a, b) => b.key.length - a.key.length);
   const blocks = {};
