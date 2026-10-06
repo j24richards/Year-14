@@ -5593,12 +5593,13 @@ function tradeAnalyzerPlayerValue(data, entry) {
 // a picker that shows what a chosen set of keepers would really cost once the
 // league's same-round rule is applied. Costs come from this season's draft
 // results: a player keeps the round he was drafted in; a player kept this
-// year costs one round more; a waiver pickup costs the league's waiver round
+// year costs one round more only where the league escalates (Hold My Rings,
+// not Year 14); a waiver pickup costs the league's waiver round
 // (a player drafted by another team only keeps his draft round if he came by
 // trade -- logged trades are detected, otherwise tick "came by trade").
 // The market round uses the Trade Analyzer's preseason ranking, so treat the
 // "edge" column as a rough guide until next year's ADP is loaded.
-const KEEPER_PLANNER = { cap: 4, waiverRound: 15 };
+const KEEPER_PLANNER = { cap: 4, waiverRound: 15, escalate: false };
 const KP_VIA_TRADE = new Set();
 const KP_PICKED = {};
 
@@ -5679,7 +5680,7 @@ function keeperPlannerCost(ctx, teamName, entry) {
     base = waiver;
     note = "Not drafted — waiver pickup.";
   }
-  if (wasKept) {
+  if (wasKept && KEEPER_PLANNER.escalate) {
     base = Math.max(1, base - 1);
     note = "Kept this year, so one round more expensive." + (note ? " " + note : "");
   }
