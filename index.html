@@ -2032,7 +2032,7 @@
 
   <section id="tradeanalyzer">
     <h2>Trade Analyzer</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Pick two teams and put players on the table for each side &mdash; this is a what-if tool, nothing here is saved. It weighs each player's real draft value against what they currently cost to keep, so a cheap keeper slot on a good player counts for more than the same player in an expensive slot.</p>
+    <p style="color: var(--muted); margin-top: -6px;">Pick two teams and put players on the table for each side &mdash; this is a what-if tool, nothing here is saved. It values each player by how highly he's ranked, plus a bonus when his keeper slot is cheap for that ranking, so a star is never treated as equal to a bench player just because neither has a keeper discount.</p>
     <div class="card">
       <div class="trade-analyzer-sides">
         <div class="trade-analyzer-side">
@@ -5450,20 +5450,57 @@ function renderTradesSection(data) {
 }
 
 // Trade Analyzer: a what-if value scale, not a stored grade. A player's
-// value here is how far his real draft-pool rank sits above (bargain) or
-// below (overpriced) the rank you'd expect for the round it costs to keep
-// him -- reusing the exact same log-curve and smoothing constant as the
-// draft grades, so "value" means the same thing across the whole site.
-function tradeAnalyzerPlayerValue(data, entry) {
-  const C = DRAFT_GRADE_SMOOTHING;
-  const norm = s => String(s || "").trim().toLowerCase();
-  const rawRankByName = {};
-  MOCK_DRAFT_POOL.forEach((p, i) => { rawRankByName[norm(p.player)] = i + 1; });
-  const ownRaw = rawRankByName[norm(entry.player)] || (MOCK_DRAFT_POOL.length + 1);
+// value has two parts, both on the same log curve and smoothing constant
+// as the draft grades:
+//   talent  -- how highly he ranks in the draft pool (ln(poolSize+C) -
+//              ln(rank+C)): the best players are worth the most no matter
+//              what they cost to keep, and the last-ranked player is ~0.
+//   surplus -- how far his rank sits above (bargain) or below (overpriced)
+//              the rank you'd expect for the round it costs to keep him.
+// Value = talent + TRADE_KEEPER_WEIGHT * surplus, floored at 0 (an
+// overpriced player can simply be dropped, so he's never a negative asset),
+// and scaled down to a quarter for kickers/defenses, who are throw-ins and
+// shouldn't be able to balance a trade on their own. The keeper discount is
+// deliberately a tiebreaker, not the driver: a Round-15 slot on a mid
+// player must never outweigh a clearly better player. Before this, value was
+// surplus alone, which scored a top QB with no keeper discount the same as
+// a bench receiver with none (both ~0) and let the "fair trade" suggester
+// pair them off.
+const TRADE_KEEPER_WEIGHT = 0.25;
+let TRADE_RANK_MAP = null;
+function tradeRankMap() {
+  if (!TRADE_RANK_MAP) {
+    TRADE_RANK_MAP = {};
+    MOCK_DRAFT_POOL.forEach((p, i) => { TRADE_RANK_MAP[String(p.player || "").trim().toLowerCase()] = i + 1; });
+  }
+  return TRADE_RANK_MAP;
+}
+function tradeAnalyzerKeeperMid(data, entry) {
   const teamCount = (data.teams || []).length || 10;
   const round = entry.keeperCost != null ? entry.keeperCost : 15;
-  const mid = (round - 1) * teamCount + (teamCount + 1) / 2;
-  return Math.log(mid + C) - Math.log(ownRaw + C);
+  return (round - 1) * teamCount + (teamCount + 1) / 2;
+}
+function tradeAnalyzerRank(data, entry) {
+  const ranked = tradeRankMap()[String(entry.player || "").trim().toLowerCase()];
+  if (ranked) return ranked;
+  // Not in the ranking list. A player with a real keeper cost (round 12 or
+  // better) was clearly valued around that slot, so assume neutral value
+  // there instead of calling him the worst player in the pool; everyone else
+  // (round 13+ / no keeper cost) is last.
+  const round = entry.keeperCost != null ? entry.keeperCost : 15;
+  return round <= 12 ? tradeAnalyzerKeeperMid(data, entry) : MOCK_DRAFT_POOL.length + 1;
+}
+function tradeAnalyzerTalent(data, entry) {
+  const C = DRAFT_GRADE_SMOOTHING;
+  return Math.log(MOCK_DRAFT_POOL.length + C) - Math.log(tradeAnalyzerRank(data, entry) + C);
+}
+function tradeAnalyzerPlayerValue(data, entry) {
+  const C = DRAFT_GRADE_SMOOTHING;
+  const rank = tradeAnalyzerRank(data, entry);
+  const surplus = Math.log(tradeAnalyzerKeeperMid(data, entry) + C) - Math.log(rank + C);
+  let value = Math.max(0, tradeAnalyzerTalent(data, entry) + TRADE_KEEPER_WEIGHT * surplus);
+  if (entry.pos === "K" || entry.pos === "DEF" || entry.pos === "DST") value *= 0.25;
+  return value;
 }
 
 function renderTradeAnalyzer(data) {
@@ -5579,48 +5616,76 @@ function renderTradeAnalyzer(data) {
       note.textContent = "Not enough skill-position players on one of these rosters to suggest a trade.";
       return;
     }
-    let best = null;
-    combosA.forEach(subA => {
-      const valA = subA.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
-      combosB.forEach(subB => {
-        const valB = subB.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
-        const net = valB - valA; // from Team A's perspective: what A receives minus what A gives up
-        const score = Math.abs(net) + (subA.length + subB.length) * 0.01; // tiny nudge toward smaller packages when value is close
-        if (!best || score < best.score) best = { subA, subB, net, score };
+    // A fair trade should be between comparable players, so a seed pairing
+    // has to clear two bars: each side's best skill player must be a real
+    // asset (not a roster-filler), and the two sides' best players must be
+    // close in talent (no star-for-scrub). If no pairing clears both bars,
+    // fall back to the closest value match and say so.
+    const MIN_BEST_TALENT = 0.9;   // roughly top-85 in the draft pool
+    const MAX_STAR_GAP = 0.35;     // best-player talent gap allowed between the two sides
+    const val = p => tradeAnalyzerPlayerValue(data, p);
+    const bestTalent = sub => Math.max.apply(null, sub.filter(isSkillPos).map(p => tradeAnalyzerTalent(data, p)));
+    // Whoever gives up MORE players must get the best player in the deal
+    // back -- nobody hands over their top guy plus extras for a lesser
+    // single player.
+    const passes = (subA, subB) => {
+      const bA = bestTalent(subA), bB = bestTalent(subB);
+      if (bA < MIN_BEST_TALENT || bB < MIN_BEST_TALENT || Math.abs(bA - bB) > MAX_STAR_GAP) return false;
+      if (subA.length > subB.length && bB < bA - 0.05) return false;
+      if (subB.length > subA.length && bA < bB - 0.05) return false;
+      return true;
+    };
+    const infoA = combosA.map(sub => ({ sub, val: sub.reduce((t, p) => t + val(p), 0), best: bestTalent(sub) }));
+    const infoB = combosB.map(sub => ({ sub, val: sub.reduce((t, p) => t + val(p), 0), best: bestTalent(sub) }));
+    function findSeed(strict) {
+      let found = null;
+      infoA.forEach(a => {
+        infoB.forEach(b => {
+          if (strict && !passes(a.sub, b.sub)) return;
+          const net = b.val - a.val; // from Team A's perspective: what A receives minus what A gives up
+          const score = Math.abs(net) + (a.sub.length + b.sub.length) * 0.02; // tiny nudge toward smaller packages when value is close
+          if (!found || score < found.score) found = { subA: a.sub, subB: b.sub, net, score };
+        });
       });
-    });
+      return found;
+    }
+    let strict = true;
+    let best = findSeed(true);
+    if (!best) {
+      strict = false;
+      best = findSeed(false);
+    }
     if (!best) {
       note.textContent = "Couldn't find a workable swap between these rosters.";
       return;
     }
-    // Real trades aren't capped at two-for-two -- starting from that best core
-    // pairing, keep adding whichever remaining player (from either roster)
-    // tightens the value gap the most, for as long as it keeps helping. This
-    // lets the package grow to three, four, or more players a side when a
-    // bigger, more complex trade is what it actually takes to even things out.
+    // Real trades aren't capped at two-for-two -- if the seed still leans
+    // noticeably one way, keep adding whichever remaining player tightens the
+    // gap the most (it has to help by a meaningful amount, and a strict
+    // suggestion has to stay between comparable stars). This lets the package
+    // grow to three or more players a side when that's what balancing takes.
     const usedA = new Set(best.subA.map(p => p.player));
     const usedB = new Set(best.subB.map(p => p.player));
     let subA = best.subA.slice();
     let subB = best.subB.slice();
     let net = best.net;
     let improved = true;
-    while (improved) {
+    while (improved && Math.abs(net) > 0.1) {
       improved = false;
       let move = null;
-      rosterA.forEach(p => {
-        if (usedA.has(p.player)) return;
-        const newNet = net - tradeAnalyzerPlayerValue(data, p);
-        if (Math.abs(newNet) < Math.abs(net) && (!move || Math.abs(newNet) < Math.abs(move.newNet))) {
-          move = { side: "A", player: p, newNet };
+      const tryAdd = (side, p) => {
+        const isA = side === "A";
+        const newNet = isA ? net - val(p) : net + val(p);
+        if (Math.abs(net) - Math.abs(newNet) < 0.05) return;
+        if (strict) {
+          const nA = isA ? subA.concat([p]) : subA;
+          const nB = isA ? subB : subB.concat([p]);
+          if (!passes(nA, nB)) return;
         }
-      });
-      rosterB.forEach(p => {
-        if (usedB.has(p.player)) return;
-        const newNet = net + tradeAnalyzerPlayerValue(data, p);
-        if (Math.abs(newNet) < Math.abs(net) && (!move || Math.abs(newNet) < Math.abs(move.newNet))) {
-          move = { side: "B", player: p, newNet };
-        }
-      });
+        if (!move || Math.abs(newNet) < Math.abs(move.newNet)) move = { side, player: p, newNet };
+      };
+      rosterA.forEach(p => { if (!usedA.has(p.player)) tryAdd("A", p); });
+      rosterB.forEach(p => { if (!usedB.has(p.player)) tryAdd("B", p); });
       if (move) {
         if (move.side === "A") { subA.push(move.player); usedA.add(move.player.player); }
         else { subB.push(move.player); usedB.add(move.player.player); }
@@ -5645,7 +5710,10 @@ function renderTradeAnalyzer(data) {
     applyChecks(rosterBEl, namesB);
     updateResult();
     const mag = Math.abs(best.net);
-    const quality = mag < 0.15 ? "a nearly dead-even swap" : mag < 0.4 ? "the closest balanced swap available" : "the closest match available, though it still leans one way";
+    const quality = !strict ? "the closest value match available, though neither roster has a comparable player to offer"
+      : mag < 0.15 ? "a nearly dead-even swap"
+      : mag < 0.4 ? "the closest balanced swap available"
+      : "the closest match available, though it still leans one way";
     note.textContent = teamAName + "'s " + namesA.join(" & ") + " for " + teamBName + "'s " + namesB.join(" & ") + " — " + quality + ".";
   }
 
