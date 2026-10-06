@@ -1586,6 +1586,30 @@
   }
   .admin-roster2026-remove-btn:hover { color: var(--red); border-color: var(--red); }
   .admin-roster2026-add-btn { margin-top: 4px; }
+  .admin-roster2026-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-bottom: 6px;
+  }
+  .admin-roster2026-block .admin-roster2026-head .admin-team-label { margin-bottom: 0; }
+  .admin-team-updated-badge {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .admin-team-updated-badge:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+  .admin-team-updated-badge:disabled { color: var(--muted); font-weight: 400; cursor: default; }
+  .admin-roster-progress { color: var(--muted); font-size: 0.82rem; margin: 0 0 12px; }
+  .admin-roster-progress strong { color: var(--text); }
   @media (max-width: 640px) {
     .admin-roster2026-row { grid-template-columns: 1fr 46px 46px 22px; }
   }
@@ -1611,6 +1635,17 @@
     margin-top: 6px;
   }
   .admin-roster-history-detail .teams-grid { margin-top: 0; }
+  .admin-history-meta {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 400;
+    margin-left: 8px;
+  }
+  .admin-history-changed { color: var(--muted); font-size: 0.8rem; margin: 0 0 10px; }
+  .team-card.history-card-highlight {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
   .admin-remove-row-btn, .admin-remove-year-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -2265,14 +2300,15 @@
       <details class="card admin-details">
         <summary class="admin-summary">2026 Team Rosters &mdash; Position &amp; NFL Team<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fill in each player's position and NFL team so they show up on the 2026 Teams page. Generate the rosters above first. Use the &times; to drop a player (waiver drop, bye trade-away, etc.) and &ldquo;+ Add Player&rdquo; to pick one up &mdash; this is also where you keep a roster current after waiver moves and trades, not just after the draft.</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Fill in each player's position and NFL team so they show up on the 2026 Teams page. Generate the rosters above first. Each team's badge shows when its roster last changed (click it to jump to that day in Roster History). Use the &times; to drop a player (waiver drop, bye trade-away, etc.) and &ldquo;+ Add Player&rdquo; to pick one up &mdash; this is also where you keep a roster current after waiver moves and trades, not just after the draft.</p>
+          <p class="admin-roster-progress" id="admin-roster-progress"></p>
           <div id="admin-teams2026-roster"></div>
         </div>
       </details>
       <details class="card admin-details">
         <summary class="admin-summary">Roster History<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Every time you click Save Changes below with a changed 2026 roster, a timestamped snapshot is recorded here automatically. The 2026 Teams page always shows the newest one &mdash; click a date to view an older snapshot (read-only).</p>
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Snapshots are grouped by day: each day shows the roster as of your last Save Changes that day, and lists which teams changed. The 2026 Teams page always shows the newest one &mdash; click a day to view an older snapshot (read-only). You can also click a team's &ldquo;Updated&rdquo; badge in 2026 Team Rosters to jump straight to the day it last changed.</p>
           <div id="admin-roster-history"></div>
         </div>
       </details>
@@ -5003,6 +5039,7 @@ document.getElementById("player-search-input").addEventListener("input", (e) => 
 function buildTeamCard(t, includeMatchup) {
   const card = document.createElement("div");
   card.className = "team-card";
+  card.dataset.team = t.team;
   let html = "<h3>" + teamBadgeHtml(t.team) + "<span class=\"team-card-name\">" + t.team + "</span></h3>" +
     "<div class=\"manager\">" + t.manager + "</div>";
   if (t.keepers2025 != null) {
@@ -6442,10 +6479,22 @@ function populateTeams2026RosterEditor(data) {
     const block = document.createElement("div");
     block.className = "admin-roster2026-block";
     block.dataset.teamIdx = ti;
+    const head = document.createElement("div");
+    head.className = "admin-roster2026-head";
     const label = document.createElement("span");
     label.className = "admin-team-label";
     label.textContent = t.team;
-    block.appendChild(label);
+    head.appendChild(label);
+    const badge = document.createElement("button");
+    badge.type = "button";
+    badge.className = "admin-team-updated-badge";
+    badge.dataset.team = t.team;
+    badge.addEventListener("click", () => {
+      const when = getTeamLastUpdated(CURRENT_DATA)[t.team];
+      if (when) jumpToRosterHistory(t.team, when);
+    });
+    head.appendChild(badge);
+    block.appendChild(head);
     const rowsWrap = document.createElement("div");
     rowsWrap.className = "admin-roster2026-rows";
     (t.roster || []).forEach(p => rowsWrap.appendChild(buildRoster2026Row(p)));
@@ -6460,6 +6509,98 @@ function populateTeams2026RosterEditor(data) {
     block.appendChild(addBtn);
     el.appendChild(block);
   });
+  updateRosterUpdateBadges(data);
+}
+
+// ---- Roster history helpers ----------------------------------------
+// Local-calendar day key ("2026-10-06") so "same day" means the
+// commissioner's day, not UTC's.
+function ymdLocal(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function rosterSig(t) {
+  return JSON.stringify((t && t.roster) || []);
+}
+
+// When each team's roster last changed: { "<team>": ISOString }.
+// The stored teams2026LastUpdated map is authoritative going forward;
+// for saves made before that field existed, the dates are derived by
+// diffing consecutive history snapshots so badges aren't empty on day one.
+function getTeamLastUpdated(data) {
+  const out = {};
+  const history = (data && data.teams2026History) || [];
+  for (let i = 1; i < history.length; i++) {
+    const prev = {};
+    ((history[i - 1] && history[i - 1].teams) || []).forEach(t => { prev[t.team] = rosterSig(t); });
+    ((history[i] && history[i].teams) || []).forEach(t => {
+      if (prev[t.team] !== rosterSig(t)) out[t.team] = history[i].timestamp;
+    });
+  }
+  const stored = (data && data.teams2026LastUpdated) || {};
+  Object.keys(stored).forEach(team => {
+    const sv = new Date(stored[team]).getTime();
+    const dv = out[team] ? new Date(out[team]).getTime() : -Infinity;
+    if (!isNaN(sv) && sv >= dv) out[team] = stored[team];
+  });
+  return out;
+}
+
+// Refreshes every team's "Updated <date>" badge and the "X of N teams
+// updated today" line in place (no editor rebuild, so unsaved edits stay).
+function updateRosterUpdateBadges(data) {
+  const lastUpdated = getTeamLastUpdated(data);
+  const todayKey = ymdLocal(new Date());
+  document.querySelectorAll("#admin-teams2026-roster .admin-team-updated-badge").forEach(badge => {
+    const iso = lastUpdated[badge.dataset.team];
+    const d = iso ? new Date(iso) : null;
+    if (d && !isNaN(d.getTime())) {
+      badge.textContent = "Updated " + d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      badge.title = "Last roster change: " + d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) + " \u2014 click to view that day in Roster History";
+      badge.disabled = false;
+    } else {
+      badge.textContent = "No updates recorded yet";
+      badge.title = "";
+      badge.disabled = true;
+    }
+  });
+  const progressEl = document.getElementById("admin-roster-progress");
+  if (progressEl) {
+    const teams = (data && data.teams2026) || [];
+    if (!teams.length) {
+      progressEl.textContent = "";
+    } else {
+      const doneToday = teams.filter(t => {
+        const iso = lastUpdated[t.team];
+        const d = iso ? new Date(iso) : null;
+        return d && !isNaN(d.getTime()) && ymdLocal(d) === todayKey;
+      }).length;
+      progressEl.innerHTML = "<strong>" + doneToday + " of " + teams.length + "</strong> teams updated today";
+    }
+  }
+}
+
+// Opens Roster History, expands the day a team last changed, then scrolls
+// to and briefly highlights that team's card in the snapshot.
+function jumpToRosterHistory(teamName, iso) {
+  const listEl = document.getElementById("admin-roster-history");
+  if (!listEl) return;
+  const details = listEl.closest("details");
+  if (details) details.open = true;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return;
+  const dayKey = ymdLocal(d);
+  const entry = Array.from(listEl.querySelectorAll(".admin-roster-history-entry")).find(e => e.dataset.day === dayKey);
+  if (!entry) { listEl.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  const detail = entry.querySelector(".admin-roster-history-detail");
+  if (detail.style.display === "none") entry.querySelector(".admin-history-toggle-btn").click();
+  const card = Array.from(detail.querySelectorAll(".team-card")).find(c => c.dataset.team === teamName);
+  const target = card || entry;
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (card) {
+    card.classList.add("history-card-highlight");
+    setTimeout(() => card.classList.remove("history-card-highlight"), 2500);
+  }
 }
 
 // Renders the "Roster History" admin list: one button per stored
@@ -6476,20 +6617,49 @@ function populateRosterHistoryList(data) {
     return;
   }
   const escHtmlAdmin = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  // Newest first; the most recent entry is what's currently live on the
-  // 2026 Teams page, so it gets an explicit "Current" tag.
-  const ordered = history.map((snap, origIdx) => ({ snap, origIdx })).reverse();
-  ordered.forEach(({ snap, origIdx }, displayIdx) => {
-    const isCurrent = origIdx === history.length - 1;
+  // Group snapshots by local calendar day. Each day is represented by its
+  // LAST snapshot (the roster as it stood at the end of that day), and
+  // older entries from before day-grouping existed collapse into the same
+  // day button instead of listing every individual save.
+  const days = [];
+  history.forEach((snap, origIdx) => {
     const d = new Date(snap.timestamp);
-    const label = isNaN(d.getTime()) ? String(snap.timestamp) : d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    const key = isNaN(d.getTime()) ? "unknown-" + origIdx : ymdLocal(d);
+    const last = days[days.length - 1];
+    if (last && last.key === key) {
+      last.snap = snap;
+      last.origIdx = origIdx;
+      last.count += 1;
+    } else {
+      days.push({ key: key, snap: snap, origIdx: origIdx, count: 1 });
+    }
+  });
+  // Which teams' rosters changed that day vs. the end of the prior day.
+  days.forEach((day, i) => {
+    if (i === 0) { day.changed = null; return; }
+    const prev = {};
+    ((days[i - 1].snap.teams) || []).forEach(t => { prev[t.team] = rosterSig(t); });
+    day.changed = ((day.snap.teams) || []).filter(t => prev[t.team] !== rosterSig(t)).map(t => t.team);
+  });
+  // Newest first; the most recent day holds what's currently live on the
+  // 2026 Teams page, so it gets an explicit "Current" tag.
+  days.slice().reverse().forEach(day => {
+    const snap = day.snap;
+    const isCurrent = day.origIdx === history.length - 1;
+    const d = new Date(snap.timestamp);
+    const valid = !isNaN(d.getTime());
+    const label = valid ? d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : String(snap.timestamp);
+    const meta = valid
+      ? (day.count > 1 ? day.count + " saves, last at " : "saved at ") + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      : "";
 
     const entry = document.createElement("div");
     entry.className = "admin-roster-history-entry";
+    entry.dataset.day = day.key;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "admin-btn admin-btn-secondary admin-history-toggle-btn";
-    btn.innerHTML = "<span>" + escHtmlAdmin(label) + "</span>" + (isCurrent ? "<span class=\"admin-history-current-tag\">Current</span>" : "");
+    btn.innerHTML = "<span>" + escHtmlAdmin(label) + (meta ? "<span class=\"admin-history-meta\">" + escHtmlAdmin(meta) + "</span>" : "") + "</span>" + (isCurrent ? "<span class=\"admin-history-current-tag\">Current</span>" : "");
     const detail = document.createElement("div");
     detail.className = "admin-roster-history-detail";
     detail.style.display = "none";
@@ -6500,6 +6670,14 @@ function populateRosterHistoryList(data) {
       el.querySelectorAll(".admin-roster-history-detail").forEach(d2 => { if (d2 !== detail) d2.style.display = "none"; });
       if (opening) {
         if (!built) {
+          if (day.changed) {
+            const note = document.createElement("p");
+            note.className = "admin-history-changed";
+            note.textContent = day.changed.length
+              ? "Teams changed this day: " + day.changed.join(", ")
+              : "No roster changes compared with the previous day.";
+            detail.appendChild(note);
+          }
           const grid = document.createElement("div");
           grid.className = "teams-grid";
           (snap.teams || []).forEach(t => grid.appendChild(buildTeamCard(t)));
@@ -8490,6 +8668,7 @@ function refreshPublicSections(data) {
   renderTeamsGrid(data);
   renderTeams2026(data);
   populateRosterHistoryList(data);
+  updateRosterUpdateBadges(data);
 }
 
 document.getElementById("admin-save-btn").addEventListener("click", async () => {
@@ -8658,14 +8837,36 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
   const teams2026Json = JSON.stringify(CURRENT_DATA.teams2026 || []);
   const rosterChanged = teams2026Json !== LAST_SAVED_TEAMS2026_JSON;
   if (rosterChanged) {
-    if (!Array.isArray(CURRENT_DATA.teams2026History)) CURRENT_DATA.teams2026History = [];
-    CURRENT_DATA.teams2026History.push({
-      timestamp: new Date().toISOString(),
-      teams: JSON.parse(teams2026Json)
+    const now = new Date();
+    const nowIso = now.toISOString();
+    // Per-team "last updated": compare each team's roster against its state
+    // as of the last load/save, and stamp only the teams that really changed
+    // (a team re-saved unchanged keeps its old date).
+    let baselineByTeam = {};
+    try {
+      JSON.parse(LAST_SAVED_TEAMS2026_JSON || "[]").forEach(t => { baselineByTeam[t.team] = rosterSig(t); });
+    } catch (e) { baselineByTeam = {}; }
+    if (!CURRENT_DATA.teams2026LastUpdated || typeof CURRENT_DATA.teams2026LastUpdated !== "object") {
+      CURRENT_DATA.teams2026LastUpdated = {};
+    }
+    (CURRENT_DATA.teams2026 || []).forEach(t => {
+      if (baselineByTeam[t.team] !== rosterSig(t)) CURRENT_DATA.teams2026LastUpdated[t.team] = nowIso;
     });
-    // Cap history length so the Firestore document doesn't grow without
-    // bound over a season of edits — oldest snapshots roll off first.
-    const MAX_ROSTER_HISTORY = 50;
+
+    // Day-grouped history: if the newest snapshot is from today (commissioner's
+    // local day), update it in place; only a save on a new day adds an entry.
+    if (!Array.isArray(CURRENT_DATA.teams2026History)) CURRENT_DATA.teams2026History = [];
+    const hist = CURRENT_DATA.teams2026History;
+    const newest = hist.length ? hist[hist.length - 1] : null;
+    const newestDate = newest ? new Date(newest.timestamp) : null;
+    if (newest && newestDate && !isNaN(newestDate.getTime()) && ymdLocal(newestDate) === ymdLocal(now)) {
+      newest.timestamp = nowIso;
+      newest.teams = JSON.parse(teams2026Json);
+    } else {
+      hist.push({ timestamp: nowIso, teams: JSON.parse(teams2026Json) });
+    }
+    // Cap at 60 days so the Firestore document doesn't grow without bound.
+    const MAX_ROSTER_HISTORY = 60;
     if (CURRENT_DATA.teams2026History.length > MAX_ROSTER_HISTORY) {
       CURRENT_DATA.teams2026History = CURRENT_DATA.teams2026History.slice(-MAX_ROSTER_HISTORY);
     }
