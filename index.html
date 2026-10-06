@@ -2016,6 +2016,7 @@
         <tbody id="trades-body"></tbody>
       </table>
     </div>
+    <div id="trade-scoreboard"></div>
   </section>
 
   <section id="waivers">
@@ -2168,6 +2169,15 @@
         <div class="admin-body">
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Record, streak, points for, and points against, per team.</p>
           <div id="admin-standings"></div>
+          <div class="admin-field" style="margin-top: 16px;">
+            <label for="admin-standings-paste">Paste standings from Yahoo</label>
+            <textarea id="admin-standings-paste" rows="6" placeholder="Open your league's Standings page on Yahoo, select the table, copy, and paste it here."></textarea>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="admin-btn admin-btn-secondary" id="admin-standings-preview-btn">Preview</button>
+            <button type="button" class="admin-btn" id="admin-standings-apply-btn" style="display: none;">Fill in the boxes above</button>
+          </div>
+          <div id="admin-standings-preview" style="margin-top: 10px; overflow-x: auto; font-size: 0.85rem;"></div>
         </div>
       </details>
       <details class="card admin-details">
@@ -5431,11 +5441,13 @@ function renderDraftResults(data) {
 }
 
 function renderTradesSection(data) {
+  renderTradeScoreboard(data);
   const tradesBody = document.getElementById("trades-body");
   tradesBody.innerHTML = "";
   (data.trades || []).forEach(row => {
     const tr = document.createElement("tr");
     tr.innerHTML = "<td>" + row.date + "</td><td>" + row.teams + "</td><td>" + row.details + "</td>";
+    tradeLogDecorateRow(data, row, tr);
     tradesBody.appendChild(tr);
   });
   const trades2025Body = document.getElementById("trades2025-body");
@@ -6435,6 +6447,129 @@ function populateManagerHistoryControls(data) {
   });
 }
 
+// ---- Standings paste-import (admin) ---------------------------------------
+// Paste the standings table copied from Yahoo, preview what was understood,
+// then fill the standings boxes above; "Save Changes" still does the saving.
+// Teams are found by name (longest name wins), so the paste can be a tidy
+// tab-separated table or Yahoo's looser multi-line copy. Per team we read:
+//   record  first W-L or W-L-T token (a 0 tie count is dropped)
+//   PF / PA the first two numbers written with exactly two decimals
+//           (Pct has 3 decimals and Games Back has 1, so they are skipped)
+//   streak  a W3 / L2 / T1 token, otherwise "-"
+function parseYahooStandings(text, standings) {
+  const norm = s => String(s || "").toLowerCase().replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim();
+  const teams = standings.map((row, idx) => ({ idx: idx, name: row.team, key: norm(row.team) }))
+    .sort((a, b) => b.key.length - a.key.length);
+  const blocks = {};
+  let current = null;
+  String(text || "").split(/\r?\n/).forEach(line => {
+    const key = norm(line);
+    if (!key) return;
+    const hit = teams.find(t => key.indexOf(t.key) > -1);
+    if (hit) {
+      current = hit.idx;
+      if (!blocks[current]) blocks[current] = [];
+      // the stats on the same line come after the team name
+      blocks[current].push(key.slice(key.indexOf(hit.key) + hit.key.length));
+    } else if (current !== null) {
+      blocks[current].push(key);
+    }
+  });
+  const rows = [];
+  const missing = [];
+  standings.forEach((row, idx) => {
+    const block = blocks[idx];
+    if (!block) { missing.push(row.team); return; }
+    const tokens = block.join(" ").split(/[\s\t]+/).filter(Boolean);
+    const out = { idx: idx, team: row.team };
+    const rec = tokens.find(t => /^\d{1,2}-\d{1,2}(-\d{1,2})?$/.test(t));
+    if (rec) {
+      const p = rec.split("-");
+      out.record = (p[2] && Number(p[2]) > 0) ? rec : p[0] + "-" + p[1];
+    }
+    const pts = tokens.filter(t => /^\d[\d,]*\.\d{2}$/.test(t)).map(t => Number(t.replace(/,/g, "")));
+    if (pts.length >= 1) out.pointsFor = pts[0];
+    if (pts.length >= 2) out.pointsAgainst = pts[1];
+    const streak = tokens.find(t => /^[wlt]\d{1,2}$/.test(t));
+    out.streak = streak ? streak.toUpperCase() : "-";
+    if (!rec) { missing.push(row.team); return; }
+    rows.push(out);
+  });
+  return { rows: rows, missing: missing };
+}
+
+let STANDINGS_IMPORT_PENDING = null;
+(function wireStandingsImport() {
+  const pasteEl = document.getElementById("admin-standings-paste");
+  const previewBtn = document.getElementById("admin-standings-preview-btn");
+  const applyBtn = document.getElementById("admin-standings-apply-btn");
+  const outEl = document.getElementById("admin-standings-preview");
+  if (!pasteEl || !previewBtn || !applyBtn || !outEl) return;
+  previewBtn.addEventListener("click", () => {
+    outEl.innerHTML = "";
+    STANDINGS_IMPORT_PENDING = null;
+    applyBtn.style.display = "none";
+    if (!CURRENT_DATA || !CURRENT_DATA.currentSeason) { outEl.textContent = "Not connected yet — try again in a moment."; return; }
+    const standings = CURRENT_DATA.currentSeason.standings;
+    const res = parseYahooStandings(pasteEl.value, standings);
+    if (!res.rows.length) {
+      outEl.textContent = "Couldn't find any of your teams with a record in that text. Copy the whole standings table from Yahoo, including the team names.";
+      return;
+    }
+    const table = document.createElement("table");
+    const head = document.createElement("tr");
+    ["Team", "Record", "Streak", "PF", "PA"].forEach(h => { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); });
+    table.appendChild(head);
+    const cell = (tr, now, old) => {
+      const td = document.createElement("td");
+      const nv = now === undefined ? "—" : String(now);
+      td.textContent = (old !== undefined && String(old) !== nv && now !== undefined) ? String(old) + " → " + nv : nv;
+      if (old !== undefined && String(old) !== nv && now !== undefined) td.style.fontWeight = "700";
+      tr.appendChild(td);
+    };
+    res.rows.forEach(r => {
+      const old = standings[r.idx];
+      const tr = document.createElement("tr");
+      const t = document.createElement("td"); t.textContent = r.team; tr.appendChild(t);
+      cell(tr, r.record, old.record);
+      cell(tr, r.streak, old.streak || "-");
+      cell(tr, r.pointsFor, old.pointsFor);
+      cell(tr, r.pointsAgainst, old.pointsAgainst || 0);
+      table.appendChild(tr);
+    });
+    outEl.appendChild(table);
+    if (res.missing.length) {
+      const p = document.createElement("p");
+      p.style.color = "var(--muted)";
+      p.textContent = "Not found in the paste (left as is): " + res.missing.join(", ") + ".";
+      outEl.appendChild(p);
+    }
+    STANDINGS_IMPORT_PENDING = res.rows;
+    applyBtn.style.display = "";
+  });
+  applyBtn.addEventListener("click", () => {
+    if (!STANDINGS_IMPORT_PENDING) return;
+    const setVal = (cls, idx, v) => {
+      if (v === undefined) return;
+      const el = document.querySelector("." + cls + "[data-idx=\"" + idx + "\"]");
+      if (el) el.value = v;
+    };
+    STANDINGS_IMPORT_PENDING.forEach(r => {
+      setVal("admin-record-input", r.idx, r.record);
+      setVal("admin-streak-input", r.idx, r.streak);
+      setVal("admin-points-input", r.idx, r.pointsFor);
+      setVal("admin-points-against-input", r.idx, r.pointsAgainst);
+    });
+    outEl.innerHTML = "";
+    const p = document.createElement("p");
+    p.textContent = "Filled in " + STANDINGS_IMPORT_PENDING.length + " teams above. Review them, then press Save Changes at the bottom.";
+    outEl.appendChild(p);
+    STANDINGS_IMPORT_PENDING = null;
+    applyBtn.style.display = "none";
+    pasteEl.value = "";
+  });
+})();
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
   document.getElementById("admin-draftdate").value = data.draftDate || "";
@@ -6500,7 +6635,7 @@ function buildAdminForm(data) {
 
   const tradesEl = document.getElementById("admin-trades");
   tradesEl.innerHTML = "";
-  (data.trades || []).forEach(t => addTradeRow(tradesEl, t.date, t.teams, t.details));
+  (data.trades || []).forEach(t => addTradeRow(tradesEl, t.date, t.teams, t.details, t));
 
   const trades2025El = document.getElementById("admin-trades2025");
   if (trades2025El) {
@@ -6776,7 +6911,152 @@ function addDraftResultRow(rowsWrap, round, pick, team, player) {
   rowsWrap.appendChild(row);
 }
 
-function addTradeRow(rowsWrap, date, teams, details) {
+// ---- Structured trade log --------------------------------------------------
+// A 2026 trade can optionally record who traded with whom and which players
+// each side gave up. The free-text Teams / Details columns are filled in from
+// that automatically, and the public Trades page adds a Trade Analyzer verdict
+// per trade plus a running tally per team. Values are the Trade Analyzer's
+// (preseason ranking + keeper cost), so this is "who won on paper", not a
+// result-based grade. Draft picks and anything not found on a roster are
+// listed but carry no value.
+const TRADE_LOG_ADMIN_ID = "admin-trades";
+const TRADE_LOG_EVEN = 0.15;
+
+function tradeLogNorm(s) {
+  return String(s || "").toLowerCase().replace(/[‘’]/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function tradeLogSplit(str) {
+  return String(str || "").split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+}
+function tradeLogLookup(data, name) {
+  const key = tradeLogNorm(name);
+  if (!key) return null;
+  const all = [];
+  (data.teams || []).forEach(t => (t.roster || []).forEach(p => all.push(p)));
+  const exact = all.find(p => tradeLogNorm(p.player) === key);
+  if (exact) return exact;
+  if (key.length < 4) return null;
+  const partial = all.filter(p => {
+    const pk = tradeLogNorm(p.player);
+    return pk.indexOf(key) > -1 || (pk.length >= 6 && key.indexOf(pk) > -1);
+  });
+  return partial.length === 1 ? partial[0] : null;
+}
+function tradeLogSideValue(data, names) {
+  let value = 0;
+  const unknown = [];
+  names.forEach(n => {
+    const p = tradeLogLookup(data, n);
+    if (p) value += tradeAnalyzerPlayerValue(data, { player: p.player, pos: p.pos, keeperCost: p.keeperCost });
+    else unknown.push(n);
+  });
+  return { value: value, unknown: unknown };
+}
+function isLoggedTrade(row) {
+  return !!(row && row.teamA && row.teamB && row.teamA !== row.teamB && ((row.sendA || []).length || (row.sendB || []).length));
+}
+// net > 0 means team A came out ahead, net < 0 means team B did.
+function scoreLoggedTrade(data, row) {
+  if (!isLoggedTrade(row)) return null;
+  const gaveA = tradeLogSideValue(data, row.sendA || []);
+  const gaveB = tradeLogSideValue(data, row.sendB || []);
+  const net = gaveB.value - gaveA.value;
+  return {
+    net: net,
+    even: Math.abs(net) < TRADE_LOG_EVEN,
+    winner: Math.abs(net) < TRADE_LOG_EVEN ? null : (net > 0 ? row.teamA : row.teamB),
+    unknown: gaveA.unknown.concat(gaveB.unknown)
+  };
+}
+function tradeLogDecorateRow(data, row, tr) {
+  const res = scoreLoggedTrade(data, row);
+  if (!res) return;
+  const cell = tr.lastElementChild;
+  if (!cell) return;
+  const line = document.createElement("div");
+  line.style.cssText = "margin-top: 6px; font-size: 0.82rem; color: var(--muted);";
+  line.textContent = (res.even
+    ? "Trade Analyzer: about even on paper."
+    : "Trade Analyzer: " + res.winner + " came out ahead on paper (+" + Math.abs(res.net).toFixed(2) + ").") +
+    (res.unknown.length ? " Not valued: " + res.unknown.join(", ") + "." : "");
+  cell.appendChild(line);
+}
+function renderTradeScoreboard(data) {
+  const wrap = document.getElementById("trade-scoreboard");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  const tally = {};
+  let counted = 0;
+  (data.trades || []).forEach(row => {
+    const res = scoreLoggedTrade(data, row);
+    if (!res) return;
+    counted++;
+    [[row.teamA, res.net], [row.teamB, -res.net]].forEach(pair => {
+      if (!tally[pair[0]]) tally[pair[0]] = { team: pair[0], trades: 0, net: 0, wins: 0 };
+      tally[pair[0]].trades++;
+      tally[pair[0]].net += pair[1];
+      if (pair[1] >= TRADE_LOG_EVEN) tally[pair[0]].wins++;
+    });
+  });
+  if (!counted) return;
+  const rows = Object.keys(tally).map(k => tally[k]).sort((a, b) => b.net - a.net);
+  const card = document.createElement("div");
+  card.className = "card";
+  const h = document.createElement("h3");
+  h.textContent = "Trade scoreboard";
+  h.style.marginTop = "0";
+  card.appendChild(h);
+  const p = document.createElement("p");
+  p.style.cssText = "color: var(--muted); font-size: 0.85rem; margin-top: -4px;";
+  p.textContent = "Running total of the Trade Analyzer's value for what each team got minus what it gave up, across logged trades. A paper score, not a result.";
+  card.appendChild(p);
+  const table = document.createElement("table");
+  const head = document.createElement("tr");
+  ["Team", "Trades", "Won on paper", "Net value"].forEach(t => { const th = document.createElement("th"); th.textContent = t; head.appendChild(th); });
+  table.appendChild(head);
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    [r.team, r.trades, r.wins, (r.net >= 0 ? "+" : "") + r.net.toFixed(2)].forEach(v => { const td = document.createElement("td"); td.textContent = String(v); tr.appendChild(td); });
+    table.appendChild(tr);
+  });
+  card.appendChild(table);
+  wrap.appendChild(card);
+}
+
+function tradeLogTeamOptions(select, selected) {
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "— team —";
+  select.appendChild(blank);
+  ((typeof CURRENT_DATA !== "undefined" && CURRENT_DATA && CURRENT_DATA.teams) || []).forEach(t => {
+    const o = document.createElement("option");
+    o.value = t.team;
+    o.textContent = t.team;
+    select.appendChild(o);
+  });
+  select.value = selected || "";
+}
+function readTradeRowStructured(row, base) {
+  const entry = { date: base.date, teams: base.teams, details: base.details };
+  const selA = row.querySelector(".admin-trade-teama");
+  const selB = row.querySelector(".admin-trade-teamb");
+  if (!selA || !selB) return entry;
+  const teamA = selA.value;
+  const teamB = selB.value;
+  const sendA = tradeLogSplit(row.querySelector(".admin-trade-senda").value);
+  const sendB = tradeLogSplit(row.querySelector(".admin-trade-sendb").value);
+  if (teamA && teamB && teamA !== teamB && (sendA.length || sendB.length)) {
+    entry.teamA = teamA;
+    entry.teamB = teamB;
+    entry.sendA = sendA;
+    entry.sendB = sendB;
+    if (!entry.teams) entry.teams = teamA + " ↔ " + teamB;
+    if (!entry.details) entry.details = teamA + " sends " + (sendA.join(", ") || "nothing") + "; " + teamB + " sends " + (sendB.join(", ") || "nothing") + ".";
+  }
+  return entry;
+}
+
+function addTradeRow(rowsWrap, date, teams, details, extra) {
   const row = document.createElement("div");
   row.className = "admin-trade-row";
   row.innerHTML = "<input type=\"text\" class=\"admin-trade-date\" placeholder=\"Date\" value=\"" + (date || "") + "\">" +
@@ -6784,6 +7064,31 @@ function addTradeRow(rowsWrap, date, teams, details) {
     "<input type=\"text\" class=\"admin-trade-details\" placeholder=\"Details\" value=\"" + (details || "") + "\">" +
     "<button type=\"button\" class=\"admin-remove-row-btn\">Remove</button>";
   row.querySelector(".admin-remove-row-btn").addEventListener("click", () => row.remove());
+  if (rowsWrap.id === TRADE_LOG_ADMIN_ID) {
+    const x = extra || {};
+    const struct = document.createElement("div");
+    struct.style.cssText = "grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px;";
+    const selA = document.createElement("select");
+    selA.className = "admin-trade-teama";
+    selA.title = "First team";
+    tradeLogTeamOptions(selA, x.teamA);
+    const selB = document.createElement("select");
+    selB.className = "admin-trade-teamb";
+    selB.title = "Second team";
+    tradeLogTeamOptions(selB, x.teamB);
+    const inA = document.createElement("input");
+    inA.type = "text";
+    inA.className = "admin-trade-senda";
+    inA.placeholder = "Players first team gave (comma separated)";
+    inA.value = (x.sendA || []).join(", ");
+    const inB = document.createElement("input");
+    inB.type = "text";
+    inB.className = "admin-trade-sendb";
+    inB.placeholder = "Players second team gave (comma separated)";
+    inB.value = (x.sendB || []).join(", ");
+    [selA, selB, inA, inB].forEach(el => struct.appendChild(el));
+    row.appendChild(struct);
+  }
   rowsWrap.appendChild(row);
 }
 
@@ -8875,7 +9180,8 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     const date = row.querySelector(".admin-trade-date").value.trim();
     const teams = row.querySelector(".admin-trade-teams").value.trim();
     const details = row.querySelector(".admin-trade-details").value.trim();
-    if (teams || details) newTrades.push({ date: date, teams: teams, details: details });
+    const entry = readTradeRowStructured(row, { date: date, teams: teams, details: details });
+    if (entry.teams || entry.details) newTrades.push(entry);
   });
   CURRENT_DATA.trades = newTrades;
 
