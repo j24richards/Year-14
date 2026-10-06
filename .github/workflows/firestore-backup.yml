@@ -67,8 +67,21 @@ jobs:
               raise ValueError("unknown Firestore value: %r" % (list(v.keys()),))
 
 
+          # Never write credentials into a public repo, even if they were
+          # stored in the document by mistake.
+          SENSITIVE = re.compile(r"password|passwd|secret|token|private[_-]?key", re.I)
+
+
+          def scrub(value):
+              if isinstance(value, dict):
+                  return {k: scrub(v) for k, v in value.items() if not SENSITIVE.search(k)}
+              if isinstance(value, list):
+                  return [scrub(v) for v in value]
+              return value
+
+
           def convert_document(doc):
-              return {k: convert(v) for k, v in doc.get("fields", {}).items()}
+              return scrub({k: convert(v) for k, v in doc.get("fields", {}).items()})
 
 
           def main():
