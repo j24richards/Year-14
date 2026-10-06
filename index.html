@@ -453,6 +453,27 @@
   .draft-grade-mid { background: #56637d; }
   .draft-grade-bad { background: #b3401a; }
   .draft-grade-keeper { margin-left: 4px; }
+  .wr-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .wr-all-link { color: var(--red); font-size: 0.85rem; text-decoration: none; white-space: nowrap; }
+  .wr-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .wr-game { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .wr-side { display: flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--muted); }
+  .wr-side + .wr-side { border-top: 1px solid var(--border); }
+  .wr-side.wr-win { color: var(--text); font-weight: 700; background: var(--panel-2); }
+  .wr-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .wr-score { font-variant-numeric: tabular-nums; }
+  .wr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .wr-chip { background: var(--panel-2); border-radius: 999px; padding: 3px 10px; font-size: 0.78rem; color: var(--muted); }
+  .wr-weeks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .wr-week-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+  .wr-week-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .wr-high { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .wr-high:last-child { border-bottom: 0; }
+  .wr-high-label { min-width: 120px; color: var(--muted); }
+  .pr-up { color: #1a7f37; } .pr-down { color: var(--red); } .pr-flat { color: var(--muted); }
+  .sr-row { display: grid; grid-template-columns: 1fr 90px 90px 1fr auto; gap: 6px; margin-bottom: 6px; align-items: center; }
+  @media (max-width: 640px) { #power-rankings-table th, #power-rankings-table td { padding: 8px 5px; font-size: 0.82rem; } #power-rankings-table .team-badge { display: none; } }
+  @media (max-width: 640px) { .sr-row { grid-template-columns: 1fr 1fr; } .sr-row .sr-ta, .sr-row .sr-tb { grid-column: span 2; } }
   .draft-grade-keeper .keeper-icon { font-size: 0.78em; margin-right: 3px; }
   /* Left accent bar only -- marks a team's best value and biggest reach
      without adding another word to the card. */
@@ -1801,6 +1822,7 @@
       <button data-tab="mockdraft">Mock Draft</button>
       <button data-tab="trades">Trades</button>
       <button data-tab="waivers">Waivers</button>
+      <button data-tab="results">Results</button>
     </div>
   </div>
   <button data-tab="tradeanalyzer">Trade Analyzer</button>
@@ -1837,6 +1859,7 @@
     <button type="button" class="mobile-nav-item" data-tab="mockdraft">Mock Draft</button>
     <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
     <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
+    <button type="button" class="mobile-nav-item" data-tab="results">Results</button>
     <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
     <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
     <div class="mobile-nav-group-label">2025 Archive</div>
@@ -1876,6 +1899,7 @@
       <div class="countdown-label" id="countdown-label"></div>
       <a class="countdown-yahoo-link" href="https://football.fantasysports.yahoo.com/" target="_blank" rel="noopener noreferrer">Open Yahoo Fantasy Football &rarr;</a>
     </div>
+    <div class="card" id="latest-results-card" style="display:none;"></div>
     <h2 id="season-heading">Current Season Standings</h2>
     <div class="card" id="standings-card">
       <table>
@@ -2031,6 +2055,25 @@
         <tbody id="waivers-body"></tbody>
       </table>
     </div>
+  </section>
+
+  <section id="results">
+    <h2>Weekly Results</h2>
+    <p id="results-empty" style="color: var(--muted); font-style: italic;">No weekly scores have been recorded yet.</p>
+    <div id="results-body">
+      <div class="wr-weeks" id="results-weeks"></div>
+      <div class="card">
+        <h3 id="results-week-title" style="margin-top: 0;"></h3>
+        <div class="wr-games" id="results-week-games"></div>
+        <div class="wr-chips" id="results-week-chips"></div>
+      </div>
+      <h3>Season Highs</h3>
+      <div class="card"><div id="results-highs"></div></div>
+      <h3>Team Scoring</h3>
+      <div class="card" style="overflow-x: auto;"><div id="results-teams"></div></div>
+    </div>
+    <h3>Season Grades</h3>
+    <div class="card" style="overflow-x: auto;"><div id="results-grades"></div></div>
   </section>
 
   <section id="keeperplanner">
@@ -2196,6 +2239,34 @@
             <button type="button" class="admin-btn" id="admin-standings-apply-btn" style="display: none;">Fill in the boxes above</button>
           </div>
           <div id="admin-standings-preview" style="margin-top: 10px; overflow-x: auto; font-size: 0.85rem;"></div>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Weekly Results<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick a week, then type each matchup's two teams and scores &mdash; or paste the Yahoo scoreboard text and press Preview. Nothing is published until you press Save Changes. A week with no filled-in games is removed.</p>
+          <div class="admin-field">
+            <label for="admin-wr-week">Week</label>
+            <select id="admin-wr-week"></select>
+          </div>
+          <div id="admin-wr-rows"></div>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-wr-add">+ Add Game</button>
+          <div style="margin-top: 14px;">
+            <label for="admin-wr-paste" style="font-size: 0.82rem; color: var(--muted);">Or paste the Yahoo scoreboard for this week</label>
+            <textarea id="admin-wr-paste" rows="5" placeholder="Paste the matchup scores here&hellip;"></textarea>
+            <button type="button" class="admin-btn admin-btn-secondary" id="admin-wr-preview-btn">Preview</button>
+            <button type="button" class="admin-btn" id="admin-wr-apply-btn" style="display: none;">Fill in the rows above</button>
+          </div>
+          <div id="admin-wr-preview" style="margin-top: 10px; overflow-x: auto; font-size: 0.85rem;"></div>
+        </div>
+      </details>
+      <details class="card admin-details">
+        <summary class="admin-summary">Season Grades<span class="admin-chevron">&#9656;</span></summary>
+        <div class="admin-body">
+          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Roster and Season grades show live on the Results page. After the last regular-season week, lock them in so they stay as the final grades, then press Save Changes.</p>
+          <p id="admin-grades-status" style="font-size: 0.9rem;"></p>
+          <button type="button" class="admin-btn" id="admin-grades-lock-btn">Lock in season grades</button>
+          <button type="button" class="admin-btn admin-btn-secondary" id="admin-grades-unlock-btn" style="display: none;">Unlock grades</button>
         </div>
       </details>
       <details class="card admin-details">
@@ -4573,6 +4644,7 @@ const DEFAULT_LEAGUE_DATA = {
   ],
   "trades2025": [],
   "waivers": [],
+  "weeklyResults": [{"week": 1, "games": [{"a": "Leeroy Judkins", "b": "Jimmy Jones Cutlets", "sa": 143.36, "sb": 99.56}, {"a": "To Infinity And Bijan", "b": "Run CMC", "sa": 139.0, "sb": 95.26}, {"a": "Tradition", "b": "Terry Glenn", "sa": 167.46, "sb": 162.36}, {"a": "White Pool Covers", "b": "Huge Ditka", "sa": 176.82, "sb": 101.8}, {"a": "Prestige Worldwide", "b": "My Ball Zach Ertz", "sa": 112.82, "sb": 97.1}]}, {"week": 2, "games": [{"a": "Leeroy Judkins", "b": "Run CMC", "sa": 139.52, "sb": 85.94}, {"a": "To Infinity And Bijan", "b": "White Pool Covers", "sa": 113.56, "sb": 79.02}, {"a": "Tradition", "b": "My Ball Zach Ertz", "sa": 126.72, "sb": 84.4}, {"a": "Huge Ditka", "b": "Prestige Worldwide", "sa": 137.86, "sb": 120.26}, {"a": "Jimmy Jones Cutlets", "b": "Terry Glenn", "sa": 119.6, "sb": 116.58}]}],
   "rulesGroups": [
     {
       "title": "League Settings",
@@ -4673,7 +4745,7 @@ const DEFAULT_LEAGUE_DATA = {
         },
         {
           "label": "Round Conflicts",
-          "value": "If two kept players share the same draft round, the player with the better Fantasy Football Calculator Half-PPR ADP moves up one round; if another kept player already holds that round, that player is bumped up one round further instead (no extra ADP comparison — it's a straight mechanical shift). At round 1, the better-ADP player keeps round 1 and the other player moves up to round 2 instead"
+          "value": "If two kept players cost the same draft round, the player with the better Fantasy Football Calculator Half-PPR ADP moves up one round; if another kept player already holds that round, that player is bumped up one round further instead (no extra ADP comparison — it's a straight mechanical shift). At round 1, the better-ADP player keeps round 1 and the other player moves up to round 2 instead. The Last-Round Keeper Bump is the one exception: a newly kept waiver pickup takes the last round no matter the ADP."
         },
         {
           "label": "Trades",
@@ -4890,6 +4962,10 @@ function formatCountdown(draftDateStr) {
 function renderCountdown() {
   const countdown = formatCountdown(CURRENT_DATA ? CURRENT_DATA.draftDate : null);
   if (!countdown) return;
+  if (countdown.drafted) {
+    document.getElementById("countdown-card").style.display = "none";
+    return;
+  }
   document.getElementById("countdown-card").style.display = "block";
   const statsEl = document.getElementById("countdown-stats");
   if (countdown.drafted) {
@@ -5599,7 +5675,7 @@ function tradeAnalyzerPlayerValue(data, entry) {
 // trade -- logged trades are detected, otherwise tick "came by trade").
 // The market round uses the Trade Analyzer's preseason ranking, so treat the
 // "edge" column as a rough guide until next year's ADP is loaded.
-const KEEPER_PLANNER = { cap: 4, waiverRound: 15, escalate: false };
+const KEEPER_PLANNER = { cap: 4, waiverRound: 15, escalate: false, lastRoundBump: true };
 const KP_VIA_TRADE = new Set();
 const KP_PICKED = {};
 
@@ -5615,9 +5691,13 @@ function kpOrdinal(n) {
 // items: [{ key, base, rank }] -> same items plus final (round), moved, stuck.
 // Same-round claims: the better-ADP player moves up a round and anyone already
 // sitting there is bumped up one more; at round 1 the better player keeps it
-// and the other drops to the next free round.
-function keeperPlannerResolve(items) {
-  const out = items.map(i => ({ key: i.key, base: i.base, rank: i.rank, final: i.base, moved: false, stuck: false }));
+// and the other drops to the next free round. Year 14 also has the Last-Round
+// Keeper Bump: a newly kept waiver pickup (item.waiver) takes the last round,
+// and a keeper already sitting there moves up one round, pushing anyone in
+// that round up one more in turn (no ADP comparison -- a straight shift).
+function keeperPlannerResolve(items, opts) {
+  opts = opts || {};
+  const out = items.map(i => ({ key: i.key, base: i.base, rank: i.rank, waiver: !!i.waiver, final: i.base, moved: false, stuck: false, bumped: false }));
   const occ = {};
   const bases = Array.from(new Set(out.map(i => i.base))).sort((a, b) => a - b);
   const placeUp = (it, r) => {
@@ -5629,7 +5709,16 @@ function keeperPlannerResolve(items) {
     if (prev && prev !== it) placeUp(prev, r - 1);
   };
   bases.forEach(r => {
-    const group = out.filter(i => i.base === r).sort((a, b) => a.rank - b.rank);
+    let group = out.filter(i => i.base === r).sort((a, b) => a.rank - b.rank);
+    if (opts.bump && r === opts.waiverRound && group.some(i => i.waiver) && group.some(i => !i.waiver)) {
+      const incoming = group.filter(i => i.waiver);
+      const existing = group.filter(i => !i.waiver).sort((a, b) => b.rank - a.rank); // worst ADP bumps first
+      const w = incoming[incoming.length - 1];
+      placeUp(w, r);
+      for (let j = incoming.length - 2; j >= 0; j--) placeUp(incoming[j], r - (incoming.length - 1 - j));
+      existing.forEach((it, k) => { placeUp(it, r - 1 - k); it.bumped = true; });
+      return;
+    }
     if (r === 1 && group.length > 1) {
       occ[1] = group[0];
       group[0].final = 1;
@@ -5670,21 +5759,23 @@ function keeperPlannerCost(ctx, teamName, entry) {
   const d = ctx.draft[key];
   const waiver = KEEPER_PLANNER.waiverRound;
   const wasKept = ctx.kept.has(key);
-  let base, note = "", askTrade = false;
+  let base, note = "", askTrade = false, isWaiver = false;
   if (d && (d.team === teamName || ctx.traded.has(key) || KP_VIA_TRADE.has(key))) {
     base = d.round;
   } else if (d) {
     base = wasKept ? d.round : waiver;
+    isWaiver = !wasKept;
     if (!wasKept) { note = "Drafted by " + d.team + " — counts as a waiver pickup unless it came by trade."; askTrade = true; }
   } else {
     base = waiver;
+    isWaiver = true;
     note = "Not drafted — waiver pickup.";
   }
   if (wasKept && KEEPER_PLANNER.escalate) {
     base = Math.max(1, base - 1);
     note = "Kept this year, so one round more expensive." + (note ? " " + note : "");
   }
-  return { base: base, note: note, askTrade: askTrade };
+  return { base: base, note: note, askTrade: askTrade, isWaiver: isWaiver };
 }
 
 function renderKeeperPlanner(data) {
@@ -5718,14 +5809,14 @@ function renderKeeperPlanner(data) {
       const ranked = !!tradeRankMap()[kpNorm(p.player)];
       const rank = tradeAnalyzerRank(data, { player: p.player, keeperCost: c.base });
       const market = ranked ? Math.ceil(rank / teamCount) : null;
-      return { p: p, key: kpNorm(p.player), base: c.base, note: c.note, askTrade: c.askTrade, rank: rank, market: market, edge: market == null ? null : c.base - market };
+      return { p: p, key: kpNorm(p.player), base: c.base, note: c.note, askTrade: c.askTrade, isWaiver: c.isWaiver, rank: rank, market: market, edge: market == null ? null : c.base - market };
     }).sort((a, b) => (b.edge == null ? -99 : b.edge) - (a.edge == null ? -99 : a.edge) || a.base - b.base);
 
     const head = document.createElement("tr");
     ["Keep", "Player", "Pos", "Cost next year", "Market round", "Edge", "Notes"].forEach(h => { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); });
     table.appendChild(head);
     const chosen = rows.filter(r => picked.has(r.key));
-    const resolved = keeperPlannerResolve(chosen.map(r => ({ key: r.key, base: r.base, rank: r.rank })));
+    const resolved = keeperPlannerResolve(chosen.map(r => ({ key: r.key, base: r.base, rank: r.rank, waiver: r.isWaiver })), { bump: !!KEEPER_PLANNER.lastRoundBump, waiverRound: KEEPER_PLANNER.waiverRound });
     const finalByKey = {};
     resolved.forEach(r => { finalByKey[r.key] = r; });
 
@@ -5770,6 +5861,12 @@ function renderKeeperPlanner(data) {
       p2.style.color = "var(--muted)";
       p2.textContent = "Some picks share a round, so the league's same-round rule moves them (shown as old → new in the cost column).";
       summary.appendChild(p2);
+    }
+    if (resolved.some(r => r.bumped)) {
+      const pb = document.createElement("p");
+      pb.style.color = "var(--muted)";
+      pb.textContent = "Last-Round Keeper Bump: a newly kept waiver pickup takes the last round, so the keeper already there moves up one round (and anyone in that round moves up one more).";
+      summary.appendChild(pb);
     }
     if (resolved.some(r => r.stuck)) {
       const p3 = document.createElement("p");
@@ -6843,8 +6940,575 @@ let STANDINGS_IMPORT_PENDING = null;
   });
 })();
 
+// ---- In-season: weekly results, power rankings, season grades ---------------
+// Everything here is computed from data.weeklyResults (entered in Admin) and
+// falls back to the standings snapshot where it can, so the home page still
+// works before any weekly scores are recorded.
+// weeklyResults: [{ week: 3, games: [{ a: "Team", b: "Team", sa: 143.36, sb: 99.56 }] }]
+const SEASON_CFG = { regSeasonWeeks: 14 };
+let SR_VIEW_WEEK = null;
+
+function srEsc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function srNorm(s) {
+  return String(s || "").toLowerCase().replace(/['‘’`]/g, "").replace(/\s+/g, " ").trim();
+}
+function srTeams(data) {
+  const st = (data.currentSeason && data.currentSeason.standings) || [];
+  return st.length ? st.map(r => r.team) : (data.teams || []).map(t => t.team);
+}
+function srFmt(n) { return Number(n).toFixed(2); }
+
+function srWeeks(data) {
+  const raw = Array.isArray(data.weeklyResults) ? data.weeklyResults : [];
+  return raw
+    .filter(w => w && Number(w.week) > 0 && Array.isArray(w.games))
+    .map(w => ({
+      week: Number(w.week),
+      games: w.games.filter(g => g && g.a && g.b && g.sa !== "" && g.sb !== "" && isFinite(Number(g.sa)) && isFinite(Number(g.sb)))
+    }))
+    .filter(w => w.games.length)
+    .sort((x, y) => x.week - y.week);
+}
+
+// Per-team record and scoring from the recorded weeks (regular season only).
+function srTable(data, upTo) {
+  const names = srTeams(data);
+  const t = {};
+  names.forEach(n => { t[n] = { team: n, w: 0, l: 0, t: 0, pf: 0, pa: 0, games: [] }; });
+  srWeeks(data).forEach(wk => {
+    if (wk.week > SEASON_CFG.regSeasonWeeks || wk.week > upTo) return;
+    wk.games.forEach(g => {
+      const sa = Number(g.sa), sb = Number(g.sb);
+      [[g.a, sa, g.b, sb], [g.b, sb, g.a, sa]].forEach(side => {
+        const r = t[side[0]];
+        if (!r) return;
+        r.pf += side[1];
+        r.pa += side[3];
+        r.games.push({ week: wk.week, pf: side[1], pa: side[3], opp: side[2] });
+        if (side[1] > side[3]) r.w++; else if (side[1] < side[3]) r.l++; else r.t++;
+      });
+    });
+  });
+  return names.map(n => t[n]);
+}
+
+function srGameInfo(g) {
+  const sa = Number(g.sa), sb = Number(g.sb);
+  const aWins = sa >= sb;
+  return {
+    win: aWins ? { team: g.a, s: sa } : { team: g.b, s: sb },
+    lose: aWins ? { team: g.b, s: sb } : { team: g.a, s: sa },
+    margin: Math.abs(sa - sb), tie: sa === sb
+  };
+}
+
+function srWeekChips(games) {
+  let high = null, close = null, blow = null;
+  games.forEach(g => {
+    const gi = srGameInfo(g);
+    if (!high || gi.win.s > high.s) high = gi.win;
+    if (!close || gi.margin < close.margin) close = { margin: gi.margin, win: gi.win, lose: gi.lose, tie: gi.tie };
+    if (!blow || gi.margin > blow.margin) blow = { margin: gi.margin, win: gi.win, lose: gi.lose };
+  });
+  const chips = [];
+  if (high) chips.push("Top score: " + srEsc(high.team) + " " + srFmt(high.s));
+  if (close && games.length > 1) chips.push("Closest game: " + srEsc(close.win.team) + " over " + srEsc(close.lose.team) + " by " + srFmt(close.margin));
+  if (blow && games.length > 1) chips.push("Biggest blowout: " + srEsc(blow.win.team) + " by " + srFmt(blow.margin));
+  return chips;
+}
+
+function srGamesHtml(games, highTeam) {
+  return games.map(g => {
+    const gi = srGameInfo(g);
+    const side = (team, score, won) => "<div class=\"wr-side" + (won ? " wr-win" : "") + "\">" + teamBadgeHtml(team) + "<span class=\"wr-name\">" + srEsc(team) + "</span><span class=\"wr-score\">" + srFmt(score) + "</span></div>";
+    const aWon = Number(g.sa) >= Number(g.sb);
+    return "<div class=\"wr-game\">" + side(g.a, g.sa, aWon && !gi.tie) + side(g.b, g.sb, !aWon && !gi.tie) + "</div>";
+  }).join("");
+}
+
+function srSeasonHighs(data) {
+  const out = { high: null, low: null, close: null, blow: null };
+  srWeeks(data).forEach(wk => wk.games.forEach(g => {
+    const gi = srGameInfo(g);
+    const ref = (x, extra) => Object.assign({ week: wk.week }, x, extra || {});
+    if (!out.high || gi.win.s > out.high.s) out.high = ref(gi.win);
+    if (!out.low || gi.lose.s < out.low.s) out.low = ref(gi.lose);
+    if (!out.close || gi.margin < out.close.margin) out.close = ref(gi.win, { margin: gi.margin, opp: gi.lose.team });
+    if (!out.blow || gi.margin > out.blow.margin) out.blow = ref(gi.win, { margin: gi.margin, opp: gi.lose.team });
+  }));
+  return out;
+}
+
+// ---- power rankings ---------------------------------------------------------
+function srPct(vals, v) {
+  const n = vals.length;
+  if (n < 2) return 0.5;
+  let less = 0, eq = 0;
+  vals.forEach(x => { if (x < v) less++; else if (x === v) eq++; });
+  return (less + 0.5 * (eq - 1)) / (n - 1);
+}
+
+function srRankTeams(data, upTo, resultsOnly) {
+  let rows = srTable(data, upTo).filter(r => r.games.length);
+  let fromResults = rows.length > 0;
+  if (!fromResults) {
+    if (resultsOnly) return [];
+    rows = ((data.currentSeason && data.currentSeason.standings) || []).map(s => {
+      const rec = parseRecord(s.record);
+      return { team: s.team, w: rec.w, l: rec.l, t: 0, pf: Number(s.pointsFor) || 0, pa: Number(s.pointsAgainst) || 0, games: [] };
+    }).filter(r => r.w + r.l > 0);
+  }
+  rows.forEach(r => {
+    r.n = r.w + r.l + r.t;
+    r.winPct = r.n ? (r.w + 0.5 * r.t) / r.n : 0;
+    r.ppg = r.n ? r.pf / r.n : 0;
+    const last = r.games.slice(-3);
+    r.recent = last.length ? last.reduce((a, g) => a + g.pf, 0) / last.length : null;
+  });
+  const wp = rows.map(r => r.winPct), pp = rows.map(r => r.ppg);
+  const rc = rows.map(r => r.recent).filter(v => v != null);
+  const hasRecent = rows.length > 1 && rc.length === rows.length;
+  rows.forEach(r => {
+    const a = srPct(wp, r.winPct), b = srPct(pp, r.ppg);
+    r.score = hasRecent ? 0.45 * a + 0.35 * b + 0.2 * srPct(rc, r.recent) : 0.55 * a + 0.45 * b;
+    r.hasRecent = hasRecent;
+    r.fromResults = fromResults;
+  });
+  rows.sort((x, y) => (y.score - x.score) || (y.pf - x.pf));
+  rows.forEach((r, i) => { r.rank = i + 1; });
+  return rows;
+}
+
+function srLatestWeek(data) {
+  const wk = srWeeks(data);
+  return wk.length ? wk[wk.length - 1].week : 0;
+}
+
+function srRenderPowerTable(data) {
+  const card = document.getElementById("power-rankings-card");
+  if (!card) return;
+  let host = document.getElementById("power-rankings-table");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "power-rankings-table";
+    host.style.overflowX = "auto";
+    const h3 = card.querySelector("h3");
+    h3.insertAdjacentElement("afterend", host);
+  }
+  const rows = srRankTeams(data, 99);
+  if (!rows.length) { host.innerHTML = ""; return; }
+  card.style.display = "block";
+  const latest = Math.min(srLatestWeek(data), SEASON_CFG.regSeasonWeeks);
+  const prev = rows[0].fromResults && latest >= 2 ? srRankTeams(data, latest - 1, true) : [];
+  const prevRank = {};
+  prev.forEach(r => { prevRank[r.team] = r.rank; });
+  const showRecent = rows.some(r => r.recent != null);
+  let html = "<table><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Pts/G</th>" + (showRecent ? "<th>Last 3</th>" : "") + (prev.length ? "<th>Move</th>" : "") + "</tr></thead><tbody>";
+  rows.forEach(r => {
+    let move = "";
+    if (prev.length) {
+      const d = prevRank[r.team] != null ? prevRank[r.team] - r.rank : 0;
+      move = "<td class=\"" + (d > 0 ? "pr-up" : d < 0 ? "pr-down" : "pr-flat") + "\">" + (d > 0 ? "&#9650; " + d : d < 0 ? "&#9660; " + (-d) : "&ndash;") + "</td>";
+    }
+    html += "<tr><td>" + r.rank + "</td><td class=\"standings-team-cell\">" + teamBadgeHtml(r.team) + "<span>" + srEsc(r.team) + "</span></td><td>" + r.w + "-" + r.l + (r.t ? "-" + r.t : "") + "</td><td>" + r.ppg.toFixed(1) + "</td>" + (showRecent ? "<td>" + (r.recent != null ? r.recent.toFixed(1) : "&ndash;") + "</td>" : "") + move + "</tr>";
+  });
+  html += "</tbody></table><p style=\"color: var(--muted); font-size: 0.8rem; margin: 8px 0 12px;\">Ranked by record (" + (showRecent ? "45" : "55") + "%), points per game (" + (showRecent ? "35" : "45") + "%)" + (showRecent ? " and scoring over the last three games (20%)" : "") + ", each measured against the rest of the league.</p>";
+  host.innerHTML = html;
+}
+
+// ---- grades -----------------------------------------------------------------
+function srLetter(p) {
+  if (p >= 0.9) return "A+";
+  if (p >= 0.75) return "A";
+  if (p >= 0.6) return "B+";
+  if (p >= 0.45) return "B";
+  if (p >= 0.3) return "C";
+  if (p >= 0.15) return "D";
+  return "F";
+}
+
+function srRosterScores(data) {
+  const out = {};
+  (data.teams2026 || []).forEach(t => {
+    const byPos = {};
+    (t.roster || []).forEach(p => {
+      const pos = String(p.pos || "").toUpperCase().replace("DST", "DEF");
+      if (!pos) return;
+      const v = Math.max(0, tradeAnalyzerTalent(data, { player: p.player, keeperCost: p.keeperCost, pos: pos }));
+      (byPos[pos] = byPos[pos] || []).push(v);
+    });
+    Object.keys(byPos).forEach(k => byPos[k].sort((a, b) => b - a));
+    const sum = arr => arr.reduce((a, b) => a + b, 0);
+    const take = (pos, from, n) => (byPos[pos] || []).slice(from, from + n);
+    let score = sum(take("QB", 0, 1)) + sum(take("RB", 0, 2)) + sum(take("WR", 0, 3)) + sum(take("TE", 0, 1));
+    const flexPool = [].concat(take("RB", 2, 9), take("WR", 3, 9), take("TE", 1, 9)).sort((a, b) => b - a);
+    score += flexPool.length ? flexPool[0] : 0;
+    score += 0.25 * (sum(take("K", 0, 1)) + sum(take("DEF", 0, 1)));
+    out[t.team] = score;
+  });
+  return out;
+}
+
+function srSeasonScores(data) {
+  let rows = srTable(data, 99).filter(r => r.games.length);
+  if (!rows.length) {
+    rows = ((data.currentSeason && data.currentSeason.standings) || []).map(s => {
+      const rec = parseRecord(s.record);
+      return { team: s.team, w: rec.w, l: rec.l, t: 0, pf: Number(s.pointsFor) || 0, pa: 0, games: [] };
+    }).filter(r => r.w + r.l > 0);
+  }
+  rows.forEach(r => {
+    const n = r.w + r.l + r.t;
+    r.winPct = n ? (r.w + 0.5 * r.t) / n : 0;
+    r.ppg = n ? r.pf / n : 0;
+  });
+  const wp = rows.map(r => r.winPct), pp = rows.map(r => r.ppg);
+  const out = {};
+  rows.forEach(r => { out[r.team] = 0.6 * srPct(wp, r.winPct) + 0.4 * srPct(pp, r.ppg); });
+  return out;
+}
+
+function srComputeGrades(data) {
+  const names = srTeams(data);
+  const roster = srRosterScores(data);
+  const season = srSeasonScores(data);
+  const rVals = names.filter(n => roster[n] != null).map(n => roster[n]);
+  const sVals = names.filter(n => season[n] != null).map(n => season[n]);
+  const rp = {}, sp = {}, op = {};
+  names.forEach(n => {
+    if (roster[n] != null) rp[n] = srPct(rVals, roster[n]);
+    if (season[n] != null) sp[n] = srPct(sVals, season[n]);
+  });
+  const oVals = [];
+  names.forEach(n => {
+    if (rp[n] != null && sp[n] != null) { op[n] = 0.5 * rp[n] + 0.5 * sp[n]; oVals.push(op[n]); }
+  });
+  const grades = {};
+  names.forEach(n => {
+    grades[n] = {
+      roster: rp[n] != null ? { letter: srLetter(rp[n]), pct: Math.round(rp[n] * 100) } : null,
+      season: sp[n] != null ? { letter: srLetter(sp[n]), pct: Math.round(sp[n] * 100) } : null,
+      overall: op[n] != null ? { letter: srLetter(srPct(oVals, op[n])), pct: Math.round(srPct(oVals, op[n]) * 100) } : null
+    };
+  });
+  return grades;
+}
+
+function srLockedGrades(data) {
+  const g = data.seasonGrades;
+  const year = data.currentSeason && data.currentSeason.year;
+  return g && g.grades && (g.year == null || g.year === year) ? g : null;
+}
+
+function srGradeChip(g, title) {
+  if (!g) return "&ndash;";
+  return "<span class=\"draft-grade draft-grade-" + draftGradeClass(g.letter) + "\" title=\"" + srEsc(title) + " — better than " + g.pct + "% of the league\">" + g.letter + "</span>";
+}
+
+function srRenderGrades(data) {
+  const host = document.getElementById("results-grades");
+  if (!host) return;
+  const locked = srLockedGrades(data);
+  const grades = locked ? locked.grades : srComputeGrades(data);
+  const names = srTeams(data);
+  const have = names.some(n => grades[n] && (grades[n].season || grades[n].roster));
+  if (!have) { host.innerHTML = "<p style=\"color: var(--muted); font-style: italic;\">Grades appear once the first results are in.</p>"; return; }
+  const weeks = Math.min(srLatestWeek(data), SEASON_CFG.regSeasonWeeks);
+  const order = names.slice().sort((a, b) => ((grades[b].overall ? grades[b].overall.pct : -1) - (grades[a].overall ? grades[a].overall.pct : -1)));
+  let html = "<p style=\"color: var(--muted); margin-top: 0; font-size: 0.88rem;\">" +
+    (locked ? "<strong>Final.</strong> Locked in" + (locked.lockedAt ? " on " + srEsc(String(locked.lockedAt).slice(0, 10)) : "") + (locked.weeksRecorded ? " after " + locked.weeksRecorded + " weeks" : "") + "."
+            : "<strong>Live.</strong> Updates as results come in" + (weeks ? " (through Week " + weeks + ")" : "") + "; becomes final when the commissioner locks it after Week " + SEASON_CFG.regSeasonWeeks + ".") +
+    " Everything is graded on a curve against the rest of the league.</p>" +
+    "<table><thead><tr><th>Team</th><th>Roster</th><th>Season</th><th>Overall</th></tr></thead><tbody>";
+  order.forEach(n => {
+    const g = grades[n];
+    html += "<tr><td class=\"standings-team-cell\">" + teamBadgeHtml(n) + "<span>" + srEsc(n) + "</span></td><td>" + srGradeChip(g.roster, "Roster grade") + "</td><td>" + srGradeChip(g.season, "Season grade") + "</td><td>" + srGradeChip(g.overall, "Overall grade") + "</td></tr>";
+  });
+  html += "</tbody></table><p style=\"color: var(--muted); font-size: 0.8rem; margin-bottom: 0;\"><strong>Roster</strong> is how good each team's starting lineup is by the same player values the Trade Analyzer uses (QB, 2 RB, 3 WR, TE, one flex, K, DEF). <strong>Season</strong> is record (60%) and points per game (40%). <strong>Overall</strong> averages the two.</p>";
+  host.innerHTML = html;
+}
+
+// ---- home + results page rendering ------------------------------------------
+function srRenderLatest(data) {
+  const card = document.getElementById("latest-results-card");
+  if (!card) return;
+  const weeks = srWeeks(data);
+  if (!weeks.length) { card.style.display = "none"; return; }
+  const wk = weeks[weeks.length - 1];
+  card.style.display = "block";
+  const chips = srWeekChips(wk.games);
+  card.innerHTML = "<div class=\"wr-head\"><h3 style=\"margin: 0;\">Week " + wk.week + " Results</h3><a href=\"#\" class=\"wr-all-link\" id=\"latest-results-all\">All weeks &rarr;</a></div>" +
+    "<div class=\"wr-games\">" + srGamesHtml(wk.games) + "</div>" +
+    (chips.length ? "<div class=\"wr-chips\">" + chips.map(c => "<span class=\"wr-chip\">" + c + "</span>").join("") + "</div>" : "");
+  const link = document.getElementById("latest-results-all");
+  if (link) link.addEventListener("click", e => {
+    e.preventDefault();
+    SR_VIEW_WEEK = wk.week;
+    srRenderResultsPage(CURRENT_DATA || data);
+    const btn = document.querySelector("nav button[data-tab=\"results\"]");
+    if (btn) btn.click();
+  });
+}
+
+function srRenderResultsPage(data) {
+  const weeksEl = document.getElementById("results-weeks");
+  if (!weeksEl) return;
+  const weeks = srWeeks(data);
+  const empty = document.getElementById("results-empty");
+  const body = document.getElementById("results-body");
+  if (empty) empty.style.display = weeks.length ? "none" : "";
+  if (body) body.style.display = weeks.length ? "" : "none";
+  srRenderGrades(data);
+  if (!weeks.length) { weeksEl.innerHTML = ""; return; }
+  if (SR_VIEW_WEEK == null || !weeks.some(w => w.week === SR_VIEW_WEEK)) SR_VIEW_WEEK = weeks[weeks.length - 1].week;
+  weeksEl.innerHTML = "";
+  weeks.forEach(w => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "wr-week-btn" + (w.week === SR_VIEW_WEEK ? " active" : "");
+    b.textContent = w.week > SEASON_CFG.regSeasonWeeks ? "Wk " + w.week + " (playoffs)" : "Wk " + w.week;
+    b.addEventListener("click", () => { SR_VIEW_WEEK = w.week; srRenderResultsPage(CURRENT_DATA || data); });
+    weeksEl.appendChild(b);
+  });
+  const wk = weeks.find(w => w.week === SR_VIEW_WEEK);
+  document.getElementById("results-week-title").textContent = "Week " + wk.week;
+  document.getElementById("results-week-games").innerHTML = srGamesHtml(wk.games);
+  const chips = srWeekChips(wk.games);
+  document.getElementById("results-week-chips").innerHTML = chips.map(c => "<span class=\"wr-chip\">" + c + "</span>").join("");
+
+  const hi = srSeasonHighs(data);
+  const hl = [];
+  if (hi.high) hl.push(["Highest score", srEsc(hi.high.team) + " &middot; " + srFmt(hi.high.s) + " (Wk " + hi.high.week + ")"]);
+  if (hi.low) hl.push(["Lowest score", srEsc(hi.low.team) + " &middot; " + srFmt(hi.low.s) + " (Wk " + hi.low.week + ")"]);
+  if (hi.close) hl.push(["Closest game", srEsc(hi.close.team) + " over " + srEsc(hi.close.opp) + " by " + srFmt(hi.close.margin) + " (Wk " + hi.close.week + ")"]);
+  if (hi.blow) hl.push(["Biggest blowout", srEsc(hi.blow.team) + " over " + srEsc(hi.blow.opp) + " by " + srFmt(hi.blow.margin) + " (Wk " + hi.blow.week + ")"]);
+  document.getElementById("results-highs").innerHTML = hl.map(h => "<div class=\"wr-high\"><span class=\"wr-high-label\">" + h[0] + "</span><span>" + h[1] + "</span></div>").join("");
+
+  const tbl = srTable(data, 99).filter(r => r.games.length).sort((a, b) => (b.w - a.w) || (b.pf - a.pf));
+  let html = "<table><thead><tr><th>Team</th><th>W-L</th><th>PF</th><th>PA</th><th>Avg</th><th>High</th><th>Low</th></tr></thead><tbody>";
+  tbl.forEach(r => {
+    const scores = r.games.map(g => g.pf);
+    html += "<tr><td class=\"standings-team-cell\">" + teamBadgeHtml(r.team) + "<span>" + srEsc(r.team) + "</span></td><td>" + r.w + "-" + r.l + (r.t ? "-" + r.t : "") + "</td><td>" + srFmt(r.pf) + "</td><td>" + srFmt(r.pa) + "</td><td>" + (r.pf / r.games.length).toFixed(1) + "</td><td>" + srFmt(Math.max.apply(null, scores)) + "</td><td>" + srFmt(Math.min.apply(null, scores)) + "</td></tr>";
+  });
+  html += "</tbody></table>";
+  document.getElementById("results-teams").innerHTML = html;
+}
+
+// After the draft the home page stops counting down and leads with results.
+function srApplyInSeasonHome(data) {
+  const cd = formatCountdown(data.draftDate);
+  const drafted = !!(cd && cd.drafted);
+  const home = document.getElementById("home");
+  if (!home) return;
+  home.classList.toggle("in-season", drafted);
+  if (drafted) {
+    const card = document.getElementById("countdown-card");
+    if (card) card.style.display = "none";
+    const search = home.querySelector(".player-search-card");
+    if (search && home.lastElementChild !== search) home.appendChild(search);
+  }
+}
+
+function renderInSeason(data) {
+  try {
+    srApplyInSeasonHome(data);
+    srRenderLatest(data);
+    srRenderPowerTable(data);
+    srRenderResultsPage(data);
+    srRenderAdminGradeStatus(data);
+  } catch (err) {
+    console.error("In-season render failed:", err);
+  }
+}
+
+// ---- admin: weekly results editor ------------------------------------------
+function srParseScoreboard(text, names) {
+  const sorted = names.slice().sort((a, b) => b.length - a.length);
+  const norm = srNorm(text);
+  const hits = [];
+  let i = 0;
+  while (i < norm.length) {
+    let found = null;
+    for (let k = 0; k < sorted.length; k++) {
+      const nm = srNorm(sorted[k]);
+      if (nm && norm.startsWith(nm, i)) { found = sorted[k]; break; }
+    }
+    if (found) { hits.push({ team: found, at: i, end: i + srNorm(found).length }); i += srNorm(found).length; } else i++;
+  }
+  hits.forEach((h, idx) => {
+    const stop = idx + 1 < hits.length ? hits[idx + 1].at : norm.length;
+    const seg = norm.slice(h.end, stop);
+    const m2 = seg.match(/\d{1,3}\.\d{2}(?!\d)/);
+    const m1 = m2 || seg.match(/\d{1,3}\.\d+/);
+    h.score = m1 ? Number(m1[0]) : null;
+  });
+  const usable = hits.filter(h => h.score != null);
+  const games = [];
+  for (let j = 0; j + 1 < usable.length; j += 2) {
+    if (usable[j].team !== usable[j + 1].team) games.push({ a: usable[j].team, b: usable[j + 1].team, sa: usable[j].score, sb: usable[j + 1].score });
+  }
+  return { games: games, leftover: usable.length % 2 };
+}
+
+function srAddAdminRow(g) {
+  const wrap = document.getElementById("admin-wr-rows");
+  if (!wrap) return;
+  const names = srTeams(CURRENT_DATA || { currentSeason: { standings: [] }, teams: [] });
+  const opts = "<option value=\"\">Team&hellip;</option>" + names.map(n => "<option value=\"" + srEsc(n) + "\">" + srEsc(n) + "</option>").join("");
+  const row = document.createElement("div");
+  row.className = "sr-row";
+  row.innerHTML = "<select class=\"sr-ta\">" + opts + "</select><input type=\"number\" step=\"0.01\" class=\"sr-sa\" placeholder=\"Score\"><input type=\"number\" step=\"0.01\" class=\"sr-sb\" placeholder=\"Score\"><select class=\"sr-tb\">" + opts + "</select><button type=\"button\" class=\"admin-btn admin-btn-secondary sr-del\" title=\"Remove\">&times;</button>";
+  if (g) {
+    row.querySelector(".sr-ta").value = g.a;
+    row.querySelector(".sr-tb").value = g.b;
+    row.querySelector(".sr-sa").value = g.sa;
+    row.querySelector(".sr-sb").value = g.sb;
+  }
+  row.querySelector(".sr-del").addEventListener("click", () => row.remove());
+  wrap.appendChild(row);
+}
+
+function srLoadAdminWeek(data, week) {
+  const sel = document.getElementById("admin-wr-week");
+  const wrap = document.getElementById("admin-wr-rows");
+  if (!sel || !wrap) return;
+  sel.dataset.loaded = String(week);
+  wrap.innerHTML = "";
+  const existing = (Array.isArray(data.weeklyResults) ? data.weeklyResults : []).find(w => Number(w.week) === week);
+  const games = existing && Array.isArray(existing.games) ? existing.games : [];
+  games.forEach(g => srAddAdminRow(g));
+  const half = Math.floor(srTeams(data).length / 2) || 5;
+  for (let k = games.length; k < half; k++) srAddAdminRow(null);
+}
+
+function srCommitAdminRows(data) {
+  const sel = document.getElementById("admin-wr-week");
+  if (!sel || !sel.dataset.loaded) return;
+  const wk = Number(sel.dataset.loaded);
+  const games = [];
+  document.querySelectorAll("#admin-wr-rows .sr-row").forEach(row => {
+    const a = row.querySelector(".sr-ta").value, b = row.querySelector(".sr-tb").value;
+    const sa = row.querySelector(".sr-sa").value, sb = row.querySelector(".sr-sb").value;
+    if (a && b && a !== b && sa !== "" && sb !== "" && isFinite(Number(sa)) && isFinite(Number(sb))) games.push({ a: a, b: b, sa: Number(sa), sb: Number(sb) });
+  });
+  const list = (Array.isArray(data.weeklyResults) ? data.weeklyResults : []).filter(w => Number(w.week) !== wk);
+  if (games.length) list.push({ week: wk, games: games });
+  list.sort((x, y) => x.week - y.week);
+  data.weeklyResults = list;
+}
+
+function srBuildAdmin(data) {
+  const sel = document.getElementById("admin-wr-week");
+  if (!sel) return;
+  const recorded = {};
+  srWeeks(data).forEach(w => { recorded[w.week] = w.games.length; });
+  const keep = sel.dataset.loaded ? Number(sel.dataset.loaded) : null;
+  sel.innerHTML = "";
+  for (let w = 1; w <= 18; w++) {
+    const o = document.createElement("option");
+    o.value = String(w);
+    o.textContent = "Week " + w + (recorded[w] ? " (" + recorded[w] + " games saved)" : "");
+    sel.appendChild(o);
+  }
+  const latest = srLatestWeek(data);
+  const start = keep || Math.min(18, latest + 1);
+  sel.value = String(start);
+  srLoadAdminWeek(data, start);
+  srRenderAdminGradeStatus(data);
+}
+
+function srRefreshWeekLabels(data) {
+  const sel = document.getElementById("admin-wr-week");
+  if (!sel) return;
+  const recorded = {};
+  srWeeks(data).forEach(w => { recorded[w.week] = w.games.length; });
+  Array.from(sel.options).forEach(o => {
+    const w = Number(o.value);
+    o.textContent = "Week " + w + (recorded[w] ? " (" + recorded[w] + " games saved)" : "");
+  });
+}
+
+function srRenderAdminGradeStatus(data) {
+  const el = document.getElementById("admin-grades-status");
+  if (!el) return;
+  const locked = srLockedGrades(data);
+  const lockBtn = document.getElementById("admin-grades-lock-btn");
+  const unlockBtn = document.getElementById("admin-grades-unlock-btn");
+  el.textContent = locked
+    ? "Grades are LOCKED" + (locked.lockedAt ? " (" + String(locked.lockedAt).slice(0, 10) + ")" : "") + ". Unlock to go back to live grades."
+    : "Grades are live (not locked). Weeks recorded: " + srWeeks(data).filter(w => w.week <= SEASON_CFG.regSeasonWeeks).length + " of " + SEASON_CFG.regSeasonWeeks + ".";
+  if (lockBtn) lockBtn.style.display = locked ? "none" : "";
+  if (unlockBtn) unlockBtn.style.display = locked ? "" : "none";
+}
+
+(function srWireAdmin() {
+  const sel = document.getElementById("admin-wr-week");
+  if (!sel) return;
+  let pending = null;
+  sel.addEventListener("change", () => {
+    if (!CURRENT_DATA) return;
+    const w = Number(sel.value);
+    srCommitAdminRows(CURRENT_DATA);
+    srRefreshWeekLabels(CURRENT_DATA);
+    sel.value = String(w);
+    srLoadAdminWeek(CURRENT_DATA, w);
+  });
+  document.getElementById("admin-wr-add").addEventListener("click", () => srAddAdminRow(null));
+  const pasteEl = document.getElementById("admin-wr-paste");
+  const outEl = document.getElementById("admin-wr-preview");
+  const applyBtn = document.getElementById("admin-wr-apply-btn");
+  document.getElementById("admin-wr-preview-btn").addEventListener("click", () => {
+    if (!CURRENT_DATA) return;
+    const res = srParseScoreboard(pasteEl.value, srTeams(CURRENT_DATA));
+    pending = res.games;
+    if (!res.games.length) {
+      outEl.textContent = "No matchups found. Check that team names match the site's names, or type the scores into the rows above.";
+      applyBtn.style.display = "none";
+      return;
+    }
+    outEl.innerHTML = "<table><thead><tr><th>Team</th><th>Score</th><th>Score</th><th>Team</th></tr></thead><tbody>" +
+      res.games.map(g => "<tr><td>" + srEsc(g.a) + "</td><td>" + srFmt(g.sa) + "</td><td>" + srFmt(g.sb) + "</td><td>" + srEsc(g.b) + "</td></tr>").join("") +
+      "</tbody></table>" + (res.leftover ? "<p style=\"color: var(--red);\">One team had a score but no opponent &mdash; check the paste.</p>" : "");
+    applyBtn.style.display = "";
+  });
+  applyBtn.addEventListener("click", () => {
+    if (!pending || !CURRENT_DATA) return;
+    document.getElementById("admin-wr-rows").innerHTML = "";
+    pending.forEach(g => srAddAdminRow(g));
+    outEl.textContent = pending.length + " games filled in for Week " + sel.value + ". Check them, then press Save Changes.";
+    applyBtn.style.display = "none";
+    pasteEl.value = "";
+    pending = null;
+  });
+  document.getElementById("admin-grades-lock-btn").addEventListener("click", () => {
+    if (!CURRENT_DATA) return;
+    srCommitAdminRows(CURRENT_DATA);
+    const done = srWeeks(CURRENT_DATA).filter(w => w.week <= SEASON_CFG.regSeasonWeeks).length;
+    if (done < SEASON_CFG.regSeasonWeeks && !window.confirm("Only " + done + " of " + SEASON_CFG.regSeasonWeeks + " regular-season weeks are recorded. Lock the grades anyway?")) return;
+    CURRENT_DATA.seasonGrades = {
+      year: CURRENT_DATA.currentSeason && CURRENT_DATA.currentSeason.year,
+      lockedAt: new Date().toISOString(),
+      weeksRecorded: done,
+      grades: srComputeGrades(CURRENT_DATA)
+    };
+    srRenderAdminGradeStatus(CURRENT_DATA);
+    srRenderGrades(CURRENT_DATA);
+    document.getElementById("admin-grades-status").textContent += " Press Save Changes to publish the lock.";
+  });
+  document.getElementById("admin-grades-unlock-btn").addEventListener("click", () => {
+    if (!CURRENT_DATA) return;
+    delete CURRENT_DATA.seasonGrades;
+    srRenderAdminGradeStatus(CURRENT_DATA);
+    srRenderGrades(CURRENT_DATA);
+    document.getElementById("admin-grades-status").textContent += " Press Save Changes to publish.";
+  });
+})();
+
 function buildAdminForm(data) {
   document.getElementById("admin-note").value = data.commissionerNote || "";
+  srBuildAdmin(data);
   const ppgEl = document.getElementById("admin-ppg");
   if (ppgEl) ppgEl.value = Object.keys(data.playerPpg || {}).map(n => n + ", " + data.playerPpg[n]).join("\n");
   document.getElementById("admin-draftdate").value = data.draftDate || "";
@@ -9019,6 +9683,7 @@ function render(LEAGUE_DATA) {
   renderWaiversSection(LEAGUE_DATA);
   renderTradeAnalyzer(LEAGUE_DATA);
   renderKeeperPlanner(LEAGUE_DATA);
+  renderInSeason(LEAGUE_DATA);
 
   const rulesGrid = document.getElementById("rules-grid");
   LEAGUE_DATA.rulesGroups.forEach(group => {
@@ -9302,6 +9967,23 @@ document.getElementById("admin-export-btn").addEventListener("click", () => {
 // narrower than render(): render() also does one-time setup (an interval
 // timer, rules/settings cards appended without clearing first) that isn't
 // safe to repeat on every live update.
+// The saved Year 14 Keeper Rules predate a couple of rules the league uses, so
+// add any that are missing (in memory; they persist the next time the admin
+// presses Save Changes). Saved wording always wins if the row already exists.
+function ensureYear14KeeperRuleRows(data) {
+  const group = (data.rulesGroups || []).find(g => g.title === "Keeper Rules");
+  if (!group || !Array.isArray(group.rows)) return data;
+  const has = label => group.rows.some(r => r.label === label);
+  const at = (label, row) => {
+    if (has(row.label)) return;
+    const idx = group.rows.findIndex(r => r.label === label);
+    group.rows.splice(idx >= 0 ? idx + 1 : group.rows.length, 0, row);
+  };
+  at("Waiver Pickups", { label: "Repeat Keepers", value: "A kept player keeps the same draft round every year he is kept -- his cost does not move up for repeat keepers" });
+  at("Waiver Pickups", { label: "Round Conflicts", value: "If two kept players cost the same draft round, the player with the better Fantasy Football Calculator Half-PPR ADP moves up one round, and anyone already in that round is bumped up one round further (a straight shift, no extra ADP comparison). At round 1, the better-ADP player keeps round 1 and the other moves to round 2. The Last-Round Keeper Bump below is the exception: a newly kept waiver pickup takes the last round no matter the ADP." });
+  return data;
+}
+
 function refreshPublicSections(data) {
   document.getElementById("commish-note").textContent = data.commissionerNote;
   document.getElementById("updated-date").textContent = data.lastUpdated;
@@ -9316,6 +9998,7 @@ function refreshPublicSections(data) {
   renderWaiversSection(data);
   renderTradeAnalyzer(data);
   renderKeeperPlanner(data);
+  renderInSeason(data);
   renderTeamsGrid(data);
   renderTeams2026(data);
   populateRosterHistoryList(data);
@@ -9329,6 +10012,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
     return;
   }
   CURRENT_DATA.commissionerNote = document.getElementById("admin-note").value;
+  srCommitAdminRows(CURRENT_DATA);
   const ppgBox = document.getElementById("admin-ppg");
   if (ppgBox) {
     const parsedPpg = {};
@@ -9849,7 +10533,7 @@ function loadAndRender() {
           // draftOrder2026 / draftResults2025) shows up immediately even
           // though the live Firestore document predates it. Anything the
           // live document already has still wins.
-          const merged = { ...DEFAULT_LEAGUE_DATA, ...snap.data() };
+          const merged = ensureYear14KeeperRuleRows({ ...DEFAULT_LEAGUE_DATA, ...snap.data() });
           if (!hasLoadedOnce) {
             render(merged);
             hasLoadedOnce = true;
