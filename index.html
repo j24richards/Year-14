@@ -5605,15 +5605,16 @@ function renderTradeAnalyzer(data) {
       note.textContent = "One of these teams doesn't have a roster on file.";
       return;
     }
-    // Kickers and defenses do get thrown into real trades, but never as the
-    // whole return -- nobody trades a TE straight-up for a kicker. So every
-    // package must include at least one skill-position player; a K/DEF can
-    // only ride along as the second piece.
-    const isSkillPos = p => p.pos !== "K" && p.pos !== "DEF" && p.pos !== "DST";
+    // Real trades are built around running backs, receivers and tight ends.
+    // So every package must include at least one RB/WR/TE (that's the "core"
+    // piece the fairness rules below are judged on); a quarterback, kicker
+    // or defense can only ride along as the second piece -- nobody trades a
+    // TE straight-up for a kicker, and a QB is almost never the centerpiece.
+    const isSkillPos = p => p.pos === "RB" || p.pos === "WR" || p.pos === "TE";
     const combosA = combosForRoster(rosterA).filter(c => c.some(isSkillPos));
     const combosB = combosForRoster(rosterB).filter(c => c.some(isSkillPos));
     if (!combosA.length || !combosB.length) {
-      note.textContent = "Not enough skill-position players on one of these rosters to suggest a trade.";
+      note.textContent = "Not enough RB/WR/TE players on one of these rosters to suggest a trade.";
       return;
     }
     // A fair trade should be between comparable players, so a seed pairing
