@@ -18,6 +18,8 @@
 //                    so finished scores get their final numbers. Weeks already
 //                    in the file are kept; fetched weeks are added/updated.
 //   DRY_RUN          "true" to report what would change without writing
+//   DEBUG_RAW        "true" to print a trimmed sample of Yahoo's raw replies
+//                    (scoreboard team, lineup player) for troubleshooting
 //   OUT_FILE         output path (default ./data/yahoo-league.json)
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -30,6 +32,7 @@ const LEAGUE_ID = String(process.env.YAHOO_LEAGUE_ID || "").trim();
 const WEEK = String(process.env.WEEK || "").trim();
 const DRY_RUN = String(process.env.DRY_RUN || "").toLowerCase() === "true";
 const OUT_FILE = process.env.OUT_FILE || "data/yahoo-league.json";
+const DEBUG_RAW = String(process.env.DEBUG_RAW || "").toLowerCase() === "true";
 // Overridable only so the script can be tested against a local stand-in.
 const API_BASE = process.env.YAHOO_API_BASE || "https://fantasysports.yahooapis.com/fantasy/v2/";
 const TOKEN_URL = process.env.YAHOO_TOKEN_URL || "https://api.login.yahoo.com/oauth2/get_token";
@@ -128,12 +131,18 @@ const num = v => (v === undefined || v === null || v === "" ? null : Number(v));
 // A Yahoo "team" is an array: [ [meta items...], {team_points}, {team_standings}, ... ]
 function readTeam(arr) {
   const meta = {};
-  let points = null, projected = null, standing = null;
+  let points = null, projected = null, winProb = null, standing = null;
   (function walk(n) {
     if (Array.isArray(n)) return n.forEach(walk);
     if (n === null || typeof n !== "object") return;
-    if (n.team_points) { points = num(n.team_points.total); return; }
-    if (n.team_projected_points) { projected = num(n.team_projected_points.total); return; }
+    // Yahoo sometimes puts these side by side in one object, sometimes in
+    // separate ones, so read every one that is present before moving on.
+    if (n.team_points || n.team_projected_points || n.win_probability !== undefined) {
+      if (n.team_points) points = num(n.team_points.total);
+      if (n.team_projected_points) projected = num(n.team_projected_points.total);
+      if (n.win_probability !== undefined && typeof n.win_probability !== "object") winProb = num(n.win_probability);
+      return;
+    }
     if (n.team_standings) { standing = n.team_standings; return; }
     if (n.managers || n.team_logos || n.roster_adds || n.clinched_playoffs !== undefined) {
       if (n.managers) {
@@ -155,6 +164,7 @@ function readTeam(arr) {
   };
   if (points !== null) t.points = points;
   if (projected !== null) t.projected = projected;
+  if (winProb !== null) t.win_probability = winProb;
   if (standing) {
     const o = standing.outcome_totals || {};
     t.rank = num(standing.rank);
@@ -200,6 +210,7 @@ async function getLeagueMeta(key) {
   const data = await yahoo("league/" + key + "/settings");
   const league = findAll(data, "league").find(Array.isArray) || [];
   const meta = flatten(league[0] || league);
+  const settings = flatten(league[1] || {});
   return {
     id: String(meta.league_id || LEAGUE_ID),
     key,
@@ -209,7 +220,9 @@ async function getLeagueMeta(key) {
     scoring_type: meta.scoring_type || null,
     current_week: num(meta.current_week),
     start_week: num(meta.start_week),
-    end_week: num(meta.end_week)
+    end_week: num(meta.end_week),
+    playoff_start_week: num(settings.playoff_start_week),
+    num_playoff_teams: num(settings.num_playoff_teams)
   };
 }
 
@@ -221,6 +234,10 @@ async function getStandings(key) {
 async function getScoreboard(key, week) {
   const data = await yahoo("league/" + key + "/scoreboard;week=" + week);
   const matchups = findAll(data, "matchup").filter(m => m && typeof m === "object");
+  if (DEBUG_RAW && matchups[0]) {
+    const t = findAll(matchups[0], "team").find(Array.isArray);
+    console.log("DEBUG scoreboard week " + week + " first team: " + JSON.stringify(t).slice(0, 1800));
+  }
   return matchups.map(m => {
     const f = {};
     for (const k of ["week", "week_start", "week_end", "status", "is_playoffs", "is_consolation", "is_tied", "winner_team_key"]) {
@@ -230,6 +247,7 @@ async function getScoreboard(key, week) {
       week: num(f.week) ?? Number(week),
       status: f.status || null,
       is_playoffs: f.is_playoffs === "1" || f.is_playoffs === 1,
+      is_consolation: f.is_consolation === "1" || f.is_consolation === 1,
       is_tied: f.is_tied === "1" || f.is_tied === 1,
       winner_team_key: f.winner_team_key || null,
       teams: readTeams(m)
@@ -266,31 +284,27 @@ function parseTransactions(data) {
   return out;
 }
 
-async function getTransactions(key) {
-  return parseTransactions(await yahoo("league/" + key + "/transactions;count=50"));
-}
-
-// Every completed trade this season (the recent-transactions list above only
-// reaches back a few weeks, so trades would otherwise be missed). Used to tell
-// which players came by trade. Walks the league's whole transaction history and
-// keeps the trades, rather than trusting a server-side filter.
-async function getTrades(key) {
+// The league's whole transaction history, walked page by page. Serves the
+// Waivers log (every add/drop this season), the Trades log and the Keeper
+// Planner's "came by trade" detection. Rather than trusting a server-side
+// type filter, it keeps what it needs from the full list.
+async function getAllTransactions(key) {
   const all = new Map();
-  let seen = 0;
   const types = {};
+  let seen = 0;
   for (let start = 0; start < 5000; start += 25) {
     const page = parseTransactions(await yahoo("league/" + key + "/transactions;start=" + start + ";count=25"));
     if (!page.length) break;
     seen += page.length;
     for (const t of page) {
       types[t.type || "?"] = (types[t.type || "?"] || 0) + 1;
-      if (t.type === "trade" && t.status === "successful") all.set(t.id, t);
+      if (t.status === "successful") all.set(t.id, t);
     }
     if (page.length < 25) break;
   }
   console.log("Scanned " + seen + " transactions: " +
     Object.entries(types).map(([k, v]) => k + " " + v).join(", ") + ".");
-  return [...all.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  return [...all.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 600);
 }
 
 async function getRoster(teamKey) {
@@ -304,6 +318,26 @@ async function getRoster(teamKey) {
       team: info.editorial_team_abbr || null,
       pos: String(info.display_position || "").split(",")[0] || null,
       slot: info.position || null
+    });
+  }
+  return rows;
+}
+
+// One team's lineup for one week, with each player's points that week.
+async function getLineup(teamKey, week) {
+  const data = await yahoo("team/" + teamKey + "/roster;week=" + week + "/players/stats;type=week;week=" + week);
+  const rows = [];
+  const players = findAll(data, "player").filter(Array.isArray);
+  if (DEBUG_RAW && players[0]) console.log("DEBUG lineup " + teamKey + " week " + week + " first player: " + JSON.stringify(players[0]).slice(0, 1800));
+  for (const p of players) {
+    const info = flatten(p);
+    if (!info.name) continue;
+    rows.push({
+      name: info.name,
+      team: info.editorial_team_abbr || null,
+      pos: String(info.display_position || "").split(",")[0] || null,
+      slot: info.position || null,
+      points: num(info.total)
     });
   }
   return rows;
@@ -368,12 +402,28 @@ async function main() {
     console.log("Week " + w + ": " + matchups.length + " matchups.");
   }
 
-  const transactions = await getTransactions(key);
-  console.log("Transactions: " + transactions.length + " recent.");
+  const all = await getAllTransactions(key);
+  const trades = all.filter(t => t.type === "trade");
+  const transactions = all;
+  console.log("Transactions: " + transactions.length + " this season, " + trades.length + " trades (" +
+    trades.reduce((n, t) => n + t.players.length, 0) + " player moves).");
 
-  const trades = await getTrades(key);
-  console.log("Trades: " + trades.length + " completed this season, " +
-    trades.reduce((n, t) => n + t.players.length, 0) + " player moves.");
+  // Weekly lineups with player points. Finished weeks already saved are kept;
+  // a failure here never blocks the rest of the update.
+  const lineups = prior && prior.lineups ? JSON.parse(JSON.stringify(prior.lineups)) : {};
+  for (const w of weeks) {
+    const ms = scores[String(w)] || [];
+    const final = ms.length && ms.every(m => m.status === "postevent");
+    if (final && lineups[String(w)]) continue;
+    try {
+      const byTeam = {};
+      for (const t of standings) byTeam[t.team_key] = await getLineup(t.team_key, w);
+      if (Object.values(byTeam).some(r => r.length)) lineups[String(w)] = byTeam;
+      console.log("Lineups week " + w + ": " + Object.values(byTeam).reduce((n, r) => n + r.length, 0) + " players.");
+    } catch (err) {
+      console.log("WARNING: could not read lineups for week " + w + ": " + String(err.message || err).slice(0, 200));
+    }
+  }
 
   const rosters = {};
   for (const t of standings) rosters[t.team_key] = await getRoster(t.team_key);
@@ -388,7 +438,8 @@ async function main() {
     scores,
     transactions,
     trades,
-    rosters
+    rosters,
+    lineups
   };
 
   // Skip the write (and the commit) when only the timestamp would change.
