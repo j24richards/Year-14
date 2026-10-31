@@ -1907,38 +1907,26 @@
 
 <nav>
   <button data-tab="home" class="active">Home</button>
-  <div class="nav-group">
-    <button type="button" class="nav-group-toggle" data-group="season2026" aria-haspopup="true" aria-expanded="false">2026 Season <span aria-hidden="true">&#9662;</span></button>
-    <div class="nav-group-menu" data-group-menu="season2026">
-      <button data-tab="teams2026">2026 Teams</button>
-      <button data-tab="draft">2026 Draft</button>
-      <button data-tab="keepers">Keepers</button>
-      <button data-tab="draftorder">Draft Order</button>
-      <button data-tab="mockdraft">Mock Draft</button>
-      <button data-tab="trades">Trades</button>
-      <button data-tab="waivers">Waivers</button>
-      <button data-tab="results">Results</button>
-      <button data-tab="yahoolive">Live Scores</button>
-    </div>
-  </div>
-  <button data-tab="tradeanalyzer">Trade Analyzer</button>
-  <button data-tab="keeperplanner">Keeper Planner</button>
-  <div class="nav-group">
-    <button type="button" class="nav-group-toggle" data-group="archive2025" aria-haspopup="true" aria-expanded="false">2025 Archive <span aria-hidden="true">&#9662;</span></button>
-    <div class="nav-group-menu" data-group-menu="archive2025">
-      <button data-tab="teams">2025 Teams</button>
-      <button data-tab="draft2025">2025 Draft</button>
-      <button data-tab="trades2025">2025 Trades</button>
-      <button data-tab="history">History</button>
-    </div>
-  </div>
-  <div class="nav-group">
-    <button type="button" class="nav-group-toggle" data-group="tools" aria-haspopup="true" aria-expanded="false">Tools <span aria-hidden="true">&#9662;</span></button>
-    <div class="nav-group-menu" data-group-menu="tools">
-      <button data-tab="export">Export</button>
-      <button data-tab="rules">Rules</button>
-      <button data-tab="admin">Admin</button>
-    </div>
+  <button data-tab="yahoolive" data-grp="season">Season</button>
+  <button data-tab="keepers" data-grp="keepers">Keepers &amp; Draft</button>
+  <button data-tab="teams" data-grp="archive">2025 Archive</button>
+  <button data-tab="rules" data-grp="more">Rules &amp; Export</button>
+  <div class="yh-hidden-tabs" aria-hidden="true">
+    <button data-tab="results" data-grp="season" tabindex="-1">Results</button>
+    <button data-tab="waivers" data-grp="season" tabindex="-1">Waivers</button>
+    <button data-tab="trades" data-grp="season" tabindex="-1">Trades</button>
+    <button data-tab="freeagents" data-grp="season" tabindex="-1">Free Agents</button>
+    <button data-tab="teams2026" data-grp="season" tabindex="-1">Teams</button>
+    <button data-tab="keeperplanner" data-grp="keepers" tabindex="-1">Keeper Planner</button>
+    <button data-tab="tradeanalyzer" data-grp="keepers" tabindex="-1">Trade Analyzer</button>
+    <button data-tab="draft" data-grp="keepers" tabindex="-1">2026 Draft</button>
+    <button data-tab="draftorder" data-grp="keepers" tabindex="-1">Draft Order</button>
+    <button data-tab="mockdraft" data-grp="keepers" tabindex="-1">Mock Draft</button>
+    <button data-tab="draft2025" data-grp="archive" tabindex="-1">2025 Draft</button>
+    <button data-tab="trades2025" data-grp="archive" tabindex="-1">2025 Trades</button>
+    <button data-tab="history" data-grp="archive" tabindex="-1">History</button>
+    <button data-tab="export" data-grp="more" tabindex="-1">Export</button>
+    <button data-tab="admin" tabindex="-1">Admin</button>
   </div>
 </nav>
 <div class="mobile-nav">
@@ -1947,27 +1935,28 @@
   </button>
   <div class="mobile-nav-menu" id="mobile-nav-menu" hidden>
     <button type="button" class="mobile-nav-item active" data-tab="home">Home</button>
-    <div class="mobile-nav-group-label">2026 Season</div>
-    <button type="button" class="mobile-nav-item" data-tab="teams2026">2026 Teams</button>
-    <button type="button" class="mobile-nav-item" data-tab="draft">2026 Draft</button>
+    <div class="mobile-nav-group-label">Season</div>
+    <button type="button" class="mobile-nav-item" data-tab="yahoolive">Live Scores</button>
+    <button type="button" class="mobile-nav-item" data-tab="results">Results</button>
+    <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
+    <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
+    <button type="button" class="mobile-nav-item" data-tab="freeagents">Free Agents</button>
+    <button type="button" class="mobile-nav-item" data-tab="teams2026">Teams</button>
+    <div class="mobile-nav-group-label">Keepers &amp; Draft</div>
     <button type="button" class="mobile-nav-item" data-tab="keepers">Keepers</button>
+    <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
+    <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
+    <button type="button" class="mobile-nav-item" data-tab="draft">2026 Draft</button>
     <button type="button" class="mobile-nav-item" data-tab="draftorder">Draft Order</button>
     <button type="button" class="mobile-nav-item" data-tab="mockdraft">Mock Draft</button>
-    <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
-    <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
-    <button type="button" class="mobile-nav-item" data-tab="results">Results</button>
-    <button type="button" class="mobile-nav-item" data-tab="yahoolive">Live Scores</button>
-    <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
-    <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
     <div class="mobile-nav-group-label">2025 Archive</div>
     <button type="button" class="mobile-nav-item" data-tab="teams">2025 Teams</button>
     <button type="button" class="mobile-nav-item" data-tab="draft2025">2025 Draft</button>
     <button type="button" class="mobile-nav-item" data-tab="trades2025">2025 Trades</button>
     <button type="button" class="mobile-nav-item" data-tab="history">History</button>
-    <div class="mobile-nav-group-label">Tools</div>
-    <button type="button" class="mobile-nav-item" data-tab="export">Export</button>
+    <div class="mobile-nav-group-label">Rules &amp; Export</div>
     <button type="button" class="mobile-nav-item" data-tab="rules">Rules</button>
-    <button type="button" class="mobile-nav-item" data-tab="admin">Admin</button>
+    <button type="button" class="mobile-nav-item" data-tab="export">Export</button>
   </div>
 </div>
 
@@ -1976,6 +1965,7 @@
   <p class="sync-note" id="sync-note">Loading league data…</p>
 
   <section id="home" class="active">
+    <div id="yh-strip"></div>
     <div class="commish-note" id="commish-note"></div>
     <div class="card player-search-card">
       <h3 style="margin-top:0;">Find a Player</h3>
@@ -2516,6 +2506,18 @@
     <p class="yl-credit">Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>
   </section>
 
+  <section id="freeagents">
+    <h2>Free Agents</h2>
+    <div class="card" id="fa-card">
+      <div class="fa-controls">
+        <input type="search" id="fa-q" placeholder="Search players or teams&hellip;" autocomplete="off" aria-label="Search free agents">
+        <label>Sort <select id="fa-sort" aria-label="Sort free agents"><option value="points">Season points</option><option value="owned">Owned %</option><option value="delta">Rising fastest</option></select></label>
+      </div>
+      <div class="fa-controls" id="fa-pos" role="group" aria-label="Position"></div>
+      <div id="fa-body"><div class="yh-skel" aria-busy="true"><span></span><span></span><span></span><span></span><span></span></div></div>
+    </div>
+  </section>
+  <section id="team"></section>
 </main>
 
 <footer><span id="footer-league-name">Year 14</span> · site last updated <span id="updated-date"></span></footer>
@@ -10891,6 +10893,8 @@ fetchWeeklyMatchups();
     return key ? String(key).replace(/^.*\.t\./, "Team ") : "";
   }
   function isTeamKey(k) { return /\.t\.\d+$/.test(String(k || "")); }
+  function ylAv(name, key) { try { return window.YH ? window.YH.avatar(name, key) : ""; } catch (e) { return ""; } }
+  window.addEventListener("yh-model-ready", function () { if (DATA) render(); });
 
   function renderScores() {
     var weeks = Object.keys(DATA.scores).map(Number).sort(function (a, b) { return a - b; });
@@ -10903,10 +10907,10 @@ fetchWeeklyMatchups();
       var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
       var rows = m.teams.map(function (t) {
         var win = m.winner_team_key && t.team_key === m.winner_team_key;
-        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) +
-          '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + ylAv(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) +
+          '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
-      return '<div class="yl-game">' + rows + '<div class="yl-status">' + label + (m.is_playoffs ? " · Playoffs" : "") + "</div></div>";
+      return '<div class="yl-game' + (m.status === "postevent" ? " fin" : "") + '">' + rows + '<div class="yl-status">' + label + (m.is_playoffs ? " · Playoffs" : "") + "</div></div>";
     }).join("") + "</div>";
     return html;
   }
@@ -10961,9 +10965,9 @@ fetchWeeklyMatchups();
     }
     var rows = list.map(function (t) {
       var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
-      return "<tr><td>" + esc(t.rank) + "</td><td>" + esc(t.name) +
+      return "<tr><td>" + esc(t.rank) + '</td><td class="standings-team-cell">' + (t.team_key ? ylAv(t.name, t.team_key) : "") + "<span>" + esc(t.name) +
         (t.managers && t.managers.length ? '<br><span class="yl-mgr">' + esc(t.managers.join(", ")) + "</span>" : "") +
-        '</td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
+        '</span></td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
         '</td><td class="yl-num">' + fmt(t.points_against) + "</td></tr>";
     }).join("");
     return picker + '<div class="card yl-scroll"><table><thead><tr><th>#</th><th>Team</th><th class="yl-num">Record</th><th class="yl-num">PF</th><th class="yl-num">PA</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
@@ -11153,6 +11157,100 @@ fetchWeeklyMatchups();
     #yh-phase .yh-title { font-size: 1.05rem; }
     #yh-insights .yh-tab { padding: 6px 11px; }
   }
+
+/* ---- layout: two-column Home, section tabs, sticky menu, phone tweaks ---- */
+  #home .yh-layout, #home .yh-main, #home .yh-side { display: contents; }
+  #home.active { display: flex; flex-direction: column; }
+  #home #yh-strip { order: 0; } #home #commish-note { order: 1; } #home #countdown-card { order: 2; }
+  #home #yh-phase { order: 3; } #home #yh-matchups { order: 4; } #home #season-heading { display: none; }
+  #home #standings-card { order: 6; } #home #yh-playoffs { order: 7; } #home #yh-insights { order: 8; }
+  #home #power-rankings-card { order: 9; } #home .player-search-card { order: 10; }
+  @media (min-width: 1020px) {
+    main { max-width: 1240px; }
+    #home.active { display: block; }
+    #home .yh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 24px; align-items: start; }
+    #home .yh-main, #home .yh-side { display: block; min-width: 0; }
+  }
+  /* Scoreboard strip */
+  #yh-strip { margin: 0 0 18px; }
+  #yh-strip .yh-strip-row { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  #yh-strip .yh-sg { flex: 0 0 auto; min-width: 168px; scroll-snap-align: start; border: 1px solid var(--border); background: var(--panel); border-radius: 12px; padding: 8px 12px; box-shadow: var(--shadow); cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  #yh-strip .yh-sg:hover { border-color: var(--link); }
+  #yh-strip .yh-sg .r { display: flex; justify-content: space-between; gap: 12px; font-size: 0.86rem; font-variant-numeric: tabular-nums; line-height: 1.5; }
+  #yh-strip .yh-sg .r.w { font-weight: 700; }
+  #yh-strip .yh-sg.fin .r:not(.w) { color: var(--muted); }
+  #yh-strip .yh-sg .st { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-top: 2px; }
+  #yh-strip .yh-sg .st.live { color: var(--good); font-weight: 650; }
+  #yh-strip .yh-links { display: flex; flex-wrap: wrap; gap: 10px; }
+  #yh-strip .yh-links a { border: 1px solid var(--border); background: var(--panel); border-radius: 12px; padding: 10px 16px; text-decoration: none; font-weight: 600; box-shadow: var(--shadow); }
+  /* Section tabs shared by every page in a group */
+  .yh-subnav { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .yh-subnav-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 650; margin-right: 6px; }
+  .yh-subtab { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); border-radius: 999px; padding: 6px 14px; font-size: 0.86rem; cursor: pointer; font-family: inherit; }
+  .yh-subtab:hover { border-color: var(--link); }
+  .yh-subtab[aria-selected="true"] { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+  .yh-footnote { margin: 6px 0 0; font-size: 0.78rem; }
+  .yh-footnote a { color: var(--muted); }
+  /* Sticky menu */
+  nav:not(.yh-tabbar) { position: sticky; top: 0; z-index: 70; }
+  .yh-tlink { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
+  .yh-tlink:hover span { text-decoration: underline; }
+  .yh-mgr { display: none; font-size: 0.74rem; color: var(--muted); font-weight: 400; }
+  /* Matchup winner emphasis */
+  .yh-game.fin .yl-row.win { font-weight: 700; }
+  .yh-game.fin .yl-row:not(.win) { color: var(--muted); }
+  /* Team page */
+  #team .yh-back { display: inline-block; margin-bottom: 12px; font-size: 0.9rem; }
+  #team .yh-thead { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  #team .yh-thead .yh-av { width: 54px; height: 54px; flex-basis: 54px; margin-right: 0; font-size: 1rem; }
+  #team .yh-thead h2 { margin: 0; border: 0; padding: 0; }
+  #team .yh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
+  #team .yh-stat { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); }
+  #team .yh-stat .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 650; }
+  #team .yh-stat .v { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #team .yh-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  #team td.n, #team th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  #team .yh-res-w { color: var(--good); font-weight: 700; } #team .yh-res-l { color: var(--bad); font-weight: 700; }
+  /* Free agents */
+  #freeagents .fa-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  #freeagents input[type="search"] { flex: 1 1 200px; min-width: 0; padding: 8px 12px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 0.95rem; }
+  #freeagents .fa-chip { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); border-radius: 999px; padding: 6px 12px; font-size: 0.84rem; cursor: pointer; font-family: inherit; }
+  #freeagents .fa-chip[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+  #freeagents select { padding: 7px 10px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); font-size: 0.9rem; }
+  #freeagents td.n, #freeagents th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  #freeagents .fa-sub { display: block; font-size: 0.76rem; color: var(--muted); }
+  #freeagents .fa-inj { display: inline-block; font-size: 0.68rem; font-weight: 700; border-radius: 4px; padding: 0 5px; margin-left: 6px; background: var(--bad); color: #fff; vertical-align: middle; }
+  #freeagents .fa-up { color: var(--good); font-weight: 600; } #freeagents .fa-down { color: var(--bad); font-weight: 600; }
+  #freeagents .fa-more { margin-top: 12px; }
+  /* Identity touches */
+  header { overflow: hidden; }
+  header > * { position: relative; z-index: 1; }
+  @media (max-width: 640px) {
+    header { padding: 12px 12px 10px; }
+    header h1 { font-size: 1.35rem; margin: 0; letter-spacing: 1px; }
+    header p { display: none; }
+    .mobile-nav { position: sticky; top: 0; z-index: 70; padding: 8px 12px; }
+    .theme-toggle { top: 8px; right: 10px; padding: 2px 8px; font-size: 0.72rem; }
+    #standings-card th:nth-child(3), #standings-card td:nth-child(3), #standings-card th:nth-child(5), #standings-card td:nth-child(5), #standings-card th:nth-child(7), #standings-card td:nth-child(7) { display: none; }
+    #standings-card .yh-mgr { display: block; }
+    #standings-card th, #standings-card td { padding: 9px 6px; }
+    #home #yh-strip { margin-top: -4px; }
+  }
+  /* Dark mode: softer text, clearer card edges, brighter small red text */
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --text: #e6ecf6; --border: #33598c; --gold: #ff6b57; } }
+  :root[data-theme="dark"] { --text: #e6ecf6; --border: #33598c; --gold: #ff6b57; }
+  #yh-strip:empty { display: none; }
+  #yh-strip .yh-strip-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 650; margin: 0 2px 6px; }
+  #yh-strip .yh-sg:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  .yh-pick2 { font-size: 0.8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .yh-pick2 select { padding: 6px 8px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); font-size: 0.9rem; max-width: 190px; }
+  nav button.active, nav button:focus-visible { outline-offset: -2px; }
+  .yh-hidden-tabs { display: none !important; }
+  .yh-skel { }
+  .yh-note a, #freeagents .yh-note a { color: var(--link); }
+
+  header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
+  header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 </style>
 <script>
 (function () {
@@ -11198,7 +11296,9 @@ fetchWeeklyMatchups();
     }
   }, true);
   function nameCell(name, key) {
-    return '<td class="standings-team-cell">' + avatar(name, key) + "<span>" + esc(name) + "</span></td>";
+    var id = (/\.t\.(\d+)$/.exec(String(key || "")) || [])[1], t = M && M.byKey[key], mg = t && t.managers && t.managers.length ? t.managers.join(", ") : "";
+    var inner = avatar(name, key) + "<span>" + esc(name) + (mg ? '<span class="yh-mgr">' + esc(mg) + "</span>" : "") + "</span>";
+    return '<td class="standings-team-cell">' + (id ? '<a class="yh-tlink" href="#/team/' + id + '">' + inner + "</a>" : inner) + "</td>";
   }
   function short(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
   function dateLabel(iso) {
@@ -11495,7 +11595,7 @@ fetchWeeklyMatchups();
       eff.map(function (e) {
         return "<tr>" + nameCell(nm(e.k), e.k) + '<td class="n">' + f1(e.act) + '</td><td class="n">' + f1(e.best) + '</td><td class="n">' + f1(e.left) + '</td><td class="n">' + (e.pct * 100).toFixed(1) + "%</td></tr>";
       }).join("") + "</tbody></table></div>" : (LINEUPS ? "" : '<p class="yh-note">Loading lineup details&hellip;</p>');
-    return '<div class="yh-controls">' + sel + '<button type="button" class="yh-btn" id="yh-copy">Copy week recap</button><span id="yh-copied" role="status" aria-live="polite"></span></div>' +
+    return '<div class="yh-controls">' + sel + '<button type="button" class="yh-btn" id="yh-copy">Copy week recap</button><button type="button" class="yh-btn" id="yh-img">Share recap image</button><span id="yh-copied" role="status" aria-live="polite"></span></div>' +
       '<div class="yh-grid">' + c.join("") + "</div>" + tbl +
       '<p class="yh-note">Best possible lineup uses the same slots each team started, filled from everyone on its roster that week.</p>';
   }
@@ -11739,7 +11839,7 @@ fetchWeeklyMatchups();
     }).join("");
     var po = DATA.league || {};
     var legend = cut ? '<p class="yh-note">Top ' + cut + " make the playoffs" + (po.playoff_start_week ? " (starting Week " + po.playoff_start_week + ")" : "") + ".</p>" : "";
-    stEl.innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>' +
+    stEl.innerHTML = '<h3>Standings</h3><div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>' +
       rows + "</tbody></table></div>" + legend +
       '<p class="yl-credit">Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>';
   }
@@ -11785,7 +11885,7 @@ fetchWeeklyMatchups();
         return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
       var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
-      var html = '<div class="yl-game yh-game' + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
+      var html = '<div class="yl-game yh-game' + (final ? " fin" : "") + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
         rows + bar + '<div class="yl-status">' + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + " · tap for lineups</div></div>";
       if (openKey === key) {
         html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button><div class="yh-lineup-cols">' +
@@ -11846,10 +11946,211 @@ fetchWeeklyMatchups();
     poEl.innerHTML = html; poEl.style.display = "";
   }
 
+  // ---- v4: scoreboard strip, team pages, phase layout, recap image -----------------
+  function tid(key) { var m = /\.t\.(\d+)$/.exec(String(key || "")); return m ? m[1] : ""; }
+  var stripEl = document.getElementById("yh-strip"), teamEl = document.getElementById("team"), curTeam = null;
+
+  function renderStrip() {
+    if (!stripEl) return;
+    var ws = weeksList(), cw = DATA.league && Number(DATA.league.current_week);
+    var w = ws.indexOf(cw) >= 0 ? cw : ws[ws.length - 1];
+    var list = w == null ? [] : DATA.scores[String(w)] || [], cards = [];
+    list.forEach(function (m, i) {
+      if (!m.teams || m.teams.length !== 2) return;
+      var final = m.status === "postevent", live = m.status === "midevent";
+      var rows = m.teams.map(function (t) {
+        var win = final && m.winner_team_key && t.team_key === m.winner_team_key;
+        var pts = t.points != null && (final || live) ? fmt(t.points) : (t.projected != null ? "proj " + f1(t.projected) : "–");
+        return '<div class="r' + (win ? " w" : "") + '"><span>' + esc(short(t.name, 18)) + "</span><span>" + pts + "</span></div>";
+      }).join("");
+      cards.push('<button type="button" class="yh-sg' + (final ? " fin" : "") + '" data-w="' + w + '" data-i="' + i + '" aria-label="Week ' + w + ": " + esc(m.teams[0].name) + " versus " + esc(m.teams[1].name) + '. Show lineups">' +
+        rows + '<div class="st' + (live ? " live" : "") + '">' + (final ? "Final" : live ? "Live" : "Upcoming") + "</div></button>");
+    });
+    if (!cards.length) {
+      stripEl.innerHTML = '<div class="yh-links"><a href="#/keeperplanner">Keeper Planner</a><a href="#/draftorder">Draft Order</a><a href="#/mockdraft">Mock Draft</a></div>';
+      return;
+    }
+    stripEl.innerHTML = '<div class="yh-strip-label">Week ' + w + ' scoreboard</div><div class="yh-strip-row">' + cards.join("") + "</div>";
+  }
+  if (stripEl) stripEl.addEventListener("click", function (e) {
+    var g = e.target.closest(".yh-sg"); if (!g) return;
+    week = Number(g.getAttribute("data-w")); openKey = week + ":" + g.getAttribute("data-i");
+    loadLineups(false); renderMatchups();
+    var t = mxEl.querySelector(".yh-lineup") || mxEl; if (t.scrollIntoView) t.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+
+  function phaseOf() {
+    var lg = DATA.league || {}, cw = Number(lg.current_week) || 0, ps = lg.playoff_start_week, ew = lg.end_week;
+    var fin = M.games.filter(function (g) { return g.w === ew && g.playoff && !g.m.is_consolation; });
+    if (ew && fin.length && fin.every(function (g) { return g.final; })) return "complete";
+    if (ps && cw >= ps) return "playoffs";
+    return "regular";
+  }
+  // Put the cards in the order that matters for this part of the season.
+  function placeHome() {
+    var home = document.getElementById("home"); if (!home) return;
+    var ph = phaseOf(); home.setAttribute("data-phase", ph);
+    function el(id) { return id === "search" ? home.querySelector(".player-search-card") : document.getElementById(id); }
+    var plan = {
+      regular: { m: ["yh-matchups", "standings-card", "yh-playoffs", "yh-insights"], s: ["yh-phase", "power-rankings-card", "search"] },
+      playoffs: { m: ["yh-playoffs", "yh-matchups", "standings-card", "yh-insights"], s: ["yh-phase", "power-rankings-card", "search"] },
+      complete: { m: ["yh-phase", "yh-playoffs", "standings-card", "yh-insights", "yh-matchups"], s: ["power-rankings-card", "search"] }
+    }[ph];
+    var main = home.querySelector(".yh-main"), side = home.querySelector(".yh-side");
+    if (main && side) {
+      plan.m.forEach(function (id) { var e = el(id); if (e) main.appendChild(e); });
+      plan.s.forEach(function (id) { var e = el(id); if (e) side.appendChild(e); });
+    }
+    var n = 3;
+    var phone = ph === "regular" ? ["yh-phase", "yh-matchups", "standings-card", "yh-playoffs", "yh-insights", "power-rankings-card", "search"]
+      : ph === "playoffs" ? ["yh-phase", "yh-playoffs", "yh-matchups", "standings-card", "yh-insights", "power-rankings-card", "search"]
+      : ["yh-phase", "yh-playoffs", "standings-card", "yh-insights", "yh-matchups", "power-rankings-card", "search"];
+    phone.forEach(function (id) { var e = el(id); if (e) e.style.order = String(n++); });
+  }
+
+  // ---- team page ------------------------------------------------------------------------
+  function teamKeyOf(id) { return M.order.filter(function (k) { return tid(k) === String(id); })[0]; }
+  function statTile(k, v) { return '<div class="yh-stat"><div class="k">' + k + '</div><div class="v">' + v + "</div></div>"; }
+  function teamBars(key) {
+    var ws = M.fw.filter(function (w) { return M.wk[key][w] != null; });
+    if (ws.length < 2) return "";
+    var W = 640, H = 170, pl = 8, pb = 22, pt = 18, n = ws.length, vals = ws.map(function (w) { return M.wk[key][w]; });
+    var mx = Math.max.apply(null, vals.concat([M.lg])) * 1.08, bw = (W - pl * 2) / n, ph = H - pt - pb;
+    function y(v) { return H - pb - (v / mx) * ph; }
+    var bars = ws.map(function (w, i) {
+      var v = vals[i], x = pl + i * bw + bw * 0.16, bwid = bw * 0.68;
+      return '<rect x="' + x.toFixed(1) + '" y="' + y(v).toFixed(1) + '" width="' + bwid.toFixed(1) + '" height="' + (H - pb - y(v)).toFixed(1) + '" rx="3" style="fill:var(--link)"><title>Week ' + w + ": " + fmt(v) + "</title></rect>" +
+        (n <= 14 ? '<text x="' + (x + bwid / 2).toFixed(1) + '" y="' + (y(v) - 4).toFixed(1) + '" text-anchor="middle" font-size="10" style="fill:var(--text)">' + Math.round(v) + "</text>" : "") +
+        '<text x="' + (x + bwid / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" style="fill:var(--muted)">' + w + "</text>";
+    }).join("");
+    var ay = y(M.lg).toFixed(1);
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Points scored each week compared with the league average of ' + f1(M.lg) + '" style="width:100%;max-width:760px;height:auto;display:block">' + bars +
+      '<line x1="' + pl + '" x2="' + (W - pl) + '" y1="' + ay + '" y2="' + ay + '" stroke-dasharray="5 4" style="stroke:var(--muted)" stroke-width="1.5"/>' +
+      "</svg>" + '<p class="yh-note" style="margin-top:6px"><span aria-hidden="true">- - -</span> League average per game: ' + f1(M.lg) + "</p>";
+  }
+  function renderTeam(key) {
+    var t = M.byKey[key], list = sortedStandings(), pos = list.map(function (x) { return x.team_key; }).indexOf(key) + 1;
+    var r = M.now[key], st = streaks()[key], a = M.ap[key], s = M.sim && M.sim[key];
+    var mine = M.games.filter(function (g) { return g.a.team_key === key || g.b.team_key === key; }).sort(function (x, y) { return x.w - y.w; });
+    var haveW = {}; mine.forEach(function (g) { haveW[g.w] = 1; });
+    var vals = M.fw.map(function (w) { return M.wk[key][w]; }).filter(function (v) { return v != null; });
+    var avg = vals.length ? vals.reduce(function (p, c) { return p + c; }, 0) / vals.length : null, hi = vals.length ? Math.max.apply(null, vals) : null;
+    var luck = M.fw.length >= 2 ? r.w + r.t / 2 - a.exp : null;
+    var tiles = [
+      statTile("Record", esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : ""))), statTile("Rank", "#" + pos + " of " + list.length),
+      statTile("Points for", fmt(t.points_for)), statTile("Points against", fmt(t.points_against)),
+      avg != null ? statTile("Avg / week", f1(avg)) : "", hi != null ? statTile("High score", f1(hi)) : "",
+      st ? statTile("Streak", st.r + st.n) : "", M.fw.length >= 2 ? statTile("All-play", a.w + "-" + a.l + (a.t ? "-" + a.t : "")) : "",
+      s ? statTile("Playoff odds", pctLabel(s.made)) : "", luck != null ? statTile("Luck", (luck > 0 ? "+" : "") + luck.toFixed(1)) : ""
+    ].join("");
+    var rows = mine.map(function (g) {
+      var me = g.a.team_key === key ? g.a : g.b, op = g.a.team_key === key ? g.b : g.a, res = "&ndash;", cls = "";
+      if (g.final) { if (g.m.is_tied) res = "T"; else if (g.m.winner_team_key === key) { res = "W"; cls = "yh-res-w"; } else { res = "L"; cls = "yh-res-l"; } }
+      else if (g.m.status === "midevent") res = "Live";
+      var score = g.final || g.m.status === "midevent" ? fmt(me.points) + " &ndash; " + fmt(op.points) : "&ndash;";
+      return "<tr><td>" + g.w + (g.playoff ? (g.m.is_consolation ? " &middot; C" : " &middot; P") : "") + "</td>" + nameCell(op.name, op.team_key) + '<td class="n">' + score + '</td><td class="n ' + cls + '">' + res + "</td></tr>";
+    }).join("");
+    M.rem.forEach(function (g) {
+      if (haveW[g.w] || (g.a !== key && g.b !== key)) return;
+      var o = g.a === key ? g.b : g.a; haveW[g.w] = 1;
+      rows += "<tr><td>" + g.w + "</td>" + nameCell(M.byKey[o].name, o) + '<td class="n">&ndash;</td><td class="n">&ndash;</td></tr>';
+    });
+    var src = LINEUPS || DATA.lineups, lw = null, lineup = "";
+    if (src) {
+      Object.keys(src).map(Number).sort(function (x, y) { return y - x; }).some(function (w) { if (src[String(w)] && src[String(w)][key] && src[String(w)][key].length) { lw = w; return true; } return false; });
+      if (lw != null) lineup = '<div class="card"><h3>Latest lineup &middot; Week ' + lw + "</h3>" + lineupTable({ name: t.name, team_key: key }, lw).replace(/^<h4>.*?<\/h4>/, "") + "</div>";
+    }
+    var pick = '<label class="yh-pick2">Team <select id="yh-team-pick" aria-label="Choose a team">' + list.map(function (x) {
+      return '<option value="' + tid(x.team_key) + '"' + (x.team_key === key ? " selected" : "") + ">" + esc(x.name) + "</option>";
+    }).join("") + "</select></label>";
+    var bars = teamBars(key);
+    return '<a class="yh-back" href="#/home">&larr; Back to Home</a><div class="card"><div class="yh-thead">' + avatar(t.name, key) +
+      '<div><h2>' + esc(t.name) + '</h2><div class="yh-note" style="margin:2px 0 0">' + esc((t.managers || []).join(", ")) + "</div></div><div style=\"margin-left:auto\">" + pick + "</div></div>" +
+      '<div class="yh-stats">' + tiles + "</div></div>" +
+      (bars ? '<div class="card"><h3>Points by week</h3>' + bars + "</div>" : "") +
+      '<div class="yh-two"><div class="card"><h3>Schedule &amp; results</h3><div style="overflow-x:auto"><table><thead><tr><th>Wk</th><th>Opponent</th><th class="n">Score</th><th class="n">Result</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="4">No games yet.</td></tr>') + "</tbody></table></div>" + (mine.some(function (g) { return g.playoff; }) ? '<p class="yh-note">P = playoffs, C = consolation.</p>' : "") + "</div>" + lineup + "</div>";
+  }
+  function showTeam(id, fromRoute) {
+    if (!teamEl) return;
+    if (!DATA || !M) { window.YH_PENDING_TEAM = id; teamEl.innerHTML = '<p class="yl-empty">Loading team&hellip;</p>'; if (window.YH_activate) window.YH_activate("team", true); return; }
+    var key = teamKeyOf(id);
+    if (!key) { teamEl.innerHTML = '<a class="yh-back" href="#/home">&larr; Back to Home</a><p class="yl-empty">That team wasn\'t found.</p>'; if (window.YH_activate) window.YH_activate("team", true); return; }
+    curTeam = key; loadLineups(false);
+    teamEl.innerHTML = renderTeam(key);
+    if (window.YH_activate) window.YH_activate("team", true);
+    if (!fromRoute && window.YH_setHash) window.YH_setHash("team/" + id);
+  }
+  function refreshTeam() { if (curTeam && teamEl && teamEl.classList.contains("active") && M && M.byKey[curTeam]) teamEl.innerHTML = renderTeam(curTeam); }
+  if (teamEl) teamEl.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "yh-team-pick") { location.hash = "#/team/" + e.target.value; }
+  });
+  window.YH = { avatar: function (n, k) { return avatar(n, k); }, showTeam: showTeam };
+
+  // ---- shareable recap image ---------------------------------------------------------
+  function recapImage(w, done) {
+    var text = recapText(w); if (!text) { done(null); return; }
+    var lines = text.split("\n").filter(function (l) { return l.trim(); }), title = lines.shift();
+    var cs = getComputedStyle(document.documentElement);
+    function cv(n, d) { return (cs.getPropertyValue(n) || "").trim() || d; }
+    var bg = cv("--bg", "#ffffff"), panel = cv("--panel", "#ffffff"), fg = cv("--text", "#16202e"), mut = cv("--muted", "#5b6b80"), acc = cv("--red", "#b82514"), bd = cv("--border", "#d5dce6");
+    var W = 1080, P = 64, c = document.createElement("canvas"), x = c.getContext("2d");
+    var FONT = '"Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif';
+    function wrap(str, font, maxW) {
+      x.font = font; var words = str.split(" "), out = [], cur = "";
+      words.forEach(function (wd) { var t = cur ? cur + " " + wd : wd; if (x.measureText(t).width > maxW && cur) { out.push(cur); cur = wd; } else cur = t; });
+      if (cur) out.push(cur); return out;
+    }
+    var items = lines.map(function (l) {
+      var i = l.indexOf(": "); return i > 0 && i < 24 ? { k: l.slice(0, i), v: l.slice(i + 2) } : { k: "", v: l };
+    });
+    function layout(draw) {
+      var y = 0;
+      y = 190;
+      items.forEach(function (it) {
+        if (it.k) { if (draw) { x.font = "600 24px " + FONT; x.fillStyle = mut; x.fillText(it.k.toUpperCase(), P, y); } y += 34; }
+        wrap(it.v, (it.k ? "600 34px " : "400 28px ") + FONT, W - P * 2).forEach(function (ln) {
+          if (draw) { x.font = (it.k ? "600 34px " : "400 28px ") + FONT; x.fillStyle = fg; x.fillText(ln, P, y); } y += it.k ? 44 : 38;
+        });
+        y += 26;
+      });
+      return y;
+    }
+    c.width = W; c.height = 10; var H = layout(false) + 90;
+    c.width = W; c.height = H;
+    x.fillStyle = bg; x.fillRect(0, 0, W, H);
+    x.fillStyle = acc; x.fillRect(0, 0, W, 150);
+    x.fillStyle = "#ffffff"; x.textBaseline = "alphabetic";
+    var lg = title.split(" - ")[0], wk = title.split(" - ")[1] || "";
+    x.font = "700 52px " + FONT; x.fillText(lg, P, 76);
+    x.font = "400 34px " + FONT; x.fillText(wk, P, 124);
+    layout(true);
+    x.fillStyle = bd; x.fillRect(P, H - 70, W - P * 2, 2);
+    x.font = "400 22px " + FONT; x.fillStyle = mut; x.fillText(location.host + location.pathname.replace(/index\.html$/, ""), P, H - 30);
+    c.toBlob(function (b) { done(b); }, "image/png");
+  }
+  function shareImage(w, out) {
+    recapImage(w, function (blob) {
+      if (!blob) { if (out) out.textContent = "Couldn't make the image."; return; }
+      var name = "week-" + w + "-recap.png", file = null;
+      try { file = new File([blob], name, { type: "image/png" }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+        navigator.share({ files: [file], title: "Week " + w + " recap" }).catch(function () {});
+        if (out) out.textContent = "";
+        return;
+      }
+      var url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      if (out) out.textContent = "Image saved. Attach it to your group chat.";
+    });
+  }
+  window.YH_recapImage = recapImage;
+
   function renderAll() {
     if (!DATA) return;
     M = build();
-    renderPhase(); renderMatchups(); renderStandings(); renderPlayoffs(); renderInsights();
+    renderPhase(); renderStrip(); renderMatchups(); renderStandings(); renderPlayoffs(); renderInsights(); placeHome(); refreshTeam(); window.dispatchEvent(new Event("yh-model-ready"));
   }
 
   // ---- events -------------------------------------------------------------------
@@ -11863,7 +12164,7 @@ fetchWeeklyMatchups();
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { LINEUPS = (j && j.lineups) || {}; })
       .catch(function () { LINEUPS = LINEUPS || {}; })
-      .then(function () { lineupsLoading = false; if (DATA) { renderMatchups(); renderBody(); } });
+      .then(function () { lineupsLoading = false; if (DATA) { renderMatchups(); renderBody(); refreshTeam(); } });
   }
   function toggleGame(el) {
     var k = el.getAttribute("data-key");
@@ -11895,6 +12196,7 @@ fetchWeeklyMatchups();
       if (c) { chartMode = c.getAttribute("data-chart"); renderBody(); return; }
       var tm = e.target.closest("[data-team]");
       if (tm) { chartTeam = tm.getAttribute("data-team"); renderBody(); return; }
+      if (e.target.closest("#yh-img")) { shareImage(awWeek, document.getElementById("yh-copied")); return; }
       if (e.target.closest("#yh-copy")) {
         var out = document.getElementById("yh-copied"), text = recapText(awWeek);
         copyText(text, function (ok) { if (out) out.textContent = ok ? "Copied. Paste it into your group chat." : "Couldn't copy. Select the text and copy it yourself."; });
@@ -11910,6 +12212,7 @@ fetchWeeklyMatchups();
   // ---- load and keep fresh ---------------------------------------------------------
   function apply(j, first) {
     DATA = j; loadedAt = Date.now(); renderAll();
+    if (window.YH_PENDING_TEAM) { var pid = window.YH_PENDING_TEAM; window.YH_PENDING_TEAM = null; showTeam(pid, true); }
     if (first) loadLineups(false); else if (LINEUPS) loadLineups(true);
   }
   function poll() {
@@ -11930,6 +12233,7 @@ fetchWeeklyMatchups();
       var msg = '<p class="yl-empty">Standings and matchups aren\'t available yet. They appear here once the weekly update has run.</p>';
       mxEl.innerHTML = msg; stEl.innerHTML = msg;
       if (phEl) phEl.style.display = "none";
+      if (window.YH_PENDING_TEAM && teamEl) teamEl.innerHTML = '<p class="yl-empty">Team data isn\'t available yet.</p>';
     });
 })();
 
@@ -11954,6 +12258,171 @@ fetchWeeklyMatchups();
     try { if (next === "auto") localStorage.removeItem("theme"); else localStorage.setItem("theme", next); } catch (e) {}
     apply(next);
   });
+})();
+</script>
+<script>window.YH_GROUPS = [{"id": "season", "label": "Season", "tabs": [["yahoolive", "Live Scores"], ["results", "Results"], ["waivers", "Waivers"], ["trades", "Trades"], ["freeagents", "Free Agents"], ["teams2026", "Teams"]]}, {"id": "keepers", "label": "Keepers & Draft", "tabs": [["keepers", "Keepers"], ["keeperplanner", "Keeper Planner"], ["tradeanalyzer", "Trade Analyzer"], ["draft", "2026 Draft"], ["draftorder", "Draft Order"], ["mockdraft", "Mock Draft"]]}, {"id": "archive", "label": "2025 Archive", "tabs": [["teams", "2025 Teams"], ["draft2025", "2025 Draft"], ["trades2025", "2025 Trades"], ["history", "History"]]}, {"id": "more", "label": "Rules & Export", "tabs": [["rules", "Rules"], ["export", "Export"]]}];</script>
+<script>
+// Page structure: shareable links (#/results), in-page section tabs, two-column
+// Home, commissioner link in the footer. Works alongside the site's own menu.
+(function () {
+  "use strict";
+  var GROUPS = window.YH_GROUPS || [];
+  function $(id) { return document.getElementById(id); }
+  function isTab(id) { var s = $(id); return !!(s && s.parentNode && s.parentNode.tagName === "MAIN"); }
+
+  // ---- two-column Home ---------------------------------------------------------
+  (function layoutHome() {
+    var home = $("home");
+    if (!home || home.querySelector(".yh-layout")) return;
+    var main = ["yh-matchups", "season-heading", "standings-card", "yh-insights"].map($).filter(Boolean);
+    var side = ["yh-phase", "yh-playoffs", "power-rankings-card"].map($).filter(Boolean);
+    var search = home.querySelector(".player-search-card"); if (search) side.push(search);
+    if (!main.length) return;
+    var layout = document.createElement("div"), m = document.createElement("div"), s = document.createElement("div");
+    layout.className = "yh-layout"; m.className = "yh-main"; s.className = "yh-side";
+    main[0].parentNode.insertBefore(layout, main[0]);
+    layout.appendChild(m); layout.appendChild(s);
+    main.forEach(function (el) { m.appendChild(el); });
+    side.forEach(function (el) { s.appendChild(el); });
+  })();
+
+  // Hide the commissioner note when it is empty.
+  (function noteWatch() {
+    var n = $("commish-note"); if (!n) return;
+    function sync() { n.style.display = n.textContent.trim() ? "" : "none"; }
+    sync();
+    if (window.MutationObserver) new MutationObserver(sync).observe(n, { childList: true, characterData: true, subtree: true });
+  })();
+
+  // ---- activating a section (same effect as the site's own menu buttons) -----------
+  function groupOf(tab) {
+    for (var i = 0; i < GROUPS.length; i++) for (var j = 0; j < GROUPS[i].tabs.length; j++) if (GROUPS[i].tabs[j][0] === tab) return GROUPS[i].id;
+    return tab === "team" ? "home" : "";
+  }
+  function activate(tab, scroll) {
+    var s = $(tab); if (!s || !isTab(tab)) return false;
+    var gid = groupOf(tab);
+    document.querySelectorAll("nav:not(.yh-tabbar) button[data-tab]").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tab === tab || (!!gid && (b.dataset.grp === gid || (gid === "home" && b.dataset.tab === "home"))));
+    });
+    document.querySelectorAll(".mobile-nav-item").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
+    document.querySelectorAll("main section").forEach(function (x) { x.classList.remove("active"); });
+    s.classList.add("active");
+    var mb = document.querySelector('.mobile-nav-item[data-tab="' + tab + '"]'), lab = $("mobile-nav-current");
+    if (lab) lab.textContent = mb ? mb.textContent.trim() : (tab === "team" ? "Team" : lab.textContent);
+    var sel = $("mobile-nav-select"); if (sel && sel.querySelector('option[value="' + tab + '"]')) sel.value = tab;
+    var menu = $("mobile-nav-menu"), tg = $("mobile-nav-toggle");
+    if (menu) menu.hidden = true; if (tg) tg.setAttribute("aria-expanded", "false");
+    document.querySelectorAll(".yh-subtab").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-sub") === tab ? "true" : "false"); });
+    if (scroll !== false) window.scrollTo(0, 0);
+    return true;
+  }
+  window.YH_activate = activate;
+
+  function setHash(path) {
+    var h = "#/" + path;
+    if (location.hash !== h) { try { history.pushState(null, "", h); } catch (e) { location.hash = h; } }
+  }
+  window.YH_setHash = setHash;
+
+  function route() {
+    var h = location.hash.replace(/^#\/?/, "");
+    if (!h) { var c0 = document.querySelector("main section.active"); if (c0 && c0.id !== "home") activate("home", false); return; }
+    var m = h.match(/^team\/(\d+)/);
+    if (m) { if (window.YH && window.YH.showTeam) window.YH.showTeam(m[1], true); else window.YH_PENDING_TEAM = m[1]; return; }
+    var tab = h.split("/")[0];
+    var cur = document.querySelector("main section.active");
+    if (isTab(tab) && (!cur || cur.id !== tab)) activate(tab, true);
+  }
+  window.addEventListener("hashchange", route);
+  window.addEventListener("popstate", route);
+
+  // Keep the address bar in step with the site's own menu.
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("nav:not(.yh-tabbar) button[data-tab], .mobile-nav-item[data-tab]");
+    if (b) setTimeout(function () { activate(b.dataset.tab, false); setHash(b.dataset.tab); }, 0);
+  });
+
+  var msel = $("mobile-nav-select");
+  if (msel) msel.addEventListener("change", function () { var t = msel.value; setTimeout(function () { activate(t, true); setHash(t); }, 0); });
+
+  // ---- section tabs inside each group ------------------------------------------------
+  GROUPS.forEach(function (g) {
+    var tabs = g.tabs.filter(function (t) { return isTab(t[0]); });
+    if (tabs.length < 2) return;
+    tabs.forEach(function (t) {
+      var s = $(t[0]); if (s.querySelector(":scope > .yh-subnav")) return;
+      var bar = document.createElement("div");
+      bar.className = "yh-subnav"; bar.setAttribute("role", "tablist"); bar.setAttribute("aria-label", g.label);
+      bar.innerHTML = '<span class="yh-subnav-label">' + g.label + "</span>" + tabs.map(function (x) {
+        return '<button type="button" class="yh-subtab" role="tab" data-sub="' + x[0] + '" aria-selected="' + (x[0] === t[0]) + '">' + x[1] + "</button>";
+      }).join("");
+      s.insertBefore(bar, s.firstChild);
+    });
+  });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest(".yh-subtab"); if (!b) return;
+    var id = b.getAttribute("data-sub"); activate(id, false); setHash(id);
+  });
+  // Quick-link buttons anywhere (Home phase links etc.).
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-go-tab]"); if (!b) return;
+    e.preventDefault(); var id = b.getAttribute("data-go-tab"); if (activate(id, true)) setHash(id);
+  });
+
+  // ---- commissioner link in the footer --------------------------------------------------
+  var foot = document.querySelector("footer");
+  if (foot && !foot.querySelector(".yh-admin-link") && isTab("admin")) {
+    var a = document.createElement("a"); a.href = "#/admin"; a.className = "yh-admin-link"; a.textContent = "Commissioner login";
+    var p = document.createElement("p"); p.className = "yh-footnote"; p.appendChild(a); foot.appendChild(p);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", route); else route();
+})();
+
+</script>
+<script>
+// Free Agents: players nobody owns in this league, from data/yahoo-freeagents.json
+// (refreshed by the same GitHub run as the scores). Loads the first time the tab opens.
+(function () {
+  var sec = document.getElementById("freeagents"); if (!sec) return;
+  var body = document.getElementById("fa-body"), q = document.getElementById("fa-q"), sortEl = document.getElementById("fa-sort"), posEl = document.getElementById("fa-pos");
+  var DATA = null, pos = "ALL", shown = 40, loading = false;
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var POS = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF"];
+  posEl.innerHTML = POS.map(function (p) { return '<button type="button" class="fa-chip" data-pos="' + p + '" aria-pressed="' + (p === pos) + '">' + (p === "ALL" ? "All" : p) + "</button>"; }).join("");
+  function render() {
+    if (!DATA) return;
+    var term = q.value.trim().toLowerCase(), key = sortEl.value;
+    var rows = DATA.players.filter(function (p) { return (pos === "ALL" || p.pos === pos) && (!term || (p.name + " " + (p.team || "")).toLowerCase().indexOf(term) >= 0); });
+    rows.sort(function (a, b) { var av = a[key] == null ? -1e9 : a[key], bv = b[key] == null ? -1e9 : b[key]; return (bv - av) || ((b.points || 0) - (a.points || 0)); });
+    var when = DATA.updated ? new Date(DATA.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+    if (!rows.length) { body.innerHTML = '<p class="yl-empty">No players match.</p>'; return; }
+    var more = rows.length > shown;
+    body.innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>Player</th><th class="n">Pts</th><th class="n">Owned</th><th class="n">Trend</th></tr></thead><tbody>' +
+      rows.slice(0, shown).map(function (p) {
+        var inj = p.status ? '<span class="fa-inj" title="Injury status">' + esc(p.status) + "</span>" : "";
+        var tr = p.delta == null ? "–" : p.delta > 0 ? '<span class="fa-up">&#9650;' + p.delta + "</span>" : p.delta < 0 ? '<span class="fa-down">&#9660;' + Math.abs(p.delta) + "</span>" : "0";
+        return "<tr><td>" + esc(p.name) + inj + '<span class="fa-sub">' + esc(p.pos) + (p.team ? " · " + esc(String(p.team).toUpperCase()) : "") + (p.bye ? " · bye wk " + p.bye : "") + '</span></td><td class="n">' + (p.points == null ? "–" : Number(p.points).toFixed(1)) + '</td><td class="n">' + (p.owned == null ? "–" : p.owned + "%") + '</td><td class="n">' + tr + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      (more ? '<button type="button" class="fa-chip fa-more" id="fa-more">Show more (' + (rows.length - shown) + ")</button>" : "") +
+      '<p class="yh-note">Players not on any team in this league, best season scorers first. Top 25 at each position. Owned % is across all of Yahoo; trend is the recent change. Add players in the Yahoo app. ' + (when ? "Updated " + esc(when) + ". " : "") +
+      'Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a>.</p>';
+  }
+  function load() {
+    if (DATA || loading) return; loading = true;
+    fetch("data/yahoo-freeagents.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (j) { if (!j || !j.players) throw new Error(); DATA = j; render(); })
+      .catch(function () { body.innerHTML = '<p class="yl-empty">The free-agent list isn\'t available yet. It appears here after the next league data update.</p>'; })
+      .then(function () { loading = false; });
+  }
+  posEl.addEventListener("click", function (e) { var b = e.target.closest("[data-pos]"); if (!b) return; pos = b.getAttribute("data-pos"); shown = 40; posEl.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); render(); });
+  q.addEventListener("input", function () { shown = 40; render(); });
+  sortEl.addEventListener("change", function () { shown = 40; render(); });
+  body.addEventListener("click", function (e) { if (e.target.id === "fa-more") { shown += 40; render(); } });
+  if (window.MutationObserver) new MutationObserver(function () { if (sec.classList.contains("active")) load(); }).observe(sec, { attributes: true, attributeFilter: ["class"] });
+  if (sec.classList.contains("active")) load();
 })();
 </script>
 <style>
@@ -11982,22 +12451,15 @@ fetchWeeklyMatchups();
   if (!bar || !sheet) return;
   function tabButton(id) { return document.querySelector('nav:not(.yh-tabbar) button[data-tab="' + id + '"]'); }
   function go(id) {
-    var b = tabButton(id);
-    if (b) { b.click(); window.scrollTo(0, 0); }
+    if (window.YH_activate && window.YH_activate(id, true)) { if (window.YH_setHash) window.YH_setHash(id); }
+    else { var b = tabButton(id); if (b) { b.click(); window.scrollTo(0, 0); } }
     sheet.classList.remove("open");
   }
   function buildSheet() {
-    var seen = {}, html = "";
-    var groups = document.querySelectorAll("nav:not(.yh-tabbar) .nav-group, nav:not(.yh-tabbar) > button[data-tab]");
-    groups.forEach(function (g) {
-      if (g.matches && g.matches("button[data-tab]")) {
-        var id = g.getAttribute("data-tab"); if (seen[id]) return; seen[id] = 1;
-        html += '<button type="button" role="menuitem" data-tab-go="' + id + '">' + g.textContent.trim() + "</button>";
-      } else {
-        var tg = g.querySelector(".nav-group-toggle"), items = g.querySelectorAll(".nav-group-menu button[data-tab]");
-        if (tg) html += '<div class="grp">' + tg.textContent.replace(/[▾▼]/g, "").trim() + "</div>";
-        items.forEach(function (b) { var id = b.getAttribute("data-tab"); if (seen[id]) return; seen[id] = 1; html += '<button type="button" role="menuitem" data-tab-go="' + id + '">' + b.textContent.trim() + "</button>"; });
-      }
+    var html = "";
+    (window.YH_GROUPS || []).forEach(function (g) {
+      html += '<div class="grp">' + g.label + "</div>";
+      g.tabs.forEach(function (t) { html += '<button type="button" role="menuitem" data-tab-go="' + t[0] + '">' + t[1] + "</button>"; });
     });
     sheet.innerHTML = html;
   }
