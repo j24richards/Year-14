@@ -404,8 +404,8 @@ async function main() {
 
   const all = await getAllTransactions(key);
   const trades = all.filter(t => t.type === "trade");
-  const transactions = all;
-  console.log("Transactions: " + transactions.length + " this season, " + trades.length + " trades (" +
+  const transactions = all.filter(t => t.type !== "commish");
+  console.log("Transactions: " + transactions.length + " this season (commissioner moves left out), " + trades.length + " trades (" +
     trades.reduce((n, t) => n + t.players.length, 0) + " player moves).");
 
   // Weekly lineups with player points. Finished weeks already saved are kept;
