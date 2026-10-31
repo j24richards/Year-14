@@ -13,8 +13,10 @@
 // Optional:
 //   YAHOO_LEAGUE_ID  numeric league id (the number in your Yahoo league URL).
 //                    If unset, the script lists your NFL leagues and stops.
-//   WEEK             fetch just this one week (default: current week and the
-//                    week before it, so finished scores get their final numbers)
+//   WEEK             weeks to fetch: a number ("5"), a range ("1-6") or a list
+//                    ("2,4,6"). Default: current week and the week before it,
+//                    so finished scores get their final numbers. Weeks already
+//                    in the file are kept; fetched weeks are added/updated.
 //   DRY_RUN          "true" to report what would change without writing
 //   OUT_FILE         output path (default ./data/yahoo-league.json)
 
@@ -283,6 +285,24 @@ async function getRoster(teamKey) {
 
 // ---------------------------------------------------------------------------
 
+function parseWeeks(spec) {
+  const out = new Set();
+  for (const part of spec.split(",")) {
+    const p = part.trim();
+    let m;
+    if ((m = p.match(/^(\d+)-(\d+)$/))) {
+      const a = Number(m[1]), b = Number(m[2]);
+      if (a < 1 || b < a || b > 25) fail("Bad week range: " + p);
+      for (let w = a; w <= b; w++) out.add(w);
+    } else if (/^\d+$/.test(p) && Number(p) >= 1 && Number(p) <= 25) {
+      out.add(Number(p));
+    } else {
+      fail("Bad WEEK value: \"" + spec + "\" (use e.g. 5, 1-6 or 2,4,6).");
+    }
+  }
+  return [...out].sort((a, b) => a - b);
+}
+
 function readExisting() {
   if (!existsSync(OUT_FILE)) return null;
   try { return JSON.parse(readFileSync(OUT_FILE, "utf8")); } catch { return null; }
@@ -311,7 +331,7 @@ async function main() {
   if (!standings.length) fail("No teams came back from standings. Leaving the file untouched.");
 
   const current = league.current_week || 1;
-  const weeks = WEEK ? [Number(WEEK)] : (current > 1 ? [current - 1, current] : [current]);
+  const weeks = WEEK ? parseWeeks(WEEK) : (current > 1 ? [current - 1, current] : [current]);
   const prior = readExisting();
   const scores = (prior && prior.scores) || {};
   for (const w of weeks) {
