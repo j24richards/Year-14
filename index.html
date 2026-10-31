@@ -1800,6 +1800,31 @@
     margin-bottom: 18px;
   }
   .ta-suggest-note { color: var(--muted); font-size: 0.85rem; }
+  /* ---- Live Scores (Yahoo data) ---- */
+  #yahoolive .yl-meta { color: var(--muted); font-size: 0.8rem; margin: -6px 0 14px; }
+  #yahoolive .yl-tabs, #yahoolive .yl-weeks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  #yahoolive .yl-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 0.88rem; }
+  #yahoolive .yl-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #yahoolive .yl-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  #yahoolive .yl-game { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  #yahoolive .yl-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 12px; }
+  #yahoolive .yl-row + .yl-row { border-top: 1px solid var(--border); }
+  #yahoolive .yl-row.win { background: var(--gold-wash); font-weight: 600; }
+  #yahoolive .yl-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #yahoolive .yl-pts { font-variant-numeric: tabular-nums; }
+  #yahoolive .yl-status { font-size: 0.72rem; color: var(--muted); padding: 5px 12px; background: var(--panel-2); text-transform: uppercase; letter-spacing: 0.04em; }
+  #yahoolive .yl-mgr { color: var(--muted); font-size: 0.78rem; }
+  #yahoolive .yl-num { text-align: right; font-variant-numeric: tabular-nums; }
+  #yahoolive .yl-tx { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  #yahoolive .yl-tx:last-child { border-bottom: none; }
+  #yahoolive .yl-tx-head { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  #yahoolive .yl-add { color: var(--keeper); font-weight: 600; }
+  #yahoolive .yl-drop { color: var(--red); font-weight: 600; }
+  #yahoolive .yl-bench td { color: var(--muted); }
+  #yahoolive .yl-empty { color: var(--muted); font-style: italic; }
+  #yahoolive .yl-credit { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  #yahoolive .yl-credit a { color: inherit; }
+  @media (max-width: 700px) { #yahoolive .yl-scroll { overflow-x: auto; padding: 10px; } #yahoolive th, #yahoolive td { padding: 8px 5px; font-size: 0.88rem; } }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
@@ -1823,6 +1848,7 @@
       <button data-tab="trades">Trades</button>
       <button data-tab="waivers">Waivers</button>
       <button data-tab="results">Results</button>
+      <button data-tab="yahoolive">Live Scores</button>
     </div>
   </div>
   <button data-tab="tradeanalyzer">Trade Analyzer</button>
@@ -1860,6 +1886,7 @@
     <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
     <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
     <button type="button" class="mobile-nav-item" data-tab="results">Results</button>
+    <button type="button" class="mobile-nav-item" data-tab="yahoolive">Live Scores</button>
     <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
     <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
     <div class="mobile-nav-group-label">2025 Archive</div>
@@ -2423,6 +2450,19 @@
       <button class="admin-btn" id="admin-save-btn">Save Changes</button>
       <p id="admin-status"></p>
     </div>
+  </section>
+
+  <section id="yahoolive">
+    <h2>Live Scores</h2>
+    <p class="yl-meta" id="yl-meta"></p>
+    <div class="yl-tabs" id="yl-tabs">
+      <button type="button" class="yl-btn active" data-yl="scores">Scores</button>
+      <button type="button" class="yl-btn" data-yl="standings">Standings</button>
+      <button type="button" class="yl-btn" data-yl="transactions">Transactions</button>
+      <button type="button" class="yl-btn" data-yl="rosters">Rosters</button>
+    </div>
+    <div id="yl-body"><p class="yl-empty">Loading…</p></div>
+    <p class="yl-credit">Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>
   </section>
 
 </main>
@@ -10582,6 +10622,141 @@ loadAndRender();
 // matchups/weather come from ESPN, not Firestore, so it fetches on its own
 // and just fills in blank cells whenever it resolves.
 fetchWeeklyMatchups();
+</script>
+
+<script>
+// Live Scores tab: reads data/yahoo-league.json, which a GitHub Action
+// refreshes from Yahoo every Tuesday during the season. Self-contained on
+// purpose -- if the file is missing or malformed, only this tab is affected.
+(function () {
+  var root = document.getElementById("yahoolive");
+  if (!root) return;
+  var body = document.getElementById("yl-body");
+  var meta = document.getElementById("yl-meta");
+  var DATA = null, view = "scores", week = null, rosterTeam = null;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmt(n) { return n == null ? "–" : Number(n).toFixed(2).replace(/\.00$/, ".0").replace(/(\.\d)0$/, "$1"); }
+  function teamName(key) {
+    var t = DATA.standings.filter(function (x) { return x.team_key === key; })[0];
+    if (t) return t.name;
+    // transactions can reference free agents / waivers instead of a team
+    return key ? String(key).replace(/^.*\.t\./, "Team ") : "";
+  }
+  function isTeamKey(k) { return /\.t\.\d+$/.test(String(k || "")); }
+
+  function renderScores() {
+    var weeks = Object.keys(DATA.scores).map(Number).sort(function (a, b) { return a - b; });
+    if (!weeks.length) return '<p class="yl-empty">No scores yet.</p>';
+    if (week == null || weeks.indexOf(week) < 0) week = weeks[weeks.length - 1];
+    var html = '<div class="yl-weeks">' + weeks.map(function (w) {
+      return '<button type="button" class="yl-btn' + (w === week ? " active" : "") + '" data-week="' + w + '">Week ' + w + "</button>";
+    }).join("") + "</div>";
+    html += '<div class="yl-games">' + (DATA.scores[String(week)] || []).map(function (m) {
+      var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
+      var rows = m.teams.map(function (t) {
+        var win = m.winner_team_key && t.team_key === m.winner_team_key;
+        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) +
+          '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+      }).join("");
+      return '<div class="yl-game">' + rows + '<div class="yl-status">' + label + (m.is_playoffs ? " · Playoffs" : "") + "</div></div>";
+    }).join("") + "</div>";
+    return html;
+  }
+
+  function renderStandings() {
+    var rows = DATA.standings.map(function (t) {
+      var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
+      return "<tr><td>" + esc(t.rank) + "</td><td>" + esc(t.name) +
+        (t.managers && t.managers.length ? '<br><span class="yl-mgr">' + esc(t.managers.join(", ")) + "</span>" : "") +
+        '</td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
+        '</td><td class="yl-num">' + fmt(t.points_against) + "</td></tr>";
+    }).join("");
+    return '<div class="card yl-scroll"><table><thead><tr><th>#</th><th>Team</th><th class="yl-num">Record</th><th class="yl-num">PF</th><th class="yl-num">PA</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+  }
+
+  function renderTransactions() {
+    var tx = (DATA.transactions || []).slice().sort(function (a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+    if (!tx.length) return '<p class="yl-empty">No transactions yet.</p>';
+    return '<div class="card">' + tx.map(function (t) {
+      var d = t.date ? new Date(t.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+      var type = String(t.type || "").replace("add/drop", "Add / Drop").replace(/^./, function (c) { return c.toUpperCase(); });
+      var lines = (t.players || []).map(function (p) {
+        var who = esc(p.name) + (p.pos ? " (" + esc(p.pos) + (p.team ? ", " + esc(String(p.team).toUpperCase()) : "") + ")" : "");
+        if (p.action === "add") return '<div><span class="yl-add">+ ' + who + "</span>" + (isTeamKey(p.to) ? " to " + esc(teamName(p.to)) : "") + "</div>";
+        if (p.action === "drop") return '<div><span class="yl-drop">− ' + who + "</span>" + (isTeamKey(p.from) ? " from " + esc(teamName(p.from)) : "") + "</div>";
+        if (p.action === "trade") return "<div>" + who + (isTeamKey(p.from) ? " · " + esc(teamName(p.from)) : "") + (isTeamKey(p.to) ? " → " + esc(teamName(p.to)) : "") + "</div>";
+        return "<div>" + who + "</div>";
+      }).join("");
+      return '<div class="yl-tx"><div class="yl-tx-head">' + esc(type) + (d ? " · " + esc(d) : "") + "</div>" + lines + "</div>";
+    }).join("") + "</div>";
+  }
+
+  var SLOT_ORDER = ["QB", "RB", "WR", "TE", "W/R/T", "W/R", "FLEX", "K", "DEF", "BN", "IR"];
+  function slotRank(s) { var i = SLOT_ORDER.indexOf(s); return i < 0 ? 50 : i; }
+
+  function renderRosters() {
+    var teams = DATA.standings;
+    if (!teams.length) return '<p class="yl-empty">No rosters yet.</p>';
+    if (!rosterTeam || !DATA.rosters[rosterTeam]) rosterTeam = teams[0].team_key;
+    var opts = teams.map(function (t) {
+      return '<option value="' + esc(t.team_key) + '"' + (t.team_key === rosterTeam ? " selected" : "") + ">" + esc(t.name) + "</option>";
+    }).join("");
+    var roster = (DATA.rosters[rosterTeam] || []).slice().sort(function (a, b) { return slotRank(a.slot) - slotRank(b.slot); });
+    var rows = roster.map(function (p) {
+      var bench = p.slot === "BN" || p.slot === "IR";
+      return '<tr class="' + (bench ? "yl-bench" : "") + '"><td>' + esc(p.slot || "") + "</td><td>" + esc(p.name) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc(String(p.team || "").toUpperCase()) + "</td></tr>";
+    }).join("");
+    return '<p><select id="yl-team" aria-label="Choose a team">' + opts + '</select></p>' +
+      '<div class="card yl-scroll"><table><thead><tr><th>Slot</th><th>Player</th><th>Pos</th><th>NFL</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+  }
+
+  function render() {
+    if (!DATA) return;
+    var html = view === "standings" ? renderStandings() : view === "transactions" ? renderTransactions() : view === "rosters" ? renderRosters() : renderScores();
+    body.innerHTML = html;
+    Array.prototype.forEach.call(document.querySelectorAll("#yl-tabs .yl-btn"), function (b) {
+      b.classList.toggle("active", b.getAttribute("data-yl") === view);
+    });
+  }
+
+  document.getElementById("yl-tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-yl]");
+    if (!b) return;
+    view = b.getAttribute("data-yl");
+    render();
+  });
+  body.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-week]");
+    if (!b) return;
+    week = Number(b.getAttribute("data-week"));
+    render();
+  });
+  body.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "yl-team") { rosterTeam = e.target.value; render(); }
+  });
+
+  function load() {
+    fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (j) {
+        if (!j || !j.standings || !j.scores) throw new Error("unexpected shape");
+        DATA = j;
+        var when = j.updated ? new Date(j.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+        meta.textContent = (j.league && j.league.current_week ? "Week " + j.league.current_week + " · " : "") + (when ? "Updated " + when : "");
+        week = j.league && j.league.current_week ? j.league.current_week : null;
+        render();
+      })
+      .catch(function () {
+        body.innerHTML = '<p class="yl-empty">Live scores aren\'t available yet. They appear here once the weekly update has run.</p>';
+      });
+  }
+  load();
+})();
 </script>
 
 </body>
