@@ -20,7 +20,9 @@
 //   DRY_RUN          "true" to report what would change without writing
 //   DEBUG_RAW        "true" to print a trimmed sample of Yahoo's raw replies
 //                    (scoreboard team, lineup player) for troubleshooting
-//   OUT_FILE         output path (default ./data/yahoo-league.json)
+//   OUT_FILE         output path (default ./data/yahoo-league.json). Weekly
+//                    lineups go in a second file beside it, yahoo-lineups.json,
+//                    which the site only loads when someone opens a matchup.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
@@ -32,6 +34,7 @@ const LEAGUE_ID = String(process.env.YAHOO_LEAGUE_ID || "").trim();
 const WEEK = String(process.env.WEEK || "").trim();
 const DRY_RUN = String(process.env.DRY_RUN || "").toLowerCase() === "true";
 const OUT_FILE = process.env.OUT_FILE || "data/yahoo-league.json";
+const LINEUPS_FILE = process.env.LINEUPS_FILE || OUT_FILE.replace(/[^/\\]*$/, "yahoo-lineups.json");
 const DEBUG_RAW = String(process.env.DEBUG_RAW || "").toLowerCase() === "true";
 // Overridable only so the script can be tested against a local stand-in.
 const API_BASE = process.env.YAHOO_API_BASE || "https://fantasysports.yahooapis.com/fantasy/v2/";
@@ -410,7 +413,10 @@ async function main() {
 
   // Weekly lineups with player points. Finished weeks already saved are kept;
   // a failure here never blocks the rest of the update.
-  const lineups = prior && prior.lineups ? JSON.parse(JSON.stringify(prior.lineups)) : {};
+  let priorLineups = null;
+  try { if (existsSync(LINEUPS_FILE)) priorLineups = JSON.parse(readFileSync(LINEUPS_FILE, "utf8")).lineups; } catch { priorLineups = null; }
+  if (!priorLineups && prior && prior.lineups) priorLineups = prior.lineups; // older combined file
+  const lineups = priorLineups ? JSON.parse(JSON.stringify(priorLineups)) : {};
   for (const w of weeks) {
     const ms = scores[String(w)] || [];
     const final = ms.length && ms.every(m => m.status === "postevent");
@@ -438,13 +444,16 @@ async function main() {
     scores,
     transactions,
     trades,
-    rosters,
-    lineups
+    rosters
   };
+  const lineupsDoc = { attribution: result.attribution, updated: result.updated, lineups };
 
   // Skip the write (and the commit) when only the timestamp would change.
   const strip = o => JSON.stringify({ ...o, updated: null });
-  if (prior && strip(prior) === strip(result)) {
+  const priorLineupsDoc = { attribution: result.attribution, updated: null, lineups: priorLineups || {} };
+  const mainSame = prior && !prior.lineups && strip(prior) === strip(result);
+  const lineupsSame = strip(priorLineupsDoc) === strip({ ...lineupsDoc });
+  if (mainSame && lineupsSame) {
     console.log("Nothing changed since the last run.");
     return;
   }
@@ -458,7 +467,8 @@ async function main() {
   }
   mkdirSync(dirname(OUT_FILE), { recursive: true });
   writeFileSync(OUT_FILE, JSON.stringify(result, null, 2) + "\n", "utf8");
-  console.log("Wrote " + OUT_FILE + ".");
+  writeFileSync(LINEUPS_FILE, JSON.stringify(lineupsDoc) + "\n", "utf8");
+  console.log("Wrote " + OUT_FILE + " and " + LINEUPS_FILE + ".");
 }
 
 main().catch(err => fail(err && err.stack ? err.stack : String(err)));
