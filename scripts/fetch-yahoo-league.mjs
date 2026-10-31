@@ -333,7 +333,9 @@ async function main() {
   const current = league.current_week || 1;
   const weeks = WEEK ? parseWeeks(WEEK) : (current > 1 ? [current - 1, current] : [current]);
   const prior = readExisting();
-  const scores = (prior && prior.scores) || {};
+  // Copy, don't alias: merging new weeks in must not alter `prior`, or the
+  // "did anything change?" comparison below would always say no.
+  const scores = prior && prior.scores ? JSON.parse(JSON.stringify(prior.scores)) : {};
   for (const w of weeks) {
     const matchups = await getScoreboard(key, w);
     if (matchups.length) scores[String(w)] = matchups;
