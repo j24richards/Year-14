@@ -10658,9 +10658,9 @@ fetchWeeklyMatchups();
     var weeks = Object.keys(DATA.scores).map(Number).sort(function (a, b) { return a - b; });
     if (!weeks.length) return '<p class="yl-empty">No scores yet.</p>';
     if (week == null || weeks.indexOf(week) < 0) week = weeks[weeks.length - 1];
-    var html = '<div class="yl-weeks">' + weeks.map(function (w) {
-      return '<button type="button" class="yl-btn' + (w === week ? " active" : "") + '" data-week="' + w + '">Week ' + w + "</button>";
-    }).join("") + "</div>";
+    var html = '<p><select id="yl-week" aria-label="Choose a week">' + weeks.map(function (w) {
+      return '<option value="' + w + '"' + (w === week ? ' selected' : '') + '>Week ' + w + '</option>';
+    }).join('') + '</select></p>';
     html += '<div class="yl-games">' + (DATA.scores[String(week)] || []).map(function (m) {
       var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
       var rows = m.teams.map(function (t) {
@@ -10790,6 +10790,7 @@ fetchWeeklyMatchups();
     render();
   });
   body.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "yl-week") { week = Number(e.target.value); render(); }
     if (e.target && e.target.id === "yl-team") { rosterTeam = e.target.value; render(); }
     if (e.target && e.target.id === "yl-asof") { asOf = e.target.value; render(); }
   });
@@ -10876,9 +10877,9 @@ fetchWeeklyMatchups();
       var cw = DATA.league && Number(DATA.league.current_week);
       week = ws.indexOf(cw) >= 0 ? cw : ws[ws.length - 1];
     }
-    var pills = ws.map(function (w) {
-      return '<button type="button" class="yl-btn' + (w === week ? " active" : "") + '" data-week="' + w + '">Wk ' + w + "</button>";
-    }).join("");
+    var picker = '<p class="yh-pick"><select id="yh-week" aria-label="Choose a week">' + ws.map(function (w) {
+      return '<option value="' + w + '"' + (w === week ? " selected" : "") + ">Week " + w + "</option>";
+    }).join("") + "</select></p>";
     var games = (DATA.scores[String(week)] || []).map(function (m) {
       var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
       var rows = (m.teams || []).map(function (t) {
@@ -10890,13 +10891,14 @@ fetchWeeklyMatchups();
     }).join("");
     mxEl.innerHTML = '<div class="wr-head"><h3 style="margin: 0;">Week ' + week + ' Matchups</h3>' +
       '<a href="#" class="wr-all-link" id="yh-all">Live Scores &rarr;</a></div>' +
-      '<div class="yl-weeks">' + pills + "</div>" +
+      picker +
       '<div class="yl-games">' + (games || '<p class="yl-empty">No games this week.</p>') + "</div>";
   }
 
+  mxEl.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "yh-week") { week = Number(e.target.value); renderMatchups(); }
+  });
   mxEl.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-week]");
-    if (b) { week = Number(b.getAttribute("data-week")); renderMatchups(); return; }
     if (e.target.closest("#yh-all")) {
       e.preventDefault();
       var nav = document.querySelector('nav button[data-tab="yahoolive"]');
