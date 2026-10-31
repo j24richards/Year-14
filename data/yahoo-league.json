@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-10-31T18:20:22.264Z",
+  "updated": "2026-10-31T18:22:06.335Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -2309,6 +2309,128 @@
     }
   ],
   "trades": [],
+  "commish": [
+    {
+      "id": 26,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788828735,
+      "date": "2026-09-08T00:52:15.000Z",
+      "players": []
+    },
+    {
+      "id": 25,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788828735,
+      "date": "2026-09-08T00:52:15.000Z",
+      "players": []
+    },
+    {
+      "id": 24,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788828735,
+      "date": "2026-09-08T00:52:15.000Z",
+      "players": []
+    },
+    {
+      "id": 23,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788828735,
+      "date": "2026-09-08T00:52:15.000Z",
+      "players": []
+    },
+    {
+      "id": 22,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788828735,
+      "date": "2026-09-08T00:52:15.000Z",
+      "players": []
+    },
+    {
+      "id": 21,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788706228,
+      "date": "2026-09-06T14:50:28.000Z",
+      "players": []
+    },
+    {
+      "id": 12,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788210723,
+      "date": "2026-08-31T21:12:03.000Z",
+      "players": []
+    },
+    {
+      "id": 9,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788114983,
+      "date": "2026-08-30T18:36:23.000Z",
+      "players": []
+    },
+    {
+      "id": 8,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788114860,
+      "date": "2026-08-30T18:34:20.000Z",
+      "players": []
+    },
+    {
+      "id": 7,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1788114860,
+      "date": "2026-08-30T18:34:20.000Z",
+      "players": []
+    },
+    {
+      "id": 5,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1785099589,
+      "date": "2026-07-26T20:59:49.000Z",
+      "players": []
+    },
+    {
+      "id": 4,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1785099589,
+      "date": "2026-07-26T20:59:49.000Z",
+      "players": []
+    },
+    {
+      "id": 3,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1785099589,
+      "date": "2026-07-26T20:59:49.000Z",
+      "players": []
+    },
+    {
+      "id": 2,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1785099589,
+      "date": "2026-07-26T20:59:49.000Z",
+      "players": []
+    },
+    {
+      "id": 1,
+      "type": "commish",
+      "status": "successful",
+      "timestamp": 1785099589,
+      "date": "2026-07-26T20:59:49.000Z",
+      "players": []
+    }
+  ],
   "rosters": {
     "470.l.390478.t.2": [
       {
