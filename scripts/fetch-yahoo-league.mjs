@@ -152,6 +152,10 @@ function readTeam(arr) {
         const m = findAll(n.managers, "nickname");
         meta.managers = m.filter(x => typeof x === "string");
       }
+      if (n.team_logos) {
+        const u = findAll(n.team_logos, "url").find(x => typeof x === "string");
+        if (u) meta.logo = u;
+      }
       return;
     }
     for (const [k, v] of Object.entries(n)) {
@@ -165,6 +169,7 @@ function readTeam(arr) {
     name: meta.name || null,
     managers: meta.managers || []
   };
+  if (meta.logo) t.logo = meta.logo;
   if (points !== null) t.points = points;
   if (projected !== null) t.projected = projected;
   if (winProb !== null) t.win_probability = winProb;
@@ -225,7 +230,11 @@ async function getLeagueMeta(key) {
     start_week: num(meta.start_week),
     end_week: num(meta.end_week),
     playoff_start_week: num(settings.playoff_start_week),
-    num_playoff_teams: num(settings.num_playoff_teams)
+    num_playoff_teams: num(settings.num_playoff_teams),
+    trade_end_date: settings.trade_end_date || null,
+    start_date: meta.start_date || null,
+    end_date: meta.end_date || null,
+    is_finished: meta.is_finished === 1 || meta.is_finished === "1"
   };
 }
 
@@ -405,6 +414,25 @@ async function main() {
     console.log("Week " + w + ": " + matchups.length + " matchups.");
   }
 
+  // Remaining regular-season schedule (who plays whom in weeks not yet started).
+  // Kept apart from `scores` so unplayed weeks never look like results. Weeks
+  // already saved are reused; a failure here never blocks the rest.
+  const schedule = {};
+  try {
+    const lastRegular = (league.playoff_start_week || (league.end_week ? league.end_week - 3 : 14)) - 1;
+    const priorSched = prior && prior.schedule ? prior.schedule : {};
+    for (let w = current + 1; w <= lastRegular; w++) {
+      if (priorSched[String(w)]) { schedule[String(w)] = priorSched[String(w)]; continue; }
+      const ms = await getScoreboard(key, w);
+      const games = ms.filter(m => m.teams.length === 2).map(m => [m.teams[0].team_key, m.teams[1].team_key]);
+      if (games.length) schedule[String(w)] = games;
+    }
+    console.log("Schedule: " + Object.keys(schedule).length + " upcoming regular-season weeks.");
+  } catch (err) {
+    console.log("WARNING: could not read the schedule: " + String(err.message || err).slice(0, 200));
+    if (prior && prior.schedule) Object.assign(schedule, prior.schedule);
+  }
+
   const all = await getAllTransactions(key);
   const trades = all.filter(t => t.type === "trade");
   const transactions = all.filter(t => t.type !== "commish");
@@ -444,7 +472,8 @@ async function main() {
     scores,
     transactions,
     trades,
-    rosters
+    rosters,
+    schedule
   };
   const lineupsDoc = { attribution: result.attribution, updated: result.updated, lineups };
 
