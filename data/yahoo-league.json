@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-10-31T17:25:20.425Z",
+  "updated": "2026-10-31T17:49:06.547Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -175,6 +175,828 @@
     }
   ],
   "scores": {
+    "1": [
+      {
+        "week": 1,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.1",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 143.36
+          },
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 99.56
+          }
+        ]
+      },
+      {
+        "week": 1,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.2",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 139
+          },
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 95.26
+          }
+        ]
+      },
+      {
+        "week": 1,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.3",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 167.46
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 162.36
+          }
+        ]
+      },
+      {
+        "week": 1,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.10",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 101.8
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 176.82
+          }
+        ]
+      },
+      {
+        "week": 1,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.7",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 97.1
+          },
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 112.82
+          }
+        ]
+      }
+    ],
+    "2": [
+      {
+        "week": 2,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.1",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 139.52
+          },
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 85.94
+          }
+        ]
+      },
+      {
+        "week": 2,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.2",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 113.56
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 79.02
+          }
+        ]
+      },
+      {
+        "week": 2,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.3",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 126.72
+          },
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 84.4
+          }
+        ]
+      },
+      {
+        "week": 2,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.4",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 137.86
+          },
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 120.26
+          }
+        ]
+      },
+      {
+        "week": 2,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.5",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 119.6
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 116.58
+          }
+        ]
+      }
+    ],
+    "3": [
+      {
+        "week": 3,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.2",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 126.02
+          },
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 152.88
+          }
+        ]
+      },
+      {
+        "week": 3,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.3",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 137.64
+          },
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 84.84
+          }
+        ]
+      },
+      {
+        "week": 3,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.5",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 105.64
+          },
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 91.44
+          }
+        ]
+      },
+      {
+        "week": 3,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.7",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 107.92
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 107.56
+          }
+        ]
+      },
+      {
+        "week": 3,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.9",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 106.96
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 114.68
+          }
+        ]
+      }
+    ],
+    "4": [
+      {
+        "week": 4,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.10",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 106.82
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 184.66
+          }
+        ]
+      },
+      {
+        "week": 4,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.9",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 139.98
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 142.52
+          }
+        ]
+      },
+      {
+        "week": 4,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.7",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 104.5
+          },
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 153.22
+          }
+        ]
+      },
+      {
+        "week": 4,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.4",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 123.3
+          },
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 106.48
+          }
+        ]
+      },
+      {
+        "week": 4,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.8",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 71.66
+          },
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 98.98
+          }
+        ]
+      }
+    ],
+    "5": [
+      {
+        "week": 5,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.9",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 122.8
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 157.5
+          }
+        ]
+      },
+      {
+        "week": 5,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.2",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 121.82
+          },
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 114.66
+          }
+        ]
+      },
+      {
+        "week": 5,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.10",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 140.28
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 149.96
+          }
+        ]
+      },
+      {
+        "week": 5,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.4",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 123.64
+          },
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 120.14
+          }
+        ]
+      },
+      {
+        "week": 5,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.5",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 169.04
+          },
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 111.08
+          }
+        ]
+      }
+    ],
+    "6": [
+      {
+        "week": 6,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.1",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "points": 140.7
+          },
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "points": 100.96
+          }
+        ]
+      },
+      {
+        "week": 6,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.4",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "points": 97.78
+          },
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "points": 106.32
+          }
+        ]
+      },
+      {
+        "week": 6,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.3",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "points": 140.18
+          },
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "points": 101.6
+          }
+        ]
+      },
+      {
+        "week": 6,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.8",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "points": 105.72
+          },
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "points": 110.14
+          }
+        ]
+      },
+      {
+        "week": 6,
+        "status": "postevent",
+        "is_playoffs": false,
+        "is_tied": false,
+        "winner_team_key": "470.l.390478.t.9",
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "points": 133.64
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "points": 107.2
+          }
+        ]
+      }
+    ],
     "7": [
       {
         "week": 7,
