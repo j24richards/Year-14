@@ -1,8 +1,16 @@
 name: Fetch league data from Yahoo
 
-# Pulls standings, weekly scores, recent transactions and rosters from Yahoo
-# Fantasy into data/yahoo-league.json. Same Yahoo app and secrets as the ADP
-# refresh. Scheduled for the NFL season only.
+# Pulls standings, weekly scores, lineups, transactions (waivers and trades)
+# and rosters from Yahoo Fantasy into data/yahoo-league.json. Same Yahoo app
+# and secrets as the ADP refresh. NFL season only (September through January).
+#
+# When it runs (all times UTC, so they line up with US game windows):
+#   - every 30 minutes on Sunday afternoon/evening and during the Sunday-,
+#     Monday- and Thursday-night games, so scores stay close to live
+#   - Tuesday 09:00, once Monday night is final
+#   - daily at 12:00, to pick up waiver moves and trades
+# A run only commits when something actually changed, so quiet stretches add
+# nothing to the history.
 #
 # One-time setup: add a repository VARIABLE (not a secret) named
 # YAHOO_LEAGUE_ID with the number from your Yahoo league URL. Not sure what it
@@ -11,8 +19,10 @@ name: Fetch league data from Yahoo
 
 on:
   schedule:
-    # 09:00 UTC every Tuesday (after Monday night), September through January.
+    - cron: "*/30 17-23 * 9-12,1 0"
+    - cron: "*/30 0-4 * 9-12,1 1,2,5"
     - cron: "0 9 * 9-12,1 2"
+    - cron: "0 12 * 9-12,1 *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -23,11 +33,20 @@ on:
         description: "Yahoo league id (blank = use the YAHOO_LEAGUE_ID variable)"
         default: ""
       week:
-        description: "Only fetch this week (blank = current and previous week)"
+        description: "Only fetch this week (blank = current and previous week). Also accepts a range like 1-6."
         default: ""
+      debug:
+        description: "Print a trimmed sample of Yahoo's raw replies in the log"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+
+# Never let two runs overlap: they would both try to commit the same file.
+concurrency:
+  group: yahoo-league-data
+  cancel-in-progress: false
 
 jobs:
   fetch:
@@ -47,6 +66,7 @@ jobs:
           YAHOO_LEAGUE_ID: ${{ github.event.inputs.league_id || vars.YAHOO_LEAGUE_ID }}
           WEEK: ${{ github.event.inputs.week }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          DEBUG_RAW: ${{ github.event.inputs.debug || 'false' }}
         run: node scripts/fetch-yahoo-league.mjs
 
       - name: Commit if the data changed
@@ -60,4 +80,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/yahoo-league.json
           git commit -m "Update league data from Yahoo"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push
