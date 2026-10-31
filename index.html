@@ -10633,7 +10633,7 @@ fetchWeeklyMatchups();
   if (!root) return;
   var body = document.getElementById("yl-body");
   var meta = document.getElementById("yl-meta");
-  var DATA = null, view = "scores", week = null, rosterTeam = null;
+  var DATA = null, view = "scores", week = null, rosterTeam = null, asOf = "current";
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -10668,15 +10668,63 @@ fetchWeeklyMatchups();
     return html;
   }
 
+  // Weeks 1..N that are fully final, counting only if every earlier week is present too.
+  function finalWeeks() {
+    var ws = Object.keys(DATA.scores).map(Number).sort(function (a, b) { return a - b; }), out = [];
+    for (var i = 0; i < ws.length; i++) {
+      if (ws[i] !== i + 1) break;
+      var ms = DATA.scores[String(ws[i])];
+      if (!ms.length || ms.some(function (m) { return m.status !== "postevent"; })) break;
+      out.push(ws[i]);
+    }
+    return out;
+  }
+
+  // Rebuilds the table as of the end of week n from the weekly matchup scores
+  // (regular season only; ranked by record, then points for).
+  function standingsAfter(n) {
+    var rec = {};
+    DATA.standings.forEach(function (t) {
+      rec[t.team_key] = { name: t.name, managers: t.managers, wins: 0, losses: 0, ties: 0, points_for: 0, points_against: 0 };
+    });
+    for (var w = 1; w <= n; w++) {
+      (DATA.scores[String(w)] || []).forEach(function (m) {
+        if (m.is_playoffs || m.teams.length !== 2) return;
+        var a = m.teams[0], b = m.teams[1], ra = rec[a.team_key], rb = rec[b.team_key];
+        if (!ra || !rb) return;
+        ra.points_for += a.points || 0; ra.points_against += b.points || 0;
+        rb.points_for += b.points || 0; rb.points_against += a.points || 0;
+        if (m.is_tied) { ra.ties++; rb.ties++; }
+        else if (m.winner_team_key === a.team_key) { ra.wins++; rb.losses++; }
+        else if (m.winner_team_key === b.team_key) { rb.wins++; ra.losses++; }
+      });
+    }
+    return Object.keys(rec).map(function (k) { return rec[k]; }).sort(function (x, y) {
+      return (y.wins - x.wins) || (y.ties - x.ties) || (y.points_for - x.points_for);
+    }).map(function (t, i) { t.rank = i + 1; return t; });
+  }
+
   function renderStandings() {
-    var rows = DATA.standings.map(function (t) {
+    var fw = finalWeeks();
+    if (asOf !== "current" && fw.indexOf(Number(asOf)) < 0) asOf = "current";
+    var list = asOf === "current" ? DATA.standings : standingsAfter(Number(asOf));
+    var picker = "";
+    if (fw.length) {
+      picker = '<p><select id="yl-asof" aria-label="Standings as of">' +
+        '<option value="current"' + (asOf === "current" ? " selected" : "") + ">Current</option>" +
+        fw.slice().reverse().map(function (w) {
+          return '<option value="' + w + '"' + (String(asOf) === String(w) ? " selected" : "") + ">After Week " + w + "</option>";
+        }).join("") + "</select></p>";
+    }
+    var rows = list.map(function (t) {
       var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
       return "<tr><td>" + esc(t.rank) + "</td><td>" + esc(t.name) +
         (t.managers && t.managers.length ? '<br><span class="yl-mgr">' + esc(t.managers.join(", ")) + "</span>" : "") +
         '</td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
         '</td><td class="yl-num">' + fmt(t.points_against) + "</td></tr>";
     }).join("");
-    return '<div class="card yl-scroll"><table><thead><tr><th>#</th><th>Team</th><th class="yl-num">Record</th><th class="yl-num">PF</th><th class="yl-num">PA</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+    return picker + '<div class="card yl-scroll"><table><thead><tr><th>#</th><th>Team</th><th class="yl-num">Record</th><th class="yl-num">PF</th><th class="yl-num">PA</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      (asOf === "current" ? "" : '<p class="yl-meta">Calculated from the weekly scores; ranked by record, then points for.</p>');
   }
 
   function renderTransactions() {
@@ -10738,6 +10786,7 @@ fetchWeeklyMatchups();
   });
   body.addEventListener("change", function (e) {
     if (e.target && e.target.id === "yl-team") { rosterTeam = e.target.value; render(); }
+    if (e.target && e.target.id === "yl-asof") { asOf = e.target.value; render(); }
   });
 
   function load() {
