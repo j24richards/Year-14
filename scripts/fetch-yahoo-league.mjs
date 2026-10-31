@@ -373,13 +373,16 @@ async function getFreeAgents(key) {
     for (const p of players) {
       const info = flatten(p);
       if (!info.name || !info.player_key) continue;
+      // Injury designation is the player's own "status" item; flatten() would mix it up with keeper status.
+      const own = (Array.isArray(p[0]) ? p[0] : []).find(x => x && typeof x.status === "string");
+      const injury = own ? own.status : null;
       const bye = findAll(p, "bye_weeks").map(b => num(flatten(b).week)).find(x => x != null);
       out.push({
         key: info.player_key,
         name: info.name,
         team: info.editorial_team_abbr || null,
         pos: String(info.display_position || pos).split(",")[0] || pos,
-        status: info.status || null,
+        status: injury,
         bye: bye == null ? null : bye,
         points: num(info.total),
         owned: null,
