@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-10-31T17:49:06.547Z",
+  "updated": "2026-10-31T18:20:22.264Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -2308,6 +2308,7 @@
       ]
     }
   ],
+  "trades": [],
   "rosters": {
     "470.l.390478.t.2": [
       {
