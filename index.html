@@ -19,7 +19,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@600&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <style>
+  header { position: relative; }
+  .theme-toggle { position: absolute; top: 10px; right: 12px; z-index: 2; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; padding: 4px 11px; font: inherit; font-size: 0.78rem; cursor: pointer; }
+  .theme-toggle:hover { background: rgba(255,255,255,0.22); }
+
   :root {
     --bg: #f5f7fb;
     --panel: #ffffff;
@@ -40,7 +45,7 @@
     --font-display: "Anton", Impact, "Arial Narrow", sans-serif;    --font-label: "Teko", "Arial Narrow", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #050b18;
       --panel: #0d1b30;
       --panel-2: #13233d;
@@ -59,6 +64,24 @@
       --rookie-tag: #6ea3e0;
     }
   }
+  :root[data-theme="dark"] {
+      --bg: #050b18;
+      --panel: #0d1b30;
+      --panel-2: #13233d;
+      --border: #26456e;
+      --text: #f2f6fc;
+      --muted: #9fb3d1;
+      --accent: #030a16;
+      --red: #dc2c18;
+      --gold: #dc2c18;
+      --silver: #9aa5b8;
+      --bronze: #c98b52;
+      --gold-wash: rgba(220, 44, 24, 0.1);
+      --keeper: #3fb950;
+      --injury-risk: #e8a33d;
+      --injury-risk-wash: rgba(232, 163, 61, 0.14);
+      --rookie-tag: #6ea3e0;
+    }
   * { box-sizing: border-box; }
   .sr-only {
     position: absolute;
@@ -1857,6 +1880,7 @@
 <body>
 
 <header>
+  <button type="button" class="theme-toggle" id="theme-toggle">◐ Auto</button>
   <div class="header-last-updated" id="header-last-updated"></div>
   <h1 id="page-heading">Year <span class="yr-accent">14</span></h1>
 </header>
@@ -1955,6 +1979,7 @@
     <div class="card" id="yh-matchups"><p class="yl-empty">Loading matchups&hellip;</p></div>
     <h2 id="season-heading">Current Season Standings</h2>
     <div class="card" id="standings-card"><p class="yl-empty">Loading standings&hellip;</p></div>
+    <div class="card" id="yh-playoffs" style="display:none;"></div>
     <div class="card" id="power-rankings-card" style="display:none;">
       <h3 style="margin-top:0;">Power Rankings</h3>
       <ul id="power-rankings-list" style="margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem;"></ul>
@@ -2271,7 +2296,8 @@
           </div>
         </div>
       </details>
-      <details class="card admin-details">
+      <div class="card"><p style="margin:0; color: var(--muted); font-size: 0.85rem;">Standings, weekly scores, waivers and trades now come from Yahoo automatically, so they are no longer entered here.</p></div>
+      <details class="card admin-details" style="display:none;">
         <summary class="admin-summary">Weekly Results<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
           <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Pick a week, then type each matchup's two teams and scores &mdash; or paste the Yahoo scoreboard text and press Preview. Nothing is published until you press Save Changes. A week with no filled-in games is removed.</p>
@@ -2405,14 +2431,14 @@
           <p id="admin-repair-archive-status" style="color: var(--muted); font-size: 0.82rem; margin-top: 8px;"></p>
         </div>
       </details>
-      <details class="card admin-details">
+      <details class="card admin-details" style="display:none;">
         <summary class="admin-summary">Trades<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
           <div id="admin-trades"></div>
           <button type="button" class="admin-btn admin-btn-secondary" id="admin-add-trade-btn">+ Add Trade</button>
         </div>
       </details>
-      <details class="card admin-details">
+      <details class="card admin-details" style="display:none;">
         <summary class="admin-summary">Waivers<span class="admin-chevron">&#9656;</span></summary>
         <div class="admin-body">
           <div id="admin-waivers"></div>
@@ -9673,7 +9699,197 @@ if (mockSearchInput) mockSearchInput.addEventListener("input", (e) => {
 });
 
 
-function render(LEAGUE_DATA) {
+// ---- Yahoo layer ---------------------------------------------------------
+// Standings, weekly scores, waivers and trades come from data/yahoo-league.json
+// (kept fresh by a GitHub Action). They are layered onto the in-memory data
+// only: yahooForSave() puts the hand-entered originals back before anything
+// is written to Firestore, so nothing Yahoo-derived is ever stored there.
+let YAHOO_LEAGUE = null;
+const YAHOO_DATA_ORIG = new WeakMap();
+const YAHOO_ROW_ORIG = new WeakMap();
+
+function yNorm(s) { return String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+// Which of the site's team names is this Yahoo team? Ignores punctuation and
+// case ("Jimmy Jones' Cutlets" = "Jimmy Jones Cutlets") and lets one name be
+// a longer form of the other ("Brown Tuten" = "Brown Tuten Boutte").
+function yahooMatchName(data, yname) {
+  const names = ((data && data.currentSeason && data.currentSeason.standings) || []).map(r => r.team);
+  const n = yNorm(yname);
+  let hit = names.find(x => yNorm(x) === n);
+  if (!hit && n.length >= 6) {
+    hit = names.find(x => { const m = yNorm(x); return m.length >= 6 && (m.startsWith(n) || n.startsWith(m)); });
+  }
+  return hit || yname;
+}
+
+function yahooTeamMap(data) {
+  const map = {};
+  (YAHOO_LEAGUE.standings || []).forEach(t => { map[t.team_key] = yahooMatchName(data, t.name); });
+  return map;
+}
+
+function yahooStreaks() {
+  const res = {};
+  Object.keys(YAHOO_LEAGUE.scores || {}).map(Number).sort((a, b) => a - b).forEach(w => {
+    (YAHOO_LEAGUE.scores[String(w)] || []).forEach(m => {
+      if (m.status !== "postevent" || !m.teams || m.teams.length !== 2) return;
+      m.teams.forEach(t => {
+        const r = m.is_tied ? "T" : (m.winner_team_key === t.team_key ? "W" : "L");
+        const s = res[t.team_key];
+        if (s && s.r === r) s.n++; else res[t.team_key] = { r: r, n: 1 };
+      });
+    });
+  });
+  return res;
+}
+
+function yahooDateLabel(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function yahooEsc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function yahooPlayerLabel(p) { return yahooEsc(p.name) + (p.pos ? " (" + yahooEsc(p.pos) + ")" : ""); }
+
+function applyYahoo(data) {
+  if (!YAHOO_LEAGUE || !data || !data.currentSeason) return data;
+  if (!YAHOO_DATA_ORIG.has(data)) {
+    YAHOO_DATA_ORIG.set(data, { weeklyResults: data.weeklyResults, trades: data.trades, waivers: data.waivers });
+  }
+  const map = yahooTeamMap(data);
+  const nameOf = key => map[key] || key;
+
+  // Standings: record, points and streak per team.
+  const byName = {};
+  (YAHOO_LEAGUE.standings || []).forEach(t => { byName[map[t.team_key]] = t; });
+  const streaks = yahooStreaks();
+  const keyOf = {};
+  Object.keys(map).forEach(k => { keyOf[map[k]] = k; });
+  ((data.currentSeason && data.currentSeason.standings) || []).forEach(row => {
+    const y = byName[row.team];
+    if (!y) return;
+    if (!YAHOO_ROW_ORIG.has(row)) {
+      YAHOO_ROW_ORIG.set(row, {
+        record: row.record, pointsFor: row.pointsFor, pointsAgainst: row.pointsAgainst, streak: row.streak,
+        hadPA: "pointsAgainst" in row, hadStreak: "streak" in row
+      });
+    }
+    row.record = y.wins + "-" + y.losses + (y.ties ? "-" + y.ties : "");
+    row.pointsFor = y.points_for;
+    row.pointsAgainst = y.points_against;
+    const s = streaks[keyOf[row.team]];
+    row.streak = s ? s.r + s.n : "-";
+  });
+
+  // Weekly results: only weeks where every game is final.
+  const weekly = [];
+  Object.keys(YAHOO_LEAGUE.scores || {}).map(Number).sort((a, b) => a - b).forEach(w => {
+    const ms = YAHOO_LEAGUE.scores[String(w)] || [];
+    if (!ms.length || ms.some(m => m.status !== "postevent")) return;
+    const games = ms.filter(m => m.teams && m.teams.length === 2).map(m => ({
+      a: nameOf(m.teams[0].team_key) || m.teams[0].name,
+      b: nameOf(m.teams[1].team_key) || m.teams[1].name,
+      sa: Number(m.teams[0].points), sb: Number(m.teams[1].points)
+    }));
+    if (games.length) weekly.push({ week: w, games: games });
+  });
+  data.weeklyResults = weekly;
+
+  // Waivers: every successful add / drop this season, newest first.
+  const tx = (YAHOO_LEAGUE.transactions || []).filter(t => t.status === "successful" && /^(add|drop|add\/drop)$/.test(t.type || ""));
+  if (tx.length) {
+    data.waivers = tx.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).map(t => {
+      const adds = (t.players || []).filter(p => p.action === "add");
+      const drops = (t.players || []).filter(p => p.action === "drop");
+      const teamKey = (adds[0] && adds[0].to) || (drops[0] && drops[0].from) || "";
+      return {
+        date: yahooDateLabel(t.date),
+        team: yahooEsc(nameOf(teamKey)),
+        added: adds.map(yahooPlayerLabel).join(", ") || "&mdash;",
+        dropped: drops.map(yahooPlayerLabel).join(", ") || "&mdash;"
+      };
+    });
+  }
+
+  // Trades: when Yahoo has any, they replace the hand-entered log.
+  const yTrades = (YAHOO_LEAGUE.trades || []).filter(t => t.status === "successful" && (t.players || []).length);
+  if (yTrades.length) {
+    data.trades = yTrades.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).map(t => {
+      const sides = {};
+      t.players.forEach(p => {
+        const from = nameOf(p.from);
+        if (!sides[from]) sides[from] = { to: nameOf(p.to), names: [] };
+        sides[from].names.push(p.name);
+      });
+      const senders = Object.keys(sides);
+      const teamA = senders[0], teamB = senders[1] || sides[senders[0]].to;
+      const sendA = sides[teamA].names, sendB = (sides[teamB] && sides[teamB].names) || [];
+      return {
+        date: yahooDateLabel(t.date),
+        teams: yahooEsc(teamA) + " &harr; " + yahooEsc(teamB),
+        details: yahooEsc(teamA) + " sends " + yahooEsc(sendA.join(", ")) + "; " + yahooEsc(teamB) + " sends " + (sendB.length ? yahooEsc(sendB.join(", ")) : "nothing") + ".",
+        teamA: teamA, teamB: teamB, sendA: sendA, sendB: sendB
+      };
+    });
+  }
+  return data;
+}
+
+// What gets written to Firestore: the hand-entered originals, never the
+// Yahoo-derived values. Anything else the commissioner edited is kept.
+function yahooForSave(data) {
+  const orig = data && YAHOO_DATA_ORIG.get(data);
+  if (!orig) return data;
+  const out = Object.assign({}, data);
+  ["weeklyResults", "trades", "waivers"].forEach(k => {
+    if (orig[k] === undefined) delete out[k]; else out[k] = orig[k];
+  });
+  if (data.currentSeason && Array.isArray(data.currentSeason.standings)) {
+    out.currentSeason = Object.assign({}, data.currentSeason, {
+      standings: data.currentSeason.standings.map(row => {
+        const o = YAHOO_ROW_ORIG.get(row);
+        if (!o) return row;
+        const r = Object.assign({}, row, { record: o.record, pointsFor: o.pointsFor });
+        if (o.hadPA) r.pointsAgainst = o.pointsAgainst; else delete r.pointsAgainst;
+        if (o.hadStreak) r.streak = o.streak; else delete r.streak;
+        return r;
+      })
+    });
+  }
+  return out;
+}
+
+function render(data) {
+  applyYahoo(data);
+  renderCore(data);
+  window.dispatchEvent(new Event("site-data-ready"));
+}
+function refreshPublicSections(data) {
+  applyYahoo(data);
+  refreshPublicSectionsCore(data);
+  window.dispatchEvent(new Event("site-data-ready"));
+}
+
+// Lets the page's plain scripts (the home cards) use the site's team list
+// and badges.
+window.SiteTeams = {
+  match: name => yahooMatchName(CURRENT_DATA, name),
+  badge: name => teamBadgeHtml(name)
+};
+
+fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
+  .then(r => (r.ok ? r.json() : null))
+  .then(j => {
+    if (!j || !j.standings || !j.scores) return;
+    YAHOO_LEAGUE = j;
+    if (CURRENT_DATA) {
+      try { refreshPublicSections(CURRENT_DATA); } catch (err) { console.error("Yahoo overlay refresh failed:", err); }
+    }
+  })
+  .catch(() => {});
+
+function renderCore(LEAGUE_DATA) {
   CURRENT_DATA = LEAGUE_DATA;
   LAST_SAVED_TEAMS2026_JSON = JSON.stringify(LEAGUE_DATA.teams2026 || []);
   const leagueName = LEAGUE_DATA.leagueName || "League";
@@ -10031,7 +10247,7 @@ function ensureYear14KeeperRuleRows(data) {
   return data;
 }
 
-function refreshPublicSections(data) {
+function refreshPublicSectionsCore(data) {
   document.getElementById("commish-note").textContent = data.commissionerNote;
   document.getElementById("updated-date").textContent = data.lastUpdated;
   document.getElementById("header-last-updated").textContent = formatLastUpdated(data.lastUpdated);
@@ -10270,7 +10486,7 @@ document.getElementById("admin-save-btn").addEventListener("click", async () => 
 
   statusEl.textContent = "Saving…";
   try {
-    await setDoc(FIRESTORE_REF, CURRENT_DATA);
+    await setDoc(FIRESTORE_REF, yahooForSave(CURRENT_DATA));
     if (rosterChanged) LAST_SAVED_TEAMS2026_JSON = teams2026Json;
     statusEl.textContent = "Saved! The site is now showing your changes.";
     refreshPublicSections(CURRENT_DATA);
@@ -10814,15 +11030,47 @@ fetchWeeklyMatchups();
 })();
 </script>
 
+<style>
+  #home .yh-mv { font-size: 0.72rem; margin-left: 6px; font-weight: 600; white-space: nowrap; }
+  #home .yh-up { color: var(--keeper); }
+  #home .yh-down { color: var(--gold); }
+  #home .yh-flat { color: var(--muted); font-weight: 400; }
+  #home #standings-card tr.yh-in td:first-child { box-shadow: inset 3px 0 0 var(--keeper); }
+  #home #standings-card tr.yh-cut td { border-bottom: 2px dashed var(--keeper); }
+  #home .yh-note { font-size: 0.78rem; color: var(--muted); margin: 8px 4px 0; }
+  #home .yh-game { cursor: pointer; }
+  #home .yh-game:hover, #home .yh-game.open { border-color: var(--rookie-tag); }
+  #home .yh-sub { display: block; font-size: 0.74rem; color: var(--muted); font-weight: 400; }
+  #home .yh-prob { display: flex; height: 5px; background: var(--panel-2); }
+  #home .yh-prob > span { background: var(--rookie-tag); }
+  #home .yh-lineup { grid-column: 1 / -1; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 10px 12px; }
+  #home .yh-lineup-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  #home .yh-lineup h4 { margin: 0 0 6px; font-size: 0.95rem; }
+  #home .yh-lineup table { width: 100%; font-size: 0.86rem; }
+  #home .yh-lineup th, #home .yh-lineup td { padding: 4px 6px; }
+  #home .yh-lineup td.n, #home .yh-lineup th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  #home .yh-lineup tr.bn td { color: var(--muted); }
+  #home .yh-lineup tr.tot td { font-weight: 600; border-top: 1px solid var(--border); }
+  #home .yh-close { float: right; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; }
+  #home #yh-playoffs h3 { margin: 0 0 8px; }
+  #home #yh-playoffs .yh-round { margin-top: 14px; }
+  #home #yh-playoffs .yh-round h4 { margin: 0 0 6px; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  #home .yh-pill { display: inline-block; font-size: 0.72rem; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--border); }
+  #home .yh-pill.in { color: var(--keeper); border-color: var(--keeper); }
+  #home .yh-pill.bub { color: var(--injury-risk); border-color: var(--injury-risk); }
+  #home .yh-pill.out { color: var(--muted); }
+</style>
 <script>
-// Home page: standings and matchups from data/yahoo-league.json, which a
-// GitHub Action refreshes from Yahoo. Self-contained -- if the file is
-// missing or malformed, only these two cards show a friendly message.
+// Home page: standings, matchups, lineups and the playoff picture, all from
+// data/yahoo-league.json, which a GitHub Action refreshes from Yahoo.
+// Self-contained -- if the file is missing or malformed, only these cards
+// show a friendly message.
 (function () {
   var stEl = document.getElementById("standings-card");
   var mxEl = document.getElementById("yh-matchups");
+  var poEl = document.getElementById("yh-playoffs");
   if (!stEl || !mxEl) return;
-  var DATA = null, week = null;
+  var DATA = null, week = null, openKey = null, LINEUPS = null, lineupsLoading = false;
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -10832,6 +11080,63 @@ fetchWeeklyMatchups();
   function fmt(n) { return n == null ? "–" : Number(n).toFixed(2); }
   function weeksList() {
     return Object.keys(DATA.scores || {}).map(Number).sort(function (a, b) { return a - b; });
+  }
+  // Team badge from the site's own team list (matches Yahoo names even when
+  // punctuation differs, e.g. "Jimmy Jones' Cutlets" vs "Jimmy Jones Cutlets").
+  function badge(name) {
+    try {
+      if (window.SiteTeams) return window.SiteTeams.badge(window.SiteTeams.match(name));
+    } catch (e) {}
+    return "";
+  }
+  function teamCell(name) {
+    return '<td class="standings-team-cell">' + badge(name) + "<span>" + esc(name) + "</span></td>";
+  }
+
+  // Weeks 1..N that are fully final.
+  function finalWeeks() {
+    var out = [];
+    weeksList().forEach(function (w, i) {
+      if (out.length !== i || w !== i + 1) return;
+      var ms = DATA.scores[String(w)] || [];
+      if (ms.length && ms.every(function (m) { return m.status === "postevent"; })) out.push(w);
+    });
+    return out;
+  }
+
+  // Table as of the end of week n, from the weekly scores (regular season
+  // only; ranked by record, then points for).
+  function standingsAfter(n) {
+    var rec = {};
+    DATA.standings.forEach(function (t) {
+      rec[t.team_key] = { key: t.team_key, name: t.name, wins: 0, losses: 0, ties: 0, pf: 0 };
+    });
+    for (var w = 1; w <= n; w++) {
+      (DATA.scores[String(w)] || []).forEach(function (m) {
+        if (m.is_playoffs || !m.teams || m.teams.length !== 2) return;
+        var a = m.teams[0], b = m.teams[1], ra = rec[a.team_key], rb = rec[b.team_key];
+        if (!ra || !rb) return;
+        ra.pf += a.points || 0; rb.pf += b.points || 0;
+        if (m.is_tied) { ra.ties++; rb.ties++; }
+        else if (m.winner_team_key === a.team_key) { ra.wins++; rb.losses++; }
+        else if (m.winner_team_key === b.team_key) { rb.wins++; ra.losses++; }
+      });
+    }
+    var list = Object.keys(rec).map(function (k) { return rec[k]; }).sort(function (x, y) {
+      return (y.wins - x.wins) || (y.ties - x.ties) || (y.pf - x.pf);
+    });
+    var rank = {};
+    list.forEach(function (t, i) { rank[t.key] = i + 1; });
+    return rank;
+  }
+
+  // Rank change since the previous completed week: positive = moved up.
+  function movement() {
+    var fw = finalWeeks(), mv = {};
+    if (fw.length < 2) return mv;
+    var n = fw[fw.length - 1], now = standingsAfter(n), before = standingsAfter(n - 1);
+    Object.keys(now).forEach(function (k) { mv[k] = before[k] - now[k]; });
+    return mv;
   }
 
   // Current win/loss streak per team, from completed matchups only.
@@ -10850,24 +11155,57 @@ fetchWeeklyMatchups();
     return res;
   }
 
-  function renderStandings() {
-    var st = streaks();
-    var list = (DATA.standings || []).slice().sort(function (a, b) {
+  function sortedStandings() {
+    return (DATA.standings || []).slice().sort(function (a, b) {
       if (a.rank != null && b.rank != null && a.rank !== b.rank) return a.rank - b.rank;
       return (b.wins - a.wins) || (b.points_for - a.points_for);
     });
+  }
+  function cutoff() { return DATA.league && DATA.league.num_playoff_teams > 0 ? DATA.league.num_playoff_teams : 0; }
+
+  function renderStandings() {
+    var st = streaks(), mv = movement(), cut = cutoff();
+    var list = sortedStandings();
     var rows = list.map(function (t, i) {
       var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
-      var s = st[t.team_key];
-      return "<tr><td>" + (i + 1) + "</td><td>" + esc(t.name) + "</td><td>" + esc((t.managers || []).join(", ")) +
+      var s = st[t.team_key], d = mv[t.team_key], arrow = "";
+      if (d > 0) arrow = '<span class="yh-mv yh-up" title="Up ' + d + ' since last week">&#9650;' + d + "</span>";
+      else if (d < 0) arrow = '<span class="yh-mv yh-down" title="Down ' + (-d) + ' since last week">&#9660;' + (-d) + "</span>";
+      else if (d === 0) arrow = '<span class="yh-mv yh-flat" title="No change since last week">&ndash;</span>';
+      var cls = cut ? (i < cut ? "yh-in" : "") + (i === cut - 1 ? " yh-cut" : "") : "";
+      return '<tr class="' + cls + '"><td>' + (i + 1) + arrow + "</td>" + teamCell(t.name) + "<td>" + esc((t.managers || []).join(", ")) +
         "</td><td>" + esc(rec) + "</td><td>" + (s ? s.r + s.n : "—") + "</td><td>" + fmt(t.points_for) +
         "</td><td>" + fmt(t.points_against) + "</td></tr>";
     }).join("");
     var when = DATA.updated ? new Date(DATA.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+    var po = DATA.league || {};
+    var legend = cut ? '<p class="yh-note">Top ' + cut + " make the playoffs" + (po.playoff_start_week ? " (starting Week " + po.playoff_start_week + ")" : "") + ".</p>" : "";
     stEl.innerHTML = "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>" +
-      rows + "</tbody></table>" +
+      rows + "</tbody></table>" + legend +
       '<p class="yl-credit">' + (when ? "Updated " + esc(when) + " · " : "") +
       'Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>';
+  }
+
+  // ---- matchups ---------------------------------------------------------
+  var SLOTS = ["QB", "RB", "WR", "TE", "W/R/T", "W/R", "FLEX", "K", "DEF", "BN", "IR"];
+  function slotRank(s) { var i = SLOTS.indexOf(s); return i < 0 ? 50 : i; }
+
+  function lineupTable(team, wk) {
+    var src = LINEUPS || DATA.lineups;
+    if (!src) return "<h4>" + esc(team.name) + '</h4><p class="yl-empty">Loading lineups&hellip;</p>';
+    var byTeam = src[String(wk)];
+    var rows = byTeam && byTeam[team.team_key];
+    if (!rows || !rows.length) return "<h4>" + esc(team.name) + '</h4><p class="yl-empty">No lineup saved for this week.</p>';
+    rows = rows.slice().sort(function (a, b) { return slotRank(a.slot) - slotRank(b.slot); });
+    var total = 0;
+    var body = rows.map(function (p) {
+      var bench = p.slot === "BN" || p.slot === "IR";
+      if (!bench && p.points != null) total += p.points;
+      return '<tr class="' + (bench ? "bn" : "") + '"><td>' + esc(p.slot || "") + "</td><td>" + esc(p.name) + ' <span class="yh-sub" style="display:inline">' +
+        esc(p.pos || "") + (p.team ? " · " + esc(String(p.team).toUpperCase()) : "") + '</span></td><td class="n">' + (p.points == null ? "–" : fmt(p.points)) + "</td></tr>";
+    }).join("");
+    return "<h4>" + esc(team.name) + '</h4><table><thead><tr><th>Slot</th><th>Player</th><th class="n">Pts</th></tr></thead><tbody>' + body +
+      '<tr class="tot"><td colspan="2">Starters</td><td class="n">' + fmt(total) + "</td></tr></tbody></table>";
   }
 
   function renderMatchups() {
@@ -10880,39 +11218,137 @@ fetchWeeklyMatchups();
     var picker = '<p class="yh-pick"><select id="yh-week" aria-label="Choose a week">' + ws.map(function (w) {
       return '<option value="' + w + '"' + (w === week ? " selected" : "") + ">Week " + w + "</option>";
     }).join("") + "</select></p>";
-    var games = (DATA.scores[String(week)] || []).map(function (m) {
-      var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
+    var ms = DATA.scores[String(week)] || [];
+    var games = ms.map(function (m, idx) {
+      var final = m.status === "postevent";
+      var label = final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
+      var key = week + ":" + idx;
+      var showProb = !final && m.teams.length === 2 && m.teams.every(function (t) { return t.win_probability != null; });
       var rows = (m.teams || []).map(function (t) {
         var win = m.winner_team_key && t.team_key === m.winner_team_key;
-        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) +
+        var sub = "";
+        if (!final && t.projected != null) sub = '<span class="yh-sub">Proj ' + fmt(t.projected) + (showProb ? " · " + Math.round(t.win_probability * 100) + "%" : "") + "</span>";
+        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) + sub +
           '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
-      return '<div class="yl-game">' + rows + '<div class="yl-status">' + label + (m.is_playoffs ? " · Playoffs" : "") + "</div></div>";
+      var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
+      var html = '<div class="yl-game yh-game' + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
+        rows + bar + '<div class="yl-status">' + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + " · tap for lineups</div></div>";
+      if (openKey === key) {
+        html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button>' +
+          '<div class="yh-lineup-cols">' + m.teams.map(function (t) { return "<div>" + lineupTable(t, week) + "</div>"; }).join("") + "</div></div>";
+      }
+      return html;
     }).join("");
     mxEl.innerHTML = '<div class="wr-head"><h3 style="margin: 0;">Week ' + week + ' Matchups</h3>' +
       '<a href="#" class="wr-all-link" id="yh-all">Live Scores &rarr;</a></div>' +
-      picker +
-      '<div class="yl-games">' + (games || '<p class="yl-empty">No games this week.</p>') + "</div>";
+      picker + '<div class="yl-games">' + (games || '<p class="yl-empty">No games this week.</p>') + "</div>";
+  }
+
+  // ---- playoff picture / bracket ---------------------------------------
+  function renderPlayoffs() {
+    if (!poEl) return;
+    var lg = DATA.league || {}, cut = cutoff(), start = lg.playoff_start_week;
+    if (!cut || !start) { poEl.style.display = "none"; return; }
+    var cw = Number(lg.current_week) || 0;
+    var inPlayoffs = cw >= start;
+    var html = "";
+    if (!inPlayoffs) {
+      var list = sortedStandings();
+      if (list.length <= cut) { poEl.style.display = "none"; return; }
+      var last = list[cut - 1], firstOut = list[cut];
+      var fw = finalWeeks().length, left = Math.max(0, start - 1 - fw);
+      var rows = list.map(function (t, i) {
+        var gb = ((last.wins - t.wins) + (t.losses - last.losses)) / 2;
+        var status, detail;
+        if (i < cut) {
+          var cush = ((t.wins - firstOut.wins) + (firstOut.losses - t.losses)) / 2;
+          status = cush <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill in">In</span>';
+          detail = i === cut - 1 ? cush + " game" + (cush === 1 ? "" : "s") + " clear of the line" : cush + " game" + (cush === 1 ? "" : "s") + " clear";
+        } else {
+          status = gb <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill out">Out</span>';
+          detail = gb + " game" + (gb === 1 ? "" : "s") + " back";
+        }
+        var maxWins = t.wins + left;
+        var dead = i >= cut && maxWins < last.wins;
+        if (dead) { status = '<span class="yh-pill out">Eliminated</span>'; detail = "can't catch #" + cut; }
+        return "<tr>" + "<td>" + (i + 1) + "</td>" + teamCell(t.name) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + status + "</td><td>" + detail + "</td></tr>";
+      }).join("");
+      html = "<h3>Playoff picture</h3><p class=\"yh-note\" style=\"margin-top:0\">Top " + cut + " advance. " + left + " regular-season week" + (left === 1 ? "" : "s") + " left (playoffs start Week " + start + ").</p>" +
+        '<div style="overflow-x:auto"><table style="min-width:420px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+    } else {
+      var rounds = weeksList().filter(function (w) { return w >= start; });
+      html = "<h3>Playoffs</h3>";
+      var seeds = standingsAfter(start - 1);
+      rounds.forEach(function (w, ri) {
+        var games = (DATA.scores[String(w)] || []).filter(function (m) { return m.is_playoffs && !m.is_consolation; });
+        if (!games.length) return;
+        html += '<div class="yh-round"><h4>Round ' + (ri + 1) + " · Week " + w + '</h4><div class="yl-games">' + games.map(function (m) {
+          var final = m.status === "postevent";
+          var rows = m.teams.map(function (t) {
+            var win = m.winner_team_key && t.team_key === m.winner_team_key;
+            return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + (seeds[t.team_key] ? "(" + seeds[t.team_key] + ") " : "") + esc(t.name) + '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+          }).join("");
+          return '<div class="yl-game">' + rows + '<div class="yl-status">' + (final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming") + "</div></div>";
+        }).join("") + "</div></div>";
+      });
+    }
+    poEl.innerHTML = html;
+    poEl.style.display = "";
+  }
+
+  function renderAll() {
+    if (!DATA) return;
+    renderMatchups(); renderStandings(); renderPlayoffs();
   }
 
   mxEl.addEventListener("change", function (e) {
-    if (e.target && e.target.id === "yh-week") { week = Number(e.target.value); renderMatchups(); }
+    if (e.target && e.target.id === "yh-week") { week = Number(e.target.value); openKey = null; renderMatchups(); }
   });
+  // Lineups live in their own file so the home page stays light; it is only
+  // fetched the first time someone opens a matchup.
+  function loadLineups() {
+    if (LINEUPS || lineupsLoading || DATA.lineups) return;
+    lineupsLoading = true;
+    fetch("data/yahoo-lineups.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { LINEUPS = (j && j.lineups) || {}; })
+      .catch(function () { LINEUPS = {}; })
+      .then(function () { lineupsLoading = false; renderMatchups(); });
+  }
+  function toggleGame(el) {
+    var k = el.getAttribute("data-key");
+    openKey = openKey === k ? null : k;
+    renderMatchups();
+    if (openKey) loadLineups();
+    var open = mxEl.querySelector(".yh-lineup");
+    if (open && open.scrollIntoView) open.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
   mxEl.addEventListener("click", function (e) {
     if (e.target.closest("#yh-all")) {
       e.preventDefault();
       var nav = document.querySelector('nav button[data-tab="yahoolive"]');
       if (nav) nav.click();
+      return;
     }
+    if (e.target.closest("[data-close]")) { openKey = null; renderMatchups(); return; }
+    if (e.target.closest(".yh-lineup")) return;
+    var g = e.target.closest(".yh-game");
+    if (g) toggleGame(g);
   });
+  mxEl.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    var g = e.target.closest && e.target.closest(".yh-game");
+    if (g && e.target === g) { e.preventDefault(); toggleGame(g); }
+  });
+  window.addEventListener("site-data-ready", function () { if (DATA) { renderStandings(); renderPlayoffs(); } });
 
   fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
     .then(function (j) {
       if (!j || !j.standings || !j.scores) throw new Error("unexpected shape");
       DATA = j;
-      renderMatchups();
-      renderStandings();
+      renderAll();
     })
     .catch(function () {
       var msg = '<p class="yl-empty">Standings and matchups aren\'t available yet. They appear here once the weekly update has run.</p>';
@@ -10922,5 +11358,26 @@ fetchWeeklyMatchups();
 })();
 </script>
 
+<script>
+// Light / dark / follow-the-device switch. The choice is remembered on this
+// device only.
+(function () {
+  var btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+  var order = ["auto", "light", "dark"], labels = { auto: "\u25D0 Auto", light: "\u2600 Light", dark: "\u263E Dark" };
+  function current() { try { var t = localStorage.getItem("theme"); return t === "light" || t === "dark" ? t : "auto"; } catch (e) { return "auto"; } }
+  function apply(t) {
+    if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+    btn.textContent = labels[t];
+    btn.setAttribute("aria-label", "Colour theme: " + t + ". Tap to change.");
+  }
+  apply(current());
+  btn.addEventListener("click", function () {
+    var next = order[(order.indexOf(current()) + 1) % order.length];
+    try { if (next === "auto") localStorage.removeItem("theme"); else localStorage.setItem("theme", next); } catch (e) {}
+    apply(next);
+  });
+})();
+</script>
 </body>
 </html>
