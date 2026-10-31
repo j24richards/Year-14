@@ -1874,6 +1874,26 @@
   #home #standings-card .yl-credit { padding: 0 4px; }
   @media (max-width: 700px) { #home #standings-card table { min-width: 560px; } #home #standings-card th, #home #standings-card td { padding: 8px 6px; font-size: 0.86rem; } }
   @media (max-width: 700px) { #yahoolive .yl-scroll { overflow-x: auto; padding: 10px; } #yahoolive th, #yahoolive td { padding: 8px 5px; font-size: 0.88rem; } }
+
+/* ---- functional colours (your existing palette is unchanged) ---- */
+:root { --good: #1a7f37; --warn: #a5680a; --bad: #c62828; --info: #2f5fa8; --link: #b82514; --shadow: 0 1px 2px rgba(16, 24, 40, 0.06); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --good: #3fb950; --warn: #e8a33d; --bad: #f2605b; --info: #6ea3e0; --link: #ff6b57; --shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
+}
+:root[data-theme="dark"] { --good: #3fb950; --warn: #e8a33d; --bad: #f2605b; --info: #6ea3e0; --link: #ff6b57; --shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
+
+/* ---- light polish (same colours) ---- */
+  body { -webkit-font-smoothing: antialiased; line-height: 1.45; }
+  main { max-width: 960px; }
+  .card { border-radius: 12px; box-shadow: var(--shadow); }
+  h3 { font-weight: 650; }
+  table { font-variant-numeric: tabular-nums; }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 650; }
+  tbody tr:hover td { background: color-mix(in srgb, var(--panel-2) 55%, transparent); }
+  :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 4px; }
+  .wr-all-link, #home .yh-link { color: var(--link); }
+  input[type="text"], input[type="search"], select { border-radius: 8px; }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 </head>
@@ -1976,10 +1996,12 @@
       <div class="countdown-label" id="countdown-label"></div>
       <a class="countdown-yahoo-link" href="https://football.fantasysports.yahoo.com/" target="_blank" rel="noopener noreferrer">Open Yahoo Fantasy Football &rarr;</a>
     </div>
-    <div class="card" id="yh-matchups"><p class="yl-empty">Loading matchups&hellip;</p></div>
+    <div id="yh-phase" style="display:none;"></div>
+    <div class="card" id="yh-matchups"><div class="yh-skel" aria-busy="true" aria-label="Loading"><span></span><span></span><span></span><span></span><span></span></div></div>
     <h2 id="season-heading">Current Season Standings</h2>
-    <div class="card" id="standings-card"><p class="yl-empty">Loading standings&hellip;</p></div>
+    <div class="card" id="standings-card"><div class="yh-skel" aria-busy="true" aria-label="Loading"><span></span><span></span><span></span><span></span><span></span></div></div>
     <div class="card" id="yh-playoffs" style="display:none;"></div>
+    <div class="card" id="yh-insights" style="display:none;"></div>
     <div class="card" id="power-rankings-card" style="display:none;">
       <h3 style="margin-top:0;">Power Rankings</h3>
       <ul id="power-rankings-list" style="margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem;"></ul>
@@ -11032,11 +11054,11 @@ fetchWeeklyMatchups();
 
 <style>
   #home .yh-mv { font-size: 0.72rem; margin-left: 6px; font-weight: 600; white-space: nowrap; }
-  #home .yh-up { color: var(--keeper); }
-  #home .yh-down { color: var(--gold); }
+  #home .yh-up { color: var(--good); }
+  #home .yh-down { color: var(--bad); }
   #home .yh-flat { color: var(--muted); font-weight: 400; }
-  #home #standings-card tr.yh-in td:first-child { box-shadow: inset 3px 0 0 var(--keeper); }
-  #home #standings-card tr.yh-cut td { border-bottom: 2px dashed var(--keeper); }
+  #home #standings-card tr.yh-in td:first-child { box-shadow: inset 3px 0 0 var(--good); }
+  #home #standings-card tr.yh-cut td { border-bottom: 2px dashed var(--good); }
   #home .yh-note { font-size: 0.78rem; color: var(--muted); margin: 8px 4px 0; }
   #home .yh-game { cursor: pointer; }
   #home .yh-game:hover, #home .yh-game.open { border-color: var(--rookie-tag); }
@@ -11056,21 +11078,93 @@ fetchWeeklyMatchups();
   #home #yh-playoffs .yh-round { margin-top: 14px; }
   #home #yh-playoffs .yh-round h4 { margin: 0 0 6px; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
   #home .yh-pill { display: inline-block; font-size: 0.72rem; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--border); }
-  #home .yh-pill.in { color: var(--keeper); border-color: var(--keeper); }
+  #home .yh-pill.in { color: var(--good); border-color: var(--good); }
   #home .yh-pill.bub { color: var(--injury-risk); border-color: var(--injury-risk); }
   #home .yh-pill.out { color: var(--muted); }
+  /* ---- Phase banner ---- */
+  #yh-phase { margin-bottom: 18px; }
+  #yh-phase .yh-banner { border: 1px solid var(--border); border-left: 4px solid var(--red); background: var(--panel); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow); }
+  #yh-phase .yh-eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 650; }
+  #yh-phase .yh-title { font-size: 1.2rem; font-weight: 700; margin: 2px 0 8px; }
+  #yh-phase .yh-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  #yh-phase .yh-chip { font-size: 0.82rem; border: 1px solid var(--border); background: var(--panel-2); border-radius: 999px; padding: 3px 11px; color: var(--text); }
+  #yh-phase .yh-chip b { font-variant-numeric: tabular-nums; }
+  #yh-phase .yh-champ { border-left-color: #d4a017; background: linear-gradient(90deg, rgba(212, 160, 23, 0.12), transparent 60%), var(--panel); }
+  #yh-phase .yh-fresh { margin-top: 8px; font-size: 0.76rem; color: var(--muted); }
+  #yh-phase .yh-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); margin-right: 6px; vertical-align: middle; }
+  #yh-phase .yh-dot.stale { background: var(--warn); }
+  /* ---- Team avatars ---- */
+  .yh-av { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; overflow: hidden; vertical-align: middle; margin-right: 8px; }
+  .yh-av .yh-logo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--panel-2); border-radius: 50%; }
+  .yl-name { display: flex; align-items: center; min-width: 0; }
+  .yl-name .yh-nm { min-width: 0; }
+  /* ---- Insights ---- */
+  #yh-insights h3 { margin: 0 0 10px; }
+  #yh-insights .yh-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; padding: 0; }
+  #yh-insights .yh-tab { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); border-radius: 999px; padding: 6px 14px; font-size: 0.86rem; cursor: pointer; font-family: inherit; }
+  #yh-insights .yh-tab[aria-selected="true"] { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+  #yh-insights .yh-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 12px; font-size: 0.86rem; color: var(--muted); }
+  #yh-insights select { font-size: 0.9rem; padding: 5px 8px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  #yh-insights .yh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  #yh-insights .yh-award { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--panel-2); }
+  #yh-insights .yh-award .k { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 650; }
+  #yh-insights .yh-award .v { font-weight: 700; margin-top: 2px; display: flex; align-items: center; }
+  #yh-insights .yh-award .d { font-size: 0.8rem; color: var(--muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
+  #yh-insights .yh-sub2 { margin: 16px 0 6px; font-size: 0.82rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  #yh-insights .yh-btn { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 6px 12px; font-size: 0.86rem; cursor: pointer; font-family: inherit; }
+  #yh-insights .yh-btn:hover { border-color: var(--red); }
+  #yh-insights .yh-scroll { overflow-x: auto; }
+  #yh-insights td.n, #yh-insights th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  #yh-insights .yh-pos { color: var(--good); font-weight: 600; }
+  #yh-insights .yh-neg { color: var(--bad); font-weight: 600; }
+  #yh-insights .yh-bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--red); vertical-align: middle; margin-right: 6px; min-width: 2px; }
+  #yh-insights .yh-track { display: inline-block; width: 70px; height: 8px; border-radius: 4px; background: var(--panel-2); vertical-align: middle; margin-right: 6px; overflow: hidden; }
+  #yh-insights .yh-track > i { display: block; height: 100%; background: var(--red); border-radius: 4px; }
+  #yh-insights .yh-chart { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  #yh-insights .yh-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--muted); margin: 6px 0; }
+  #yh-insights .yh-legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  #yh-insights .yh-tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px 9px; font-size: 0.8rem; box-shadow: 0 6px 18px rgba(0,0,0,0.25); z-index: 5; display: none; white-space: nowrap; }
+  #yh-insights .yh-chartbox { position: relative; }
+  #yh-insights details.yh-tv { margin-top: 10px; font-size: 0.84rem; }
+  #yh-insights details.yh-tv summary { cursor: pointer; color: var(--muted); }
+  #yh-insights .yh-feed { list-style: none; margin: 0; padding: 0; }
+  #yh-insights .yh-feed li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; display: flex; gap: 10px; align-items: baseline; }
+  #yh-insights .yh-feed li:last-child { border-bottom: 0; }
+  #yh-insights .yh-feed .dt { color: var(--muted); font-size: 0.78rem; min-width: 52px; font-variant-numeric: tabular-nums; }
+  #yh-insights .yh-plus { color: var(--good); font-weight: 700; }
+  #yh-insights .yh-minus { color: var(--bad); font-weight: 700; }
+  #yh-insights .yh-empty { color: var(--muted); font-size: 0.9rem; padding: 6px 0; }
+  .yh-odds { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .yh-note { font-size: 0.78rem; color: var(--muted); margin: 8px 4px 0; }
+  /* ---- Loading placeholders ---- */
+  .yh-skel { display: grid; gap: 10px; }
+  .yh-skel span { display: block; height: 16px; border-radius: 6px; background: linear-gradient(90deg, var(--panel-2) 25%, color-mix(in srgb, var(--panel-2) 55%, var(--border)) 50%, var(--panel-2) 75%); background-size: 200% 100%; animation: yhShimmer 1.3s linear infinite; }
+  .yh-skel span:nth-child(3n) { width: 72%; }
+  @keyframes yhShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .yh-skel span { animation: none; } }
+  /* ---- Phone bottom bar ---- */
+  .yh-tabbar { display: none; }
+  @media (max-width: 640px) {
+    body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+    .yh-tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 16px rgba(0,0,0,0.18); }
+    .yh-tabbar button { flex: 1; background: none; border: 0; color: var(--muted); padding: 8px 2px 7px; font-size: 0.68rem; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 56px; cursor: pointer; }
+    .yh-tabbar button svg { width: 22px; height: 22px; }
+    .yh-tabbar button[aria-current="page"] { color: var(--link); font-weight: 650; }
+    #yh-phase .yh-title { font-size: 1.05rem; }
+    #yh-insights .yh-tab { padding: 6px 11px; }
+  }
 </style>
 <script>
-// Home page: standings, matchups, lineups and the playoff picture, all from
-// data/yahoo-league.json, which a GitHub Action refreshes from Yahoo.
-// Self-contained -- if the file is missing or malformed, only these cards
-// show a friendly message.
 (function () {
+  "use strict";
   var stEl = document.getElementById("standings-card");
   var mxEl = document.getElementById("yh-matchups");
   var poEl = document.getElementById("yh-playoffs");
+  var inEl = document.getElementById("yh-insights");
+  var phEl = document.getElementById("yh-phase");
   if (!stEl || !mxEl) return;
-  var DATA = null, week = null, openKey = null, LINEUPS = null, lineupsLoading = false;
+  var DATA = null, LINEUPS = null, lineupsLoading = false, week = null, openKey = null;
+  var tab = "awards", awWeek = null, chartMode = "rank", chartTeam = null, M = null, loadedAt = 0;
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -11078,83 +11172,548 @@ fetchWeeklyMatchups();
     });
   }
   function fmt(n) { return n == null ? "–" : Number(n).toFixed(2); }
+  function f1(n) { return n == null || isNaN(n) ? "–" : Number(n).toFixed(1); }
   function weeksList() {
     return Object.keys(DATA.scores || {}).map(Number).sort(function (a, b) { return a - b; });
   }
-  // Team badge from the site's own team list (matches Yahoo names even when
-  // punctuation differs, e.g. "Jimmy Jones' Cutlets" vs "Jimmy Jones Cutlets").
-  function badge(name) {
-    try {
-      if (window.SiteTeams) return window.SiteTeams.badge(window.SiteTeams.match(name));
-    } catch (e) {}
+  function badgeHtml(name) {
+    try { if (window.SiteTeams) return window.SiteTeams.badge(window.SiteTeams.match(name)); } catch (e) {}
     return "";
   }
-  function teamCell(name) {
-    return '<td class="standings-team-cell">' + badge(name) + "<span>" + esc(name) + "</span></td>";
+  // Team picture: the Yahoo logo when the manager has set one, otherwise the
+  // site's own badge. A logo that fails to load falls back to the badge.
+  function avatar(name, key) {
+    var t = M && M.byKey[key], logo = t && t.logo, fb = badgeHtml(name);
+    if (logo && !/\/default|placeholder|avatar_default/i.test(logo) && /^https:\/\//.test(logo)) {
+      return '<span class="yh-av"><img class="yh-logo" src="' + esc(logo) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-fb="' + esc(fb) + '"></span>';
+    }
+    return fb;
+  }
+  document.addEventListener("error", function (e) {
+    var el = e.target;
+    if (el && el.classList && el.classList.contains("yh-logo") && el.parentNode) {
+      var fb = el.getAttribute("data-fb") || "";
+      var p = el.parentNode;
+      if (p.classList.contains("yh-av")) { p.insertAdjacentHTML("afterend", fb); p.remove(); } else el.remove();
+    }
+  }, true);
+  function nameCell(name, key) {
+    return '<td class="standings-team-cell">' + avatar(name, key) + "<span>" + esc(name) + "</span></td>";
+  }
+  function short(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+  function dateLabel(iso) {
+    if (!iso) return "";
+    var d = new Date(iso); if (isNaN(d)) return "";
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
-  // Weeks 1..N that are fully final.
-  function finalWeeks() {
-    var out = [];
-    weeksList().forEach(function (w, i) {
-      if (out.length !== i || w !== i + 1) return;
-      var ms = DATA.scores[String(w)] || [];
-      if (ms.length && ms.every(function (m) { return m.status === "postevent"; })) out.push(w);
+  // ---- model: everything derived from the saved Yahoo data -------------------
+  function mulberry(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function eligible(slot) {
+    var s = String(slot || "").toUpperCase();
+    if (!s || s === "BN" || s === "IR") return null;
+    if (s === "FLEX") return ["WR", "RB", "TE"];
+    if (s === "SUPERFLEX" || s === "OP" || s === "SFLX") return ["QB", "WR", "RB", "TE"];
+    if (s === "D/ST" || s === "DEF") return ["DEF"];
+    if (s.indexOf("/") > 0) {
+      var map = { W: "WR", R: "RB", T: "TE", Q: "QB" }, out = [];
+      s.split("/").forEach(function (c) { if (map[c]) out.push(map[c]); });
+      return out.length ? out : [s];
+    }
+    return [s];
+  }
+  function normPos(p) { p = String(p || "").toUpperCase(); return p === "D/ST" || p === "DST" ? "DEF" : p; }
+  // Best lineup the roster allowed that week, and what actually started.
+  function lineupEff(rows) {
+    var actual = 0, slots = [], pool = [];
+    rows.forEach(function (p) {
+      var pts = p.points == null ? 0 : p.points, el = eligible(p.slot);
+      if (el) { actual += pts; slots.push(el); }
+      if (String(p.slot).toUpperCase() !== "IR") pool.push({ pos: normPos(p.pos), pts: pts, used: false });
     });
+    slots.sort(function (a, b) { return a.length - b.length; });
+    var best = 0;
+    slots.forEach(function (el) {
+      var pick = null;
+      pool.forEach(function (pl) { if (!pl.used && el.indexOf(pl.pos) >= 0 && (!pick || pl.pts > pick.pts)) pick = pl; });
+      if (pick) { pick.used = true; best += pick.pts; }
+    });
+    return { actual: actual, best: Math.max(best, actual) };
+  }
+
+  function build() {
+    var d = DATA, byKey = {}, order = [];
+    d.standings.forEach(function (t) { byKey[t.team_key] = t; order.push(t.team_key); });
+    var games = [];
+    Object.keys(d.scores || {}).forEach(function (w) {
+      (d.scores[w] || []).forEach(function (m) {
+        if (!m.teams || m.teams.length !== 2) return;
+        games.push({ w: Number(w), m: m, final: m.status === "postevent", playoff: !!m.is_playoffs, a: m.teams[0], b: m.teams[1] });
+      });
+    });
+    var wk = {}; // finished regular-season points by team and week
+    order.forEach(function (k) { wk[k] = {}; });
+    var byWeek = {};
+    games.forEach(function (g) {
+      (byWeek[g.w] = byWeek[g.w] || []).push(g);
+      if (g.final && !g.playoff) { if (wk[g.a.team_key]) wk[g.a.team_key][g.w] = g.a.points || 0; if (wk[g.b.team_key]) wk[g.b.team_key][g.w] = g.b.points || 0; }
+    });
+    var fw = [];
+    Object.keys(byWeek).map(Number).sort(function (a, b) { return a - b; }).forEach(function (w, i) {
+      var gs = byWeek[w].filter(function (g) { return !g.playoff; });
+      if (fw.length === i && w === i + 1 && gs.length && gs.every(function (g) { return g.final; })) fw.push(w);
+    });
+    // table after each completed week
+    function tableAfter(n) {
+      var r = {};
+      order.forEach(function (k) { r[k] = { key: k, w: 0, l: 0, t: 0, pf: 0 }; });
+      games.forEach(function (g) {
+        if (g.w > n || !g.final || g.playoff) return;
+        var ra = r[g.a.team_key], rb = r[g.b.team_key]; if (!ra || !rb) return;
+        ra.pf += g.a.points || 0; rb.pf += g.b.points || 0;
+        if (g.m.is_tied) { ra.t++; rb.t++; }
+        else if (g.m.winner_team_key === g.a.team_key) { ra.w++; rb.l++; }
+        else if (g.m.winner_team_key === g.b.team_key) { rb.w++; ra.l++; }
+      });
+      var list = order.map(function (k) { return r[k]; }).sort(function (x, y) { return (y.w - x.w) || (y.t - x.t) || (y.pf - x.pf); });
+      list.forEach(function (x, i) { x.rank = i + 1; });
+      return r;
+    }
+    var hist = fw.map(tableAfter);
+    var now = tableAfter(99);
+    // strength estimate
+    var all = [], sum = {}, cnt = {};
+    order.forEach(function (k) {
+      sum[k] = 0; cnt[k] = 0;
+      fw.forEach(function (w) { if (wk[k][w] != null) { sum[k] += wk[k][w]; cnt[k]++; all.push(wk[k][w]); } });
+    });
+    var lg = all.length ? all.reduce(function (a, b) { return a + b; }, 0) / all.length : 100;
+    var dev = 0, df = 0;
+    order.forEach(function (k) {
+      if (!cnt[k]) return;
+      var m = sum[k] / cnt[k];
+      fw.forEach(function (w) { if (wk[k][w] != null) dev += Math.pow(wk[k][w] - m, 2); });
+      df += cnt[k] - 1;
+    });
+    var sd = Math.max(12, Math.sqrt(dev / Math.max(1, df)));
+    var mu = {};
+    order.forEach(function (k) { mu[k] = (sum[k] + 3 * lg) / (cnt[k] + 3); });
+    // all-play and luck
+    var ap = {};
+    order.forEach(function (k) { ap[k] = { w: 0, l: 0, t: 0, exp: 0, g: 0 }; });
+    fw.forEach(function (w) {
+      var ks = order.filter(function (k) { return wk[k][w] != null; });
+      ks.forEach(function (k) {
+        var beat = 0, lost = 0, tie = 0;
+        ks.forEach(function (o) {
+          if (o === k) return;
+          if (wk[k][w] > wk[o][w]) beat++; else if (wk[k][w] < wk[o][w]) lost++; else tie++;
+        });
+        ap[k].w += beat; ap[k].l += lost; ap[k].t += tie;
+        ap[k].exp += (beat + tie / 2) / Math.max(1, ks.length - 1); ap[k].g++;
+      });
+    });
+    // games still to play (regular season)
+    var rem = [];
+    games.forEach(function (g) {
+      if (!g.final && !g.playoff) rem.push({ w: g.w, a: g.a.team_key, b: g.b.team_key, pa: g.a.projected, pb: g.b.projected });
+    });
+    Object.keys(d.schedule || {}).forEach(function (w) {
+      if (byWeek[w]) return;
+      (d.schedule[w] || []).forEach(function (p) { rem.push({ w: Number(w), a: p[0], b: p[1] }); });
+    });
+    rem = rem.filter(function (g) { return wk[g.a] && wk[g.b]; });
+    var M0 = { byKey: byKey, order: order, games: games, fw: fw, hist: hist, now: now, wk: wk, mu: mu, sd: sd, lg: lg, ap: ap, rem: rem, sim: null, sos: null };
+    var cut = d.league && d.league.num_playoff_teams > 0 ? d.league.num_playoff_teams : 0;
+    if (cut && rem.length && fw.length >= 2) M0.sim = simulate(M0, cut);
+    if (rem.length && fw.length >= 2) M0.sos = schedule(M0);
+    return M0;
+  }
+
+  // Playoff odds: replay the rest of the regular season many times, drawing each
+  // team's score around its own season average, then count who finishes in the
+  // top N (wins first, points for as the tiebreaker).
+  function simulate(m, cut) {
+    var N = 4000, rnd = mulberry(20260101), order = m.order, n = order.length, idx = {};
+    order.forEach(function (k, i) { idx[k] = i; });
+    var base = order.map(function (k) { return { w: m.now[k].w + m.now[k].t / 2, pf: m.now[k].pf }; });
+    var made = new Array(n).fill(0), top = new Array(n).fill(0), winSum = new Array(n).fill(0);
+    function gauss() { var u = 1 - rnd(), v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+    var gm = m.rem.map(function (g) {
+      var ma = m.mu[g.a], mb = m.mu[g.b];
+      if (g.pa != null) ma = 0.5 * ma + 0.5 * g.pa;
+      if (g.pb != null) mb = 0.5 * mb + 0.5 * g.pb;
+      return { a: idx[g.a], b: idx[g.b], ma: ma, mb: mb };
+    });
+    for (var s = 0; s < N; s++) {
+      var w = base.map(function (x) { return x.w; }), pf = base.map(function (x) { return x.pf; });
+      for (var i = 0; i < gm.length; i++) {
+        var g = gm[i], pa = g.ma + m.sd * gauss(), pb = g.mb + m.sd * gauss();
+        pf[g.a] += pa; pf[g.b] += pb;
+        if (pa > pb) w[g.a] += 1; else if (pb > pa) w[g.b] += 1; else { w[g.a] += 0.5; w[g.b] += 0.5; }
+      }
+      var ord = order.map(function (_, j) { return j; }).sort(function (x, y) { return (w[y] - w[x]) || (pf[y] - pf[x]); });
+      for (var r = 0; r < n; r++) { winSum[ord[r]] += 0; if (r < cut) made[ord[r]]++; }
+      top[ord[0]]++;
+      for (var j = 0; j < n; j++) winSum[j] += w[j];
+    }
+    var out = {};
+    order.forEach(function (k, i) { out[k] = { made: made[i] / N, top: top[i] / N, wins: winSum[i] / N }; });
     return out;
   }
-
-  // Table as of the end of week n, from the weekly scores (regular season
-  // only; ranked by record, then points for).
-  function standingsAfter(n) {
-    var rec = {};
-    DATA.standings.forEach(function (t) {
-      rec[t.team_key] = { key: t.team_key, name: t.name, wins: 0, losses: 0, ties: 0, pf: 0 };
+  // Remaining schedule difficulty: average scoring of the opponents still to come.
+  function schedule(m) {
+    var o = {};
+    m.order.forEach(function (k) { o[k] = { left: 0, sum: 0, opp: [] }; });
+    m.rem.forEach(function (g) {
+      o[g.a].left++; o[g.a].sum += m.mu[g.b]; o[g.a].opp.push(g.b);
+      o[g.b].left++; o[g.b].sum += m.mu[g.a]; o[g.b].opp.push(g.a);
     });
-    for (var w = 1; w <= n; w++) {
-      (DATA.scores[String(w)] || []).forEach(function (m) {
-        if (m.is_playoffs || !m.teams || m.teams.length !== 2) return;
-        var a = m.teams[0], b = m.teams[1], ra = rec[a.team_key], rb = rec[b.team_key];
-        if (!ra || !rb) return;
-        ra.pf += a.points || 0; rb.pf += b.points || 0;
-        if (m.is_tied) { ra.ties++; rb.ties++; }
-        else if (m.winner_team_key === a.team_key) { ra.wins++; rb.losses++; }
-        else if (m.winner_team_key === b.team_key) { rb.wins++; ra.losses++; }
+    var list = m.order.filter(function (k) { return o[k].left; }).sort(function (a, b) { return o[b].sum / o[b].left - o[a].sum / o[a].left; });
+    list.forEach(function (k, i) { o[k].rank = i + 1; o[k].avg = o[k].sum / o[k].left; });
+    return o;
+  }
+  function pctLabel(p) {
+    if (p == null) return "–";
+    if (p >= 0.995) return ">99%";
+    if (p < 0.005) return "<1%";
+    return Math.round(p * 100) + "%";
+  }
+
+  // ---- awards, efficiency, recap -------------------------------------------
+  function effFor(w, k) {
+    var src = LINEUPS || DATA.lineups; if (!src) return null;
+    var rows = src[String(w)] && src[String(w)][k];
+    return rows && rows.length ? lineupEff(rows) : null;
+  }
+  function weekAwards(w) {
+    var gs = M.games.filter(function (g) { return g.w === w && g.final; });
+    if (!gs.length) return null;
+    var teams = [];
+    gs.forEach(function (g) {
+      teams.push({ t: g.a, opp: g.b, g: g }); teams.push({ t: g.b, opp: g.a, g: g });
+    });
+    var hi = teams[0], lo = teams[0], blow = gs[0], close = gs[0];
+    teams.forEach(function (x) { if (x.t.points > hi.t.points) hi = x; if (x.t.points < lo.t.points) lo = x; });
+    function margin(g) { return Math.abs((g.a.points || 0) - (g.b.points || 0)); }
+    gs.forEach(function (g) { if (margin(g) > margin(blow)) blow = g; if (margin(g) < margin(close)) close = g; });
+    var A = { week: w, hi: hi, lo: lo, blow: blow, close: close, margin: margin };
+    var effs = [];
+    M.order.forEach(function (k) { var e = effFor(w, k); if (e) effs.push({ k: k, e: e, pct: e.best ? e.actual / e.best : 1, left: e.best - e.actual }); });
+    if (effs.length) {
+      A.bestMgr = effs.slice().sort(function (a, b) { return (b.pct - a.pct) || (b.e.actual - a.e.actual); })[0];
+      A.blunder = effs.slice().sort(function (a, b) { return b.left - a.left; })[0];
+    }
+    var src = LINEUPS || DATA.lineups, top = null, bench = null;
+    if (src && src[String(w)]) {
+      Object.keys(src[String(w)]).forEach(function (k) {
+        src[String(w)][k].forEach(function (p) {
+          var isBn = /^(BN|IR)$/i.test(p.slot || ""), pts = p.points == null ? -1 : p.points;
+          if (!isBn && (!top || pts > top.pts)) top = { p: p, k: k, pts: pts };
+          if (String(p.slot).toUpperCase() === "BN" && (!bench || pts > bench.pts)) bench = { p: p, k: k, pts: pts };
+        });
       });
     }
-    var list = Object.keys(rec).map(function (k) { return rec[k]; }).sort(function (x, y) {
-      return (y.wins - x.wins) || (y.ties - x.ties) || (y.pf - x.pf);
+    A.top = top; A.bench = bench;
+    return A;
+  }
+  function nm(k) { var t = M.byKey[k]; return t ? t.name : "?"; }
+  function movementText(w) {
+    var i = M.fw.indexOf(w);
+    if (i < 1) return "";
+    var cur = M.hist[i], prev = M.hist[i - 1], best = null;
+    M.order.forEach(function (k) { var d = prev[k].rank - cur[k].rank; if (!best || d > best.d) best = { k: k, d: d }; });
+    return best && best.d > 0 ? nm(best.k) + " climbed " + best.d + " spot" + (best.d === 1 ? "" : "s") + " to #" + cur[best.k].rank : "";
+  }
+  function recapText(w) {
+    var A = weekAwards(w); if (!A) return "";
+    var lg = (DATA.league && DATA.league.name) || "League", L = [];
+    L.push(lg + " - Week " + w + " recap", "");
+    L.push("Top score: " + A.hi.t.name + " (" + fmt(A.hi.t.points) + ")");
+    L.push("Low score: " + A.lo.t.name + " (" + fmt(A.lo.t.points) + ")");
+    var bw = A.blow.a.points > A.blow.b.points ? A.blow.a : A.blow.b, bl = bw === A.blow.a ? A.blow.b : A.blow.a;
+    L.push("Blowout: " + bw.name + " beat " + bl.name + " by " + fmt(A.margin(A.blow)));
+    var cw = A.close.a.points > A.close.b.points ? A.close.a : A.close.b, cl = cw === A.close.a ? A.close.b : A.close.a;
+    L.push("Closest game: " + cw.name + " over " + cl.name + " by " + fmt(A.margin(A.close)));
+    if (A.bestMgr) L.push("Best manager: " + nm(A.bestMgr.k) + " (" + Math.round(A.bestMgr.pct * 100) + "% of max lineup)");
+    if (A.blunder && A.blunder.left > 0.5) L.push("Bench blunder: " + nm(A.blunder.k) + " left " + f1(A.blunder.left) + " points on the bench");
+    if (A.top) L.push("Top player: " + A.top.p.name + " (" + fmt(A.top.pts) + ") for " + nm(A.top.k));
+    var mv = movementText(w); if (mv) L.push("", mv + ".");
+    var i = M.fw.indexOf(w);
+    if (i >= 0) {
+      var tb = M.hist[i], rows = M.order.slice().sort(function (a, b) { return tb[a].rank - tb[b].rank; }).slice(0, 3);
+      L.push("", "Top 3: " + rows.map(function (k, j) { return (j + 1) + ". " + nm(k) + " (" + tb[k].w + "-" + tb[k].l + (tb[k].t ? "-" + tb[k].t : "") + ")"; }).join(", "));
+    }
+    return L.join("\n");
+  }
+  function copyText(text, done) {
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    else fallback();
+  }
+  function awardCard(k, v, d, key) {
+    return '<div class="yh-award"><div class="k">' + k + '</div><div class="v">' + (key ? avatar(M.byKey[key] ? M.byKey[key].name : "", key) : "") + "<span>" + esc(v) + '</span></div><div class="d">' + d + "</div></div>";
+  }
+  function renderAwards() {
+    if (!M.fw.length) return '<p class="yh-empty">Awards appear once a week is complete.</p>';
+    if (awWeek == null || M.fw.indexOf(awWeek) < 0) awWeek = M.fw[M.fw.length - 1];
+    var A = weekAwards(awWeek), sel = '<select id="yh-aw-week" aria-label="Choose a week">' + M.fw.slice().reverse().map(function (w) {
+      return '<option value="' + w + '"' + (w === awWeek ? " selected" : "") + ">Week " + w + "</option>";
+    }).join("") + "</select>";
+    var c = [];
+    c.push(awardCard("Highest score", A.hi.t.name, fmt(A.hi.t.points) + " vs " + esc(A.hi.opp.name), A.hi.t.team_key));
+    c.push(awardCard("Lowest score", A.lo.t.name, fmt(A.lo.t.points) + " vs " + esc(A.lo.opp.name), A.lo.t.team_key));
+    var bw = A.blow.a.points > A.blow.b.points ? A.blow.a : A.blow.b, bl = bw === A.blow.a ? A.blow.b : A.blow.a;
+    c.push(awardCard("Biggest blowout", bw.name, "by " + fmt(A.margin(A.blow)) + " over " + esc(bl.name), bw.team_key));
+    var cw = A.close.a.points > A.close.b.points ? A.close.a : A.close.b, cl = cw === A.close.a ? A.close.b : A.close.a;
+    c.push(awardCard("Closest game", cw.name, "by " + fmt(A.margin(A.close)) + " over " + esc(cl.name), cw.team_key));
+    if (A.bestMgr) c.push(awardCard("Best manager", nm(A.bestMgr.k), Math.round(A.bestMgr.pct * 100) + "% of the best possible lineup", A.bestMgr.k));
+    if (A.blunder && A.blunder.left > 0.5) c.push(awardCard("Bench blunder", nm(A.blunder.k), f1(A.blunder.left) + " points left on the bench", A.blunder.k));
+    if (A.top) c.push(awardCard("Top player", A.top.p.name, fmt(A.top.pts) + " · " + esc(nm(A.top.k)), null));
+    if (A.bench && A.bench.pts > 0) c.push(awardCard("Best bench player", A.bench.p.name, fmt(A.bench.pts) + " on " + esc(nm(A.bench.k)) + "'s bench", null));
+    // season efficiency table
+    var eff = [];
+    M.order.forEach(function (k) {
+      var act = 0, best = 0, n = 0;
+      M.fw.forEach(function (w) { var e = effFor(w, k); if (e) { act += e.actual; best += e.best; n++; } });
+      if (n) eff.push({ k: k, act: act, best: best, pct: best ? act / best : 1, left: best - act });
     });
-    var rank = {};
-    list.forEach(function (t, i) { rank[t.key] = i + 1; });
-    return rank;
+    eff.sort(function (a, b) { return b.pct - a.pct; });
+    var tbl = eff.length ? '<div class="yh-sub2">Lineup efficiency this season</div><div class="yh-scroll"><table><thead><tr><th>Team</th><th class="n">Scored</th><th class="n">Best possible</th><th class="n">Left on bench</th><th class="n">Efficiency</th></tr></thead><tbody>' +
+      eff.map(function (e) {
+        return "<tr>" + nameCell(nm(e.k), e.k) + '<td class="n">' + f1(e.act) + '</td><td class="n">' + f1(e.best) + '</td><td class="n">' + f1(e.left) + '</td><td class="n">' + (e.pct * 100).toFixed(1) + "%</td></tr>";
+      }).join("") + "</tbody></table></div>" : (LINEUPS ? "" : '<p class="yh-note">Loading lineup details&hellip;</p>');
+    return '<div class="yh-controls">' + sel + '<button type="button" class="yh-btn" id="yh-copy">Copy week recap</button><span id="yh-copied" role="status" aria-live="polite"></span></div>' +
+      '<div class="yh-grid">' + c.join("") + "</div>" + tbl +
+      '<p class="yh-note">Best possible lineup uses the same slots each team started, filled from everyone on its roster that week.</p>';
   }
 
-  // Rank change since the previous completed week: positive = moved up.
-  function movement() {
-    var fw = finalWeeks(), mv = {};
-    if (fw.length < 2) return mv;
-    var n = fw[fw.length - 1], now = standingsAfter(n), before = standingsAfter(n - 1);
-    Object.keys(now).forEach(function (k) { mv[k] = before[k] - now[k]; });
-    return mv;
+  // ---- charts -----------------------------------------------------------------
+  function svgRank() {
+    var T = M.order.length, fw = M.fw, W = 640, H = Math.max(280, T * 32 + 40), ml = 28, mr = 176, mt = 14, mb = 26;
+    function x(i) { return ml + (fw.length > 1 ? i * (W - ml - mr) / (fw.length - 1) : (W - ml - mr) / 2); }
+    function y(r) { return mt + (r - 1) * (H - mt - mb) / Math.max(1, T - 1); }
+    var g = [], i, r;
+    for (r = 1; r <= T; r++) g.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(r) + '" y2="' + y(r) + '" stroke="var(--border)" stroke-opacity="0.6"/><text x="' + (ml - 8) + '" y="' + (y(r) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + r + "</text>");
+    var step = fw.length > 12 ? 2 : 1;
+    fw.forEach(function (w, j) { if (j % step === 0) g.push('<text x="' + x(j) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="var(--muted)">W' + w + "</text>"); });
+    var sel = chartTeam, others = M.order.filter(function (k) { return k !== sel; }), lines = [];
+    function pts(k) { return M.hist.map(function (h, j) { return x(j) + "," + y(h[k].rank); }).join(" "); }
+    others.forEach(function (k) {
+      lines.push('<polyline points="' + pts(k) + '" fill="none" stroke="var(--muted)" stroke-opacity="0.45" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><polyline data-team="' + esc(k) + '" points="' + pts(k) + '" fill="none" stroke="transparent" stroke-width="14" style="cursor:pointer"/>');
+    });
+    if (sel) lines.push('<polyline points="' + pts(sel) + '" fill="none" stroke="var(--red)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>' +
+      M.hist.map(function (h, j) { return '<circle cx="' + x(j) + '" cy="' + y(h[sel].rank) + '" r="4.5" fill="var(--red)" stroke="var(--panel)" stroke-width="2"/>'; }).join(""));
+    var last = M.hist[M.hist.length - 1], labels = M.order.map(function (k) {
+      var on = k === sel;
+      return '<text data-team="' + esc(k) + '" x="' + (W - mr + 10) + '" y="' + (y(last[k].rank) + 4) + '" font-size="12" ' + (on ? 'font-weight="700" fill="var(--text)"' : 'fill="var(--muted)"') + ' style="cursor:pointer">' + esc(short(nm(k), 24)) + "</text>";
+    }).join("");
+    return '<svg class="yh-chart" id="yh-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Standings rank by week for each team. Table view below."><g>' + g.join("") + "</g>" + lines.join("") + labels +
+      '<rect id="yh-hit" x="' + ml + '" y="' + mt + '" width="' + (W - ml - mr) + '" height="' + (H - mt - mb) + '" fill="transparent"/><line id="yh-cross" y1="' + mt + '" y2="' + (H - mb) + '" stroke="var(--muted)" stroke-dasharray="3 3" style="display:none"/></svg>';
+  }
+  function svgPoints() {
+    var k = chartTeam, fw = M.fw, W = 640, H = 270, ml = 36, mr = 10, mt = 16, mb = 28;
+    var vals = fw.map(function (w) { return M.wk[k][w] || 0; });
+    var avg = fw.map(function (w) {
+      var a = 0, n = 0; M.order.forEach(function (o) { if (M.wk[o][w] != null) { a += M.wk[o][w]; n++; } }); return n ? a / n : 0;
+    });
+    var max = Math.max.apply(null, vals.concat(avg)), top = Math.ceil((max + 1) / 20) * 20;
+    function y(v) { return mt + (1 - v / top) * (H - mt - mb); }
+    var slot = (W - ml - mr) / fw.length, bw = Math.min(34, slot * 0.58), g = [];
+    for (var t = 0; t <= 4; t++) { var v = top * t / 4; g.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--border)" stroke-opacity="' + (t ? 0.6 : 1) + '"/><text x="' + (ml - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + Math.round(v) + "</text>"); }
+    var bars = fw.map(function (w, i) {
+      var cx = ml + slot * (i + 0.5), h = (H - mb) - y(vals[i]), r = Math.min(4, bw / 2, h);
+      var x0 = cx - bw / 2, y0 = y(vals[i]), b = H - mb;
+      var path = "M" + x0 + "," + b + "V" + (y0 + r) + "Q" + x0 + "," + y0 + " " + (x0 + r) + "," + y0 + "H" + (x0 + bw - r) + "Q" + (x0 + bw) + "," + y0 + " " + (x0 + bw) + "," + (y0 + r) + "V" + b + "Z";
+      return '<path d="' + path + '" fill="var(--red)"/><text x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="var(--muted)">W' + w + "</text>";
+    }).join("");
+    var hi = vals.indexOf(Math.max.apply(null, vals));
+    var line = '<polyline points="' + avg.map(function (v, i) { return (ml + slot * (i + 0.5)) + "," + y(v); }).join(" ") + '" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>';
+    var lab = '<text x="' + (ml + slot * (hi + 0.5)) + '" y="' + (y(vals[hi]) - 5) + '" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">' + f1(vals[hi]) + "</text>";
+    return '<svg class="yh-chart" id="yh-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Weekly points for the selected team against the league average. Table view below.">' + g.join("") + bars + line + lab +
+      '<rect id="yh-hit" x="' + ml + '" y="' + mt + '" width="' + (W - ml - mr) + '" height="' + (H - mt - mb) + '" fill="transparent"/></svg>';
+  }
+  function renderTrends() {
+    if (M.fw.length < 2) return '<p class="yh-empty">Charts appear after two completed weeks.</p>';
+    if (!chartTeam || !M.byKey[chartTeam]) chartTeam = M.order.slice().sort(function (a, b) { return M.now[a].rank - M.now[b].rank; })[0];
+    var opts = M.order.slice().sort(function (a, b) { return M.now[a].rank - M.now[b].rank; }).map(function (k) {
+      return '<option value="' + esc(k) + '"' + (k === chartTeam ? " selected" : "") + ">" + esc(nm(k)) + "</option>";
+    }).join("");
+    var seg = '<span role="group" aria-label="Chart type"><button type="button" class="yh-tab" data-chart="rank" aria-selected="' + (chartMode === "rank") + '">Rank by week</button> <button type="button" class="yh-tab" data-chart="pts" aria-selected="' + (chartMode === "pts") + '">Points by week</button></span>';
+    var legend = chartMode === "rank"
+      ? '<div class="yh-legend"><span><i style="background:var(--red)"></i>' + esc(nm(chartTeam)) + '</span><span><i style="background:var(--muted);opacity:.5"></i>Other teams</span><span>Tap a team name or line to highlight it</span></div>'
+      : '<div class="yh-legend"><span><i style="background:var(--red);height:10px"></i>' + esc(nm(chartTeam)) + '</span><span><i style="background:var(--muted)"></i>League average</span></div>';
+    var table;
+    if (chartMode === "rank") {
+      table = "<thead><tr><th>Team</th>" + M.fw.map(function (w) { return '<th class="n">W' + w + "</th>"; }).join("") + "</tr></thead><tbody>" +
+        M.order.slice().sort(function (a, b) { return M.now[a].rank - M.now[b].rank; }).map(function (k) { return "<tr><td>" + esc(nm(k)) + "</td>" + M.hist.map(function (h) { return '<td class="n">' + h[k].rank + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>";
+    } else {
+      table = "<thead><tr><th>Week</th><th class=\"n\">" + esc(nm(chartTeam)) + '</th><th class="n">League avg</th></tr></thead><tbody>' + M.fw.map(function (w) {
+        var a = 0, n = 0; M.order.forEach(function (o) { if (M.wk[o][w] != null) { a += M.wk[o][w]; n++; } });
+        return "<tr><td>Week " + w + '</td><td class="n">' + fmt(M.wk[chartTeam][w]) + '</td><td class="n">' + fmt(n ? a / n : 0) + "</td></tr>";
+      }).join("") + "</tbody>";
+    }
+    return '<div class="yh-controls">' + seg + '<label>Team <select id="yh-chart-team">' + opts + "</select></label></div>" + legend +
+      '<div class="yh-chartbox">' + (chartMode === "rank" ? svgRank() : svgPoints()) + '<div class="yh-tip" id="yh-tip"></div></div>' +
+      '<details class="yh-tv"><summary>View as table</summary><div class="yh-scroll"><table>' + table + "</table></div></details>";
+  }
+  function wireChart() {
+    var svg = document.getElementById("yh-svg"), hit = document.getElementById("yh-hit"), tip = document.getElementById("yh-tip");
+    if (!svg || !hit || !tip) return;
+    var vb = svg.viewBox.baseVal, cross = document.getElementById("yh-cross"), n = M.fw.length;
+    var ml = Number(hit.getAttribute("x")), wd = Number(hit.getAttribute("width"));
+    function at(ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * vb.width;
+      var i = chartMode === "rank" ? Math.round((px - ml) / (wd / Math.max(1, n - 1))) : Math.floor((px - ml) / (wd / n));
+      i = Math.max(0, Math.min(n - 1, i));
+      var cx = chartMode === "rank" ? ml + i * wd / Math.max(1, n - 1) : ml + wd / n * (i + 0.5);
+      var w = M.fw[i], html;
+      if (chartMode === "rank") {
+        var h = M.hist[i][chartTeam];
+        html = "<b>Week " + w + "</b><br>" + esc(nm(chartTeam)) + ": #" + h.rank + " (" + h.w + "-" + h.l + (h.t ? "-" + h.t : "") + ")";
+      } else {
+        var a = 0, c = 0; M.order.forEach(function (o) { if (M.wk[o][w] != null) { a += M.wk[o][w]; c++; } });
+        html = "<b>Week " + w + "</b><br>" + fmt(M.wk[chartTeam][w]) + " pts · league avg " + fmt(c ? a / c : 0);
+      }
+      if (cross) { cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.style.display = ""; }
+      tip.innerHTML = html; tip.style.display = "block";
+      var left = cx / vb.width * r.width + 10; if (left + 170 > r.width) left -= 190;
+      tip.style.left = Math.max(0, left) + "px"; tip.style.top = "6px";
+    }
+    hit.addEventListener("pointermove", at); hit.addEventListener("pointerdown", at);
+    hit.addEventListener("pointerleave", function () { tip.style.display = "none"; if (cross) cross.style.display = "none"; });
   }
 
-  // Current win/loss streak per team, from completed matchups only.
+  // ---- luck, schedule, waiver wire ------------------------------------------
+  function renderLuck() {
+    if (M.fw.length < 2) return '<p class="yh-empty">Needs two completed weeks.</p>';
+    var rows = M.order.map(function (k) {
+      var a = M.ap[k], r = M.now[k], luck = r.w + r.t / 2 - a.exp;
+      return { k: k, a: a, r: r, luck: luck };
+    }).sort(function (x, y) { return y.luck - x.luck; });
+    var html = '<div class="yh-sub2" style="margin-top:0">Luck: actual wins vs. all-play expected wins</div><div class="yh-scroll"><table><thead><tr><th>Team</th><th class="n">Record</th><th class="n">All-play</th><th class="n">Expected wins</th><th class="n">Luck</th></tr></thead><tbody>' +
+      rows.map(function (x) {
+        var cls = x.luck > 0.25 ? "yh-pos" : x.luck < -0.25 ? "yh-neg" : "", sign = x.luck > 0 ? "+" : "";
+        return "<tr>" + nameCell(nm(x.k), x.k) + '<td class="n">' + x.r.w + "-" + x.r.l + (x.r.t ? "-" + x.r.t : "") + '</td><td class="n">' + x.a.w + "-" + x.a.l + (x.a.t ? "-" + x.a.t : "") + '</td><td class="n">' + f1(x.a.exp) + '</td><td class="n ' + cls + '">' + sign + x.luck.toFixed(1) + (x.luck > 0.25 ? " lucky" : x.luck < -0.25 ? " unlucky" : "") + "</td></tr>";
+      }).join("") + '</tbody></table></div><p class="yh-note">All-play = each team\'s record if it had played every other team every week. Luck is how far the real record is from that.</p>';
+    if (M.sos) {
+      var cut = DATA.league && DATA.league.num_playoff_teams, list = M.order.filter(function (k) { return M.sos[k] && M.sos[k].left; }).sort(function (a, b) { return M.sos[a].rank - M.sos[b].rank; });
+      html += '<div class="yh-sub2">Strength of remaining schedule</div><div class="yh-scroll"><table><thead><tr><th>Team</th><th class="n">Games left</th><th class="n">Avg opponent pts</th><th class="n">Difficulty</th></tr></thead><tbody>' +
+        list.map(function (k) {
+          var s = M.sos[k], lab = s.rank <= Math.ceil(list.length / 3) ? "Hardest" : s.rank > list.length - Math.ceil(list.length / 3) ? "Easiest" : "Middle";
+          return "<tr>" + nameCell(nm(k), k) + '<td class="n">' + s.left + '</td><td class="n">' + f1(s.avg) + '</td><td class="n">#' + s.rank + " of " + list.length + " · " + lab + "</td></tr>";
+        }).join("") + '</tbody></table></div><p class="yh-note">#1 = toughest. Based on how many points each remaining opponent has averaged this season.</p>';
+    }
+    return html;
+  }
+  function renderWaivers() {
+    var tx = (DATA.transactions || []).filter(function (t) { return t.status === "successful" && /^(add|drop|add\/drop)$/.test(t.type || ""); });
+    if (!tx.length) return '<p class="yh-empty">No waiver moves yet.</p>';
+    var cnt = {};
+    tx.forEach(function (t) { (t.players || []).forEach(function (p) { if (p.action === "add" && p.to && M.byKey[p.to]) cnt[p.to] = (cnt[p.to] || 0) + 1; }); });
+    var act = M.order.map(function (k) { return { k: k, n: cnt[k] || 0 }; }).sort(function (a, b) { return b.n - a.n; });
+    var mx = Math.max(1, act[0].n);
+    var feed = tx.slice(0, 12).map(function (t) {
+      var team = null, parts = [];
+      (t.players || []).forEach(function (p) {
+        var k = p.action === "add" ? p.to : p.from; if (k && M.byKey[k]) team = k;
+        parts.push('<span class="' + (p.action === "add" ? "yh-plus" : "yh-minus") + '">' + (p.action === "add" ? "+" : "−") + "</span> " + esc(p.name) + ' <span class="yh-sub" style="display:inline">' + esc((p.pos || "") + (p.team ? " · " + String(p.team).toUpperCase() : "")) + "</span>");
+      });
+      return '<li><span class="dt">' + esc(dateLabel(t.date)) + "</span><span><b>" + esc(team ? nm(team) : "") + "</b> " + parts.join(" &nbsp;") + "</span></li>";
+    }).join("");
+    return '<div class="yh-sub2" style="margin-top:0">Most active this season (pickups)</div><div class="yh-scroll"><table><tbody>' +
+      act.map(function (x) { return "<tr>" + nameCell(nm(x.k), x.k) + '<td class="n"><span class="yh-track"><i style="width:' + Math.round(x.n / mx * 100) + '%"></i></span>' + x.n + "</td></tr>"; }).join("") +
+      '</tbody></table></div><div class="yh-sub2">Latest moves</div><ul class="yh-feed">' + feed + "</ul>";
+  }
+
+  // ---- insights shell ----------------------------------------------------------
+  var TABS = [["awards", "Weekly awards"], ["trends", "Trends"], ["luck", "Luck & schedule"], ["waivers", "Waiver wire"]];
+  function renderInsights() {
+    if (!inEl) return;
+    var body = tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
+    inEl.innerHTML = '<h3>League insights</h3><div class="yh-tabs" role="tablist">' + TABS.map(function (t) {
+      return '<button type="button" class="yh-tab" role="tab" data-itab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + "</button>";
+    }).join("") + '</div><div id="yh-ibody">' + body + "</div>";
+    inEl.style.display = "";
+    if (tab === "trends") wireChart();
+  }
+  function renderBody() {
+    var b = document.getElementById("yh-ibody"); if (!b) return renderInsights();
+    b.innerHTML = tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
+    if (tab === "trends") wireChart();
+  }
+
+  // ---- phase banner ------------------------------------------------------------
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    var p = String(dateStr).split("-"); if (p.length < 3) return null;
+    var end = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 23, 59, 59);
+    return Math.ceil((end - new Date()) / 86400000);
+  }
+  function hasLive() {
+    var cw = DATA && DATA.league && Number(DATA.league.current_week);
+    return !!(cw && (DATA.scores[String(cw)] || []).some(function (m) { return m.status === "midevent"; }));
+  }
+  function agoText() {
+    if (!DATA || !DATA.updated) return "";
+    var mins = Math.max(0, Math.round((Date.now() - new Date(DATA.updated).getTime()) / 60000));
+    if (mins < 1) return "just now"; if (mins < 60) return mins + " min ago";
+    var h = Math.round(mins / 60); if (h < 36) return h + (h === 1 ? " hour ago" : " hours ago");
+    return Math.round(h / 24) + " days ago";
+  }
+  function renderPhase() {
+    if (!phEl || !DATA || !M) return;
+    var lg = DATA.league || {}, cw = Number(lg.current_week) || 0, ps = lg.playoff_start_week, ew = lg.end_week, cut = lg.num_playoff_teams;
+    var eyebrow, title, chips = [], champ = null, cls = "yh-banner";
+    var finals = M.games.filter(function (g) { return g.w === ew && g.playoff && !g.m.is_consolation; });
+    if (ew && finals.length && finals.every(function (g) { return g.final; })) {
+      var g0 = finals[0], wk = g0.m.winner_team_key && M.byKey[g0.m.winner_team_key];
+      if (wk) champ = wk;
+    }
+    if (champ) {
+      eyebrow = "Season complete"; title = "Champion: " + champ.name; cls += " yh-champ";
+      var r = M.now[champ.team_key]; chips.push('<span class="yh-chip">Regular season <b>' + r.w + "-" + r.l + (r.t ? "-" + r.t : "") + "</b></span>");
+    } else if (ps && cw >= ps) {
+      eyebrow = "Playoffs"; title = "Round " + (cw - ps + 1) + " · Week " + cw;
+      if (ew) chips.push('<span class="yh-chip">Championship in <b>Week ' + ew + "</b></span>");
+    } else {
+      eyebrow = "Regular season"; title = "Week " + cw + (ps ? " of " + (ps - 1) : "");
+      var dl = daysUntil(lg.trade_end_date);
+      if (dl != null) chips.push(dl >= 0 ? '<span class="yh-chip">Trade deadline <b>' + esc(dateLabel(lg.trade_end_date + "T12:00:00")) + "</b> (" + (dl === 0 ? "today" : dl + (dl === 1 ? " day" : " days")) + ")</span>" : '<span class="yh-chip">Trade deadline passed</span>');
+      if (ps) chips.push('<span class="yh-chip">Playoffs start <b>Week ' + ps + "</b>" + (cut ? " · top " + cut : "") + "</span>");
+    }
+    phEl.innerHTML = '<div class="' + cls + '"><div class="yh-eyebrow">' + esc(eyebrow) + '</div><div class="yh-title">' + esc(title) + '</div><div class="yh-chips">' + chips.join("") + "</div>" +
+      '<div class="yh-fresh"><span class="yh-dot' + (hasLive() ? "" : "") + '"></span>Updated <span id="yh-ago">' + esc(agoText()) + "</span>" + (hasLive() ? " · live games, checking for new scores every 2 minutes" : "") + "</div></div>";
+    phEl.style.display = "";
+  }
+  function tickAgo() {
+    var el = document.getElementById("yh-ago"); if (el) el.textContent = agoText();
+  }
+
+  // ---- standings ---------------------------------------------------------------
   function streaks() {
     var res = {};
-    weeksList().forEach(function (w) {
-      (DATA.scores[String(w)] || []).forEach(function (m) {
-        if (m.status !== "postevent" || !m.teams || m.teams.length !== 2) return;
-        m.teams.forEach(function (t) {
-          var r = m.is_tied ? "T" : (m.winner_team_key === t.team_key ? "W" : "L");
-          var s = res[t.team_key];
-          if (s && s.r === r) s.n++; else res[t.team_key] = { r: r, n: 1 };
-        });
+    M.games.slice().sort(function (a, b) { return a.w - b.w; }).forEach(function (g) {
+      if (!g.final) return;
+      [g.a, g.b].forEach(function (t) {
+        var r = g.m.is_tied ? "T" : (g.m.winner_team_key === t.team_key ? "W" : "L"), s = res[t.team_key];
+        if (s && s.r === r) s.n++; else res[t.team_key] = { r: r, n: 1 };
       });
     });
     return res;
   }
-
   function sortedStandings() {
     return (DATA.standings || []).slice().sort(function (a, b) {
       if (a.rank != null && b.rank != null && a.rank !== b.rank) return a.rank - b.rank;
@@ -11164,37 +11723,34 @@ fetchWeeklyMatchups();
   function cutoff() { return DATA.league && DATA.league.num_playoff_teams > 0 ? DATA.league.num_playoff_teams : 0; }
 
   function renderStandings() {
-    var st = streaks(), mv = movement(), cut = cutoff();
-    var list = sortedStandings();
+    var st = streaks(), cut = cutoff(), list = sortedStandings(), mv = {};
+    if (M.hist.length >= 2) {
+      var cur = M.hist[M.hist.length - 1], prev = M.hist[M.hist.length - 2];
+      M.order.forEach(function (k) { mv[k] = prev[k].rank - cur[k].rank; });
+    }
     var rows = list.map(function (t, i) {
-      var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
-      var s = st[t.team_key], d = mv[t.team_key], arrow = "";
+      var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : ""), s = st[t.team_key], d = mv[t.team_key], arrow = "";
       if (d > 0) arrow = '<span class="yh-mv yh-up" title="Up ' + d + ' since last week">&#9650;' + d + "</span>";
       else if (d < 0) arrow = '<span class="yh-mv yh-down" title="Down ' + (-d) + ' since last week">&#9660;' + (-d) + "</span>";
       else if (d === 0) arrow = '<span class="yh-mv yh-flat" title="No change since last week">&ndash;</span>';
       var cls = cut ? (i < cut ? "yh-in" : "") + (i === cut - 1 ? " yh-cut" : "") : "";
-      return '<tr class="' + cls + '"><td>' + (i + 1) + arrow + "</td>" + teamCell(t.name) + "<td>" + esc((t.managers || []).join(", ")) +
-        "</td><td>" + esc(rec) + "</td><td>" + (s ? s.r + s.n : "—") + "</td><td>" + fmt(t.points_for) +
-        "</td><td>" + fmt(t.points_against) + "</td></tr>";
+      return '<tr class="' + cls + '"><td>' + (i + 1) + arrow + "</td>" + nameCell(t.name, t.team_key) + "<td>" + esc((t.managers || []).join(", ")) +
+        "</td><td>" + esc(rec) + "</td><td>" + (s ? s.r + s.n : "—") + "</td><td>" + fmt(t.points_for) + "</td><td>" + fmt(t.points_against) + "</td></tr>";
     }).join("");
-    var when = DATA.updated ? new Date(DATA.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
     var po = DATA.league || {};
     var legend = cut ? '<p class="yh-note">Top ' + cut + " make the playoffs" + (po.playoff_start_week ? " (starting Week " + po.playoff_start_week + ")" : "") + ".</p>" : "";
-    stEl.innerHTML = "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>" +
-      rows + "</tbody></table>" + legend +
-      '<p class="yl-credit">' + (when ? "Updated " + esc(when) + " · " : "") +
-      'Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>';
+    stEl.innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>' +
+      rows + "</tbody></table></div>" + legend +
+      '<p class="yl-credit">Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>';
   }
 
-  // ---- matchups ---------------------------------------------------------
+  // ---- matchups ----------------------------------------------------------------
   var SLOTS = ["QB", "RB", "WR", "TE", "W/R/T", "W/R", "FLEX", "K", "DEF", "BN", "IR"];
   function slotRank(s) { var i = SLOTS.indexOf(s); return i < 0 ? 50 : i; }
-
   function lineupTable(team, wk) {
     var src = LINEUPS || DATA.lineups;
     if (!src) return "<h4>" + esc(team.name) + '</h4><p class="yl-empty">Loading lineups&hellip;</p>';
-    var byTeam = src[String(wk)];
-    var rows = byTeam && byTeam[team.team_key];
+    var rows = src[String(wk)] && src[String(wk)][team.team_key];
     if (!rows || !rows.length) return "<h4>" + esc(team.name) + '</h4><p class="yl-empty">No lineup saved for this week.</p>';
     rows = rows.slice().sort(function (a, b) { return slotRank(a.slot) - slotRank(b.slot); });
     var total = 0;
@@ -11204,10 +11760,11 @@ fetchWeeklyMatchups();
       return '<tr class="' + (bench ? "bn" : "") + '"><td>' + esc(p.slot || "") + "</td><td>" + esc(p.name) + ' <span class="yh-sub" style="display:inline">' +
         esc(p.pos || "") + (p.team ? " · " + esc(String(p.team).toUpperCase()) : "") + '</span></td><td class="n">' + (p.points == null ? "–" : fmt(p.points)) + "</td></tr>";
     }).join("");
+    var e = lineupEff(rows);
     return "<h4>" + esc(team.name) + '</h4><table><thead><tr><th>Slot</th><th>Player</th><th class="n">Pts</th></tr></thead><tbody>' + body +
-      '<tr class="tot"><td colspan="2">Starters</td><td class="n">' + fmt(total) + "</td></tr></tbody></table>";
+      '<tr class="tot"><td colspan="2">Starters</td><td class="n">' + fmt(total) + "</td></tr></tbody></table>" +
+      '<p class="yh-note" style="margin-top:4px">Best possible lineup: ' + fmt(e.best) + "</p>";
   }
-
   function renderMatchups() {
     var ws = weeksList();
     if (!ws.length) { mxEl.innerHTML = '<p class="yl-empty">No matchups yet.</p>'; return; }
@@ -11220,142 +11777,162 @@ fetchWeeklyMatchups();
     }).join("") + "</select></p>";
     var ms = DATA.scores[String(week)] || [];
     var games = ms.map(function (m, idx) {
-      var final = m.status === "postevent";
-      var label = final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
-      var key = week + ":" + idx;
+      var final = m.status === "postevent", label = final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming", key = week + ":" + idx;
       var showProb = !final && m.teams.length === 2 && m.teams.every(function (t) { return t.win_probability != null; });
       var rows = (m.teams || []).map(function (t) {
-        var win = m.winner_team_key && t.team_key === m.winner_team_key;
-        var sub = "";
+        var win = m.winner_team_key && t.team_key === m.winner_team_key, sub = "";
         if (!final && t.projected != null) sub = '<span class="yh-sub">Proj ' + fmt(t.projected) + (showProb ? " · " + Math.round(t.win_probability * 100) + "%" : "") + "</span>";
-        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) + sub +
-          '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
       var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
       var html = '<div class="yl-game yh-game' + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
         rows + bar + '<div class="yl-status">' + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + " · tap for lineups</div></div>";
       if (openKey === key) {
-        html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button>' +
-          '<div class="yh-lineup-cols">' + m.teams.map(function (t) { return "<div>" + lineupTable(t, week) + "</div>"; }).join("") + "</div></div>";
+        html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button><div class="yh-lineup-cols">' +
+          m.teams.map(function (t) { return "<div>" + lineupTable(t, week) + "</div>"; }).join("") + "</div></div>";
       }
       return html;
     }).join("");
-    mxEl.innerHTML = '<div class="wr-head"><h3 style="margin: 0;">Week ' + week + ' Matchups</h3>' +
-      '<a href="#" class="wr-all-link" id="yh-all">Live Scores &rarr;</a></div>' +
+    mxEl.innerHTML = '<div class="wr-head"><h3 style="margin: 0;">Week ' + week + ' Matchups</h3><a href="#" class="wr-all-link" id="yh-all">Live Scores &rarr;</a></div>' +
       picker + '<div class="yl-games">' + (games || '<p class="yl-empty">No games this week.</p>') + "</div>";
   }
 
-  // ---- playoff picture / bracket ---------------------------------------
+  // ---- playoff picture / bracket ------------------------------------------------
   function renderPlayoffs() {
     if (!poEl) return;
     var lg = DATA.league || {}, cut = cutoff(), start = lg.playoff_start_week;
     if (!cut || !start) { poEl.style.display = "none"; return; }
-    var cw = Number(lg.current_week) || 0;
-    var inPlayoffs = cw >= start;
-    var html = "";
-    if (!inPlayoffs) {
+    var cw = Number(lg.current_week) || 0, html = "";
+    if (cw < start) {
       var list = sortedStandings();
       if (list.length <= cut) { poEl.style.display = "none"; return; }
-      var last = list[cut - 1], firstOut = list[cut];
-      var fw = finalWeeks().length, left = Math.max(0, start - 1 - fw);
+      var last = list[cut - 1], firstOut = list[cut], left = Math.max(0, start - 1 - M.fw.length), sim = M.sim;
       var rows = list.map(function (t, i) {
-        var gb = ((last.wins - t.wins) + (t.losses - last.losses)) / 2;
-        var status, detail;
+        var gb = ((last.wins - t.wins) + (t.losses - last.losses)) / 2, status, detail;
         if (i < cut) {
           var cush = ((t.wins - firstOut.wins) + (firstOut.losses - t.losses)) / 2;
           status = cush <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill in">In</span>';
-          detail = i === cut - 1 ? cush + " game" + (cush === 1 ? "" : "s") + " clear of the line" : cush + " game" + (cush === 1 ? "" : "s") + " clear";
+          detail = cush + " game" + (cush === 1 ? "" : "s") + " clear" + (i === cut - 1 ? " of the line" : "");
         } else {
           status = gb <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill out">Out</span>';
           detail = gb + " game" + (gb === 1 ? "" : "s") + " back";
         }
-        var maxWins = t.wins + left;
-        var dead = i >= cut && maxWins < last.wins;
-        if (dead) { status = '<span class="yh-pill out">Eliminated</span>'; detail = "can't catch #" + cut; }
-        return "<tr>" + "<td>" + (i + 1) + "</td>" + teamCell(t.name) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + status + "</td><td>" + detail + "</td></tr>";
+        if (i >= cut && t.wins + left < last.wins) { status = '<span class="yh-pill out">Eliminated</span>'; detail = "can't catch #" + cut; }
+        var s = sim && sim[t.team_key];
+        var odds = s ? '<td class="yh-odds"><span class="yh-track" aria-hidden="true"><i style="width:' + Math.round(s.made * 100) + '%"></i></span>' + pctLabel(s.made) + "</td>" +
+          '<td class="yh-odds">' + pctLabel(s.top) + "</td>" : "";
+        return "<tr><td>" + (i + 1) + "</td>" + nameCell(t.name, t.team_key) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + status + "</td><td>" + detail + "</td>" + odds + "</tr>";
       }).join("");
       html = "<h3>Playoff picture</h3><p class=\"yh-note\" style=\"margin-top:0\">Top " + cut + " advance. " + left + " regular-season week" + (left === 1 ? "" : "s") + " left (playoffs start Week " + start + ").</p>" +
-        '<div style="overflow-x:auto"><table style="min-width:420px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th></tr></thead><tbody>' + rows + "</tbody></table></div>";
+        '<div style="overflow-x:auto"><table style="min-width:' + (sim ? 640 : 420) + 'px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th>' + (sim ? '<th>Make playoffs</th><th>#1 seed</th>' : "") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        (sim ? '<p class="yh-note">Odds come from 4,000 simulated finishes of the remaining schedule, each team scoring around its season average. They\'re an estimate, not a promise.</p>' : "");
     } else {
       var rounds = weeksList().filter(function (w) { return w >= start; });
       html = "<h3>Playoffs</h3>";
-      var seeds = standingsAfter(start - 1);
+      var si = start - 2, seeds = si >= 0 && M.hist[si] ? M.hist[si] : null;
       rounds.forEach(function (w, ri) {
-        var games = (DATA.scores[String(w)] || []).filter(function (m) { return m.is_playoffs && !m.is_consolation; });
-        if (!games.length) return;
-        html += '<div class="yh-round"><h4>Round ' + (ri + 1) + " · Week " + w + '</h4><div class="yl-games">' + games.map(function (m) {
+        var gs = (DATA.scores[String(w)] || []).filter(function (m) { return m.is_playoffs && !m.is_consolation; });
+        if (!gs.length) return;
+        html += '<div class="yh-round"><h4>Round ' + (ri + 1) + " · Week " + w + '</h4><div class="yl-games">' + gs.map(function (m) {
           var final = m.status === "postevent";
           var rows = m.teams.map(function (t) {
             var win = m.winner_team_key && t.team_key === m.winner_team_key;
-            return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + (seeds[t.team_key] ? "(" + seeds[t.team_key] + ") " : "") + esc(t.name) + '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+            return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + (seeds && seeds[t.team_key] ? "(" + seeds[t.team_key].rank + ") " : "") + esc(t.name) + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
           }).join("");
           return '<div class="yl-game">' + rows + '<div class="yl-status">' + (final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming") + "</div></div>";
         }).join("") + "</div></div>";
       });
     }
-    poEl.innerHTML = html;
-    poEl.style.display = "";
+    poEl.innerHTML = html; poEl.style.display = "";
   }
 
   function renderAll() {
     if (!DATA) return;
-    renderMatchups(); renderStandings(); renderPlayoffs();
+    M = build();
+    renderPhase(); renderMatchups(); renderStandings(); renderPlayoffs(); renderInsights();
   }
 
+  // ---- events -------------------------------------------------------------------
   mxEl.addEventListener("change", function (e) {
     if (e.target && e.target.id === "yh-week") { week = Number(e.target.value); openKey = null; renderMatchups(); }
   });
-  // Lineups live in their own file so the home page stays light; it is only
-  // fetched the first time someone opens a matchup.
-  function loadLineups() {
-    if (LINEUPS || lineupsLoading || DATA.lineups) return;
+  function loadLineups(force) {
+    if (lineupsLoading || (!force && (LINEUPS || DATA.lineups))) return;
     lineupsLoading = true;
     fetch("data/yahoo-lineups.json?v=" + Date.now(), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { LINEUPS = (j && j.lineups) || {}; })
-      .catch(function () { LINEUPS = {}; })
-      .then(function () { lineupsLoading = false; renderMatchups(); });
+      .catch(function () { LINEUPS = LINEUPS || {}; })
+      .then(function () { lineupsLoading = false; if (DATA) { renderMatchups(); renderBody(); } });
   }
   function toggleGame(el) {
     var k = el.getAttribute("data-key");
     openKey = openKey === k ? null : k;
     renderMatchups();
-    if (openKey) loadLineups();
     var open = mxEl.querySelector(".yh-lineup");
     if (open && open.scrollIntoView) open.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
   mxEl.addEventListener("click", function (e) {
     if (e.target.closest("#yh-all")) {
       e.preventDefault();
-      var nav = document.querySelector('nav button[data-tab="yahoolive"]');
-      if (nav) nav.click();
+      var nav = document.querySelector('nav button[data-tab="yahoolive"]'); if (nav) nav.click();
       return;
     }
     if (e.target.closest("[data-close]")) { openKey = null; renderMatchups(); return; }
     if (e.target.closest(".yh-lineup")) return;
-    var g = e.target.closest(".yh-game");
-    if (g) toggleGame(g);
+    var g = e.target.closest(".yh-game"); if (g) toggleGame(g);
   });
   mxEl.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" && e.key !== " ") return;
     var g = e.target.closest && e.target.closest(".yh-game");
     if (g && e.target === g) { e.preventDefault(); toggleGame(g); }
   });
-  window.addEventListener("site-data-ready", function () { if (DATA) { renderStandings(); renderPlayoffs(); } });
+  if (inEl) {
+    inEl.addEventListener("click", function (e) {
+      var t = e.target.closest("[data-itab]");
+      if (t) { tab = t.getAttribute("data-itab"); renderInsights(); return; }
+      var c = e.target.closest("[data-chart]");
+      if (c) { chartMode = c.getAttribute("data-chart"); renderBody(); return; }
+      var tm = e.target.closest("[data-team]");
+      if (tm) { chartTeam = tm.getAttribute("data-team"); renderBody(); return; }
+      if (e.target.closest("#yh-copy")) {
+        var out = document.getElementById("yh-copied"), text = recapText(awWeek);
+        copyText(text, function (ok) { if (out) out.textContent = ok ? "Copied. Paste it into your group chat." : "Couldn't copy. Select the text and copy it yourself."; });
+      }
+    });
+    inEl.addEventListener("change", function (e) {
+      if (e.target.id === "yh-aw-week") { awWeek = Number(e.target.value); renderBody(); }
+      else if (e.target.id === "yh-chart-team") { chartTeam = e.target.value; renderBody(); }
+    });
+  }
+  window.addEventListener("site-data-ready", function () { if (DATA && M) { renderStandings(); renderPlayoffs(); } });
+
+  // ---- load and keep fresh ---------------------------------------------------------
+  function apply(j, first) {
+    DATA = j; loadedAt = Date.now(); renderAll();
+    if (first) loadLineups(false); else if (LINEUPS) loadLineups(true);
+  }
+  function poll() {
+    if (document.visibilityState !== "visible" || !DATA) return;
+    fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && j.standings && j.scores && j.updated !== DATA.updated) apply(j, false); })
+      .catch(function () {});
+  }
+  setInterval(function () { tickAgo(); }, 30000);
+  setInterval(function () { if (hasLive() || (DATA && Date.now() - loadedAt > 600000)) poll(); }, 120000);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && DATA && Date.now() - loadedAt > 120000) poll(); });
 
   fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(function (j) {
-      if (!j || !j.standings || !j.scores) throw new Error("unexpected shape");
-      DATA = j;
-      renderAll();
-    })
+    .then(function (j) { if (!j || !j.standings || !j.scores) throw new Error("unexpected shape"); apply(j, true); })
     .catch(function () {
       var msg = '<p class="yl-empty">Standings and matchups aren\'t available yet. They appear here once the weekly update has run.</p>';
-      mxEl.innerHTML = msg;
-      stEl.innerHTML = msg;
+      mxEl.innerHTML = msg; stEl.innerHTML = msg;
+      if (phEl) phEl.style.display = "none";
     });
 })();
+
 </script>
 
 <script>
@@ -11379,5 +11956,78 @@ fetchWeeklyMatchups();
   });
 })();
 </script>
+<style>
+  .yh-sheet { display: none; }
+  @media (max-width: 640px) {
+    .yh-sheet { display: none; position: fixed; left: 8px; right: 8px; bottom: calc(66px + env(safe-area-inset-bottom)); max-height: 62vh; overflow-y: auto; z-index: 85; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 12px 36px rgba(0,0,0,0.4); padding: 6px; }
+    .yh-sheet.open { display: block; }
+    .yh-sheet button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--text); padding: 12px 14px; font-size: 0.98rem; font-family: inherit; border-radius: 8px; min-height: 44px; cursor: pointer; }
+    .yh-sheet button:hover, .yh-sheet button[aria-current="page"] { background: var(--panel-2); font-weight: 650; }
+    .yh-sheet .grp { padding: 10px 14px 2px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 650; }
+  }
+</style>
+<nav class="yh-tabbar" id="yh-tabbar" aria-label="Quick navigation">
+  <button type="button" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</button>
+  <button type="button" data-go="yahoolive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V11M10 20V4M16 20v-7M22 20H2"/></svg>Scores</button>
+  <button type="button" data-go="results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Results</button>
+  <button type="button" data-go="keeperplanner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>Planner</button>
+  <button type="button" data-go="more" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>More</button>
+</nav>
+<div class="yh-sheet" id="yh-sheet" role="menu" aria-label="All pages"></div>
+<script>
+// Phone quick-navigation bar. It drives the site's own menu buttons, so it
+// never gets out of step with the regular navigation.
+(function () {
+  var bar = document.getElementById("yh-tabbar"), sheet = document.getElementById("yh-sheet");
+  if (!bar || !sheet) return;
+  function tabButton(id) { return document.querySelector('nav:not(.yh-tabbar) button[data-tab="' + id + '"]'); }
+  function go(id) {
+    var b = tabButton(id);
+    if (b) { b.click(); window.scrollTo(0, 0); }
+    sheet.classList.remove("open");
+  }
+  function buildSheet() {
+    var seen = {}, html = "";
+    var groups = document.querySelectorAll("nav:not(.yh-tabbar) .nav-group, nav:not(.yh-tabbar) > button[data-tab]");
+    groups.forEach(function (g) {
+      if (g.matches && g.matches("button[data-tab]")) {
+        var id = g.getAttribute("data-tab"); if (seen[id]) return; seen[id] = 1;
+        html += '<button type="button" role="menuitem" data-tab-go="' + id + '">' + g.textContent.trim() + "</button>";
+      } else {
+        var tg = g.querySelector(".nav-group-toggle"), items = g.querySelectorAll(".nav-group-menu button[data-tab]");
+        if (tg) html += '<div class="grp">' + tg.textContent.replace(/[▾▼]/g, "").trim() + "</div>";
+        items.forEach(function (b) { var id = b.getAttribute("data-tab"); if (seen[id]) return; seen[id] = 1; html += '<button type="button" role="menuitem" data-tab-go="' + id + '">' + b.textContent.trim() + "</button>"; });
+      }
+    });
+    sheet.innerHTML = html;
+  }
+  function currentId() { var s = document.querySelector("main section.active"); return s ? s.id : "home"; }
+  function mark() {
+    var cur = currentId(), direct = false;
+    bar.querySelectorAll("button[data-go]").forEach(function (b) {
+      var on = b.getAttribute("data-go") === cur; if (on) direct = true;
+      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    var more = bar.querySelector('[data-go="more"]');
+    if (!direct) more.setAttribute("aria-current", "page"); else more.removeAttribute("aria-current");
+    sheet.querySelectorAll("button").forEach(function (b) { if (b.getAttribute("data-tab-go") === cur) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  }
+  bar.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-go]"); if (!b) return;
+    var id = b.getAttribute("data-go");
+    if (id === "more") {
+      if (!sheet.innerHTML) buildSheet();
+      var open = sheet.classList.toggle("open"); b.setAttribute("aria-expanded", open ? "true" : "false"); mark();
+    } else go(id);
+  });
+  sheet.addEventListener("click", function (e) { var b = e.target.closest("button[data-tab-go]"); if (b) go(b.getAttribute("data-tab-go")); });
+  document.addEventListener("click", function (e) { if (!e.target.closest("#yh-sheet") && !e.target.closest('[data-go="more"]')) sheet.classList.remove("open"); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") sheet.classList.remove("open"); });
+  var main = document.querySelector("main");
+  if (main && window.MutationObserver) new MutationObserver(mark).observe(main, { attributes: true, subtree: true, attributeFilter: ["class"] });
+  setTimeout(mark, 300);
+})();
+</script>
+<script>if ("serviceWorker" in navigator && /^https:/.test(location.protocol)) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }</script>
 </body>
 </html>
