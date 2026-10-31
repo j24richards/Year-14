@@ -276,6 +276,7 @@ async function getTransactions(key) {
 // keeps the trades, rather than trusting a server-side filter.
 async function getTrades(key) {
   const all = new Map();
+  const commish = new Map();
   let seen = 0;
   const types = {};
   for (let start = 0; start < 5000; start += 25) {
@@ -285,12 +286,16 @@ async function getTrades(key) {
     for (const t of page) {
       types[t.type || "?"] = (types[t.type || "?"] || 0) + 1;
       if (t.type === "trade" && t.status === "successful") all.set(t.id, t);
+      // Commissioner moves: leagues that trade outside Yahoo often record the
+      // swap as commissioner add/drops instead of a Yahoo trade.
+      if (t.type === "commish") commish.set(t.id, t);
     }
     if (page.length < 25) break;
   }
   console.log("Scanned " + seen + " transactions: " +
     Object.entries(types).map(([k, v]) => k + " " + v).join(", ") + ".");
-  return [...all.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  const byNewest = (a, b) => (b.timestamp || 0) - (a.timestamp || 0);
+  return { trades: [...all.values()].sort(byNewest), commish: [...commish.values()].sort(byNewest) };
 }
 
 async function getRoster(teamKey) {
@@ -371,7 +376,8 @@ async function main() {
   const transactions = await getTransactions(key);
   console.log("Transactions: " + transactions.length + " recent.");
 
-  const trades = await getTrades(key);
+  const { trades, commish } = await getTrades(key);
+  console.log("Commissioner moves: " + commish.length + ".");
   console.log("Trades: " + trades.length + " completed this season, " +
     trades.reduce((n, t) => n + t.players.length, 0) + " player moves.");
 
@@ -388,6 +394,7 @@ async function main() {
     scores,
     transactions,
     trades,
+    commish,
     rosters
   };
 
