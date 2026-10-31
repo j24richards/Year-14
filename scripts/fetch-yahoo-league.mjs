@@ -35,6 +35,7 @@ const WEEK = String(process.env.WEEK || "").trim();
 const DRY_RUN = String(process.env.DRY_RUN || "").toLowerCase() === "true";
 const OUT_FILE = process.env.OUT_FILE || "data/yahoo-league.json";
 const LINEUPS_FILE = process.env.LINEUPS_FILE || OUT_FILE.replace(/[^/\\]*$/, "yahoo-lineups.json");
+const FA_FILE = process.env.FA_FILE || OUT_FILE.replace(/[^/\\]*$/, "yahoo-freeagents.json");
 const DEBUG_RAW = String(process.env.DEBUG_RAW || "").toLowerCase() === "true";
 // Overridable only so the script can be tested against a local stand-in.
 const API_BASE = process.env.YAHOO_API_BASE || "https://fantasysports.yahooapis.com/fantasy/v2/";
@@ -355,6 +356,56 @@ async function getLineup(teamKey, week) {
   return rows;
 }
 
+
+// Players nobody owns (free agents and waivers), best season scorers first, one
+// list per position, with how widely each is owned across Yahoo.
+async function getFreeAgents(key) {
+  const out = [];
+  for (const pos of ["QB", "RB", "WR", "TE", "K", "DEF"]) {
+    let data;
+    try {
+      data = await yahoo("league/" + key + "/players;status=A;position=" + pos + ";sort=PTS;sort_type=season;count=25/stats");
+    } catch (err) {
+      data = await yahoo("league/" + key + "/players;status=A;position=" + pos + ";count=25/stats");
+    }
+    const players = findAll(data, "player").filter(Array.isArray);
+    if (DEBUG_RAW && players[0]) console.log("DEBUG free agent " + pos + ": " + JSON.stringify(players[0]).slice(0, 1500));
+    for (const p of players) {
+      const info = flatten(p);
+      if (!info.name || !info.player_key) continue;
+      const bye = findAll(p, "bye_weeks").map(b => num(flatten(b).week)).find(x => x != null);
+      out.push({
+        key: info.player_key,
+        name: info.name,
+        team: info.editorial_team_abbr || null,
+        pos: String(info.display_position || pos).split(",")[0] || pos,
+        status: info.status || null,
+        bye: bye == null ? null : bye,
+        points: num(info.total),
+        owned: null,
+        delta: null
+      });
+    }
+  }
+  // Ownership is a separate Yahoo call; a failure here only drops that column.
+  try {
+    for (let i = 0; i < out.length; i += 25) {
+      const chunk = out.slice(i, i + 25);
+      const data = await yahoo("league/" + key + "/players;player_keys=" + chunk.map(c => c.key).join(",") + "/percent_owned");
+      const players = findAll(data, "player").filter(Array.isArray);
+      if (DEBUG_RAW && i === 0 && players[0]) console.log("DEBUG percent_owned: " + JSON.stringify(players[0]).slice(0, 1200));
+      for (const p of players) {
+        const info = flatten(p);
+        const row = chunk.find(c => c.key === info.player_key);
+        if (row) { row.owned = num(info.value); row.delta = num(info.delta); }
+      }
+    }
+  } catch (err) {
+    console.log("WARNING: could not read ownership: " + String(err.message || err).slice(0, 200));
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 
 function parseWeeks(spec) {
@@ -464,6 +515,14 @@ async function main() {
   console.log("Rosters: " + Object.keys(rosters).length + " teams, " +
     Object.values(rosters).reduce((n, r) => n + r.length, 0) + " players.");
 
+  let freeAgents = null;
+  try {
+    freeAgents = await getFreeAgents(key);
+    console.log("Free agents: " + freeAgents.length + " players (" + freeAgents.filter(p => p.owned != null).length + " with ownership).");
+  } catch (err) {
+    console.log("WARNING: could not read free agents: " + String(err.message || err).slice(0, 200));
+  }
+
   const result = {
     attribution: "Fantasy data provided by Yahoo Fantasy",
     updated: new Date().toISOString(),
@@ -477,12 +536,20 @@ async function main() {
   };
   const lineupsDoc = { attribution: result.attribution, updated: result.updated, lineups };
 
+  const faDoc = freeAgents ? { attribution: result.attribution, updated: result.updated, players: freeAgents } : null;
+  let faSame = true;
+  if (faDoc) {
+    let priorFa = null;
+    try { if (existsSync(FA_FILE)) priorFa = JSON.parse(readFileSync(FA_FILE, "utf8")); } catch { priorFa = null; }
+    faSame = !!priorFa && JSON.stringify({ ...priorFa, updated: null }) === JSON.stringify({ ...faDoc, updated: null });
+  }
+
   // Skip the write (and the commit) when only the timestamp would change.
   const strip = o => JSON.stringify({ ...o, updated: null });
   const priorLineupsDoc = { attribution: result.attribution, updated: null, lineups: priorLineups || {} };
   const mainSame = prior && !prior.lineups && strip(prior) === strip(result);
   const lineupsSame = strip(priorLineupsDoc) === strip({ ...lineupsDoc });
-  if (mainSame && lineupsSame) {
+  if (mainSame && lineupsSame && faSame) {
     console.log("Nothing changed since the last run.");
     return;
   }
@@ -497,7 +564,8 @@ async function main() {
   mkdirSync(dirname(OUT_FILE), { recursive: true });
   writeFileSync(OUT_FILE, JSON.stringify(result, null, 2) + "\n", "utf8");
   writeFileSync(LINEUPS_FILE, JSON.stringify(lineupsDoc) + "\n", "utf8");
-  console.log("Wrote " + OUT_FILE + " and " + LINEUPS_FILE + ".");
+  if (faDoc) writeFileSync(FA_FILE, JSON.stringify(faDoc) + "\n", "utf8");
+  console.log("Wrote " + OUT_FILE + ", " + LINEUPS_FILE + (faDoc ? " and " + FA_FILE : "") + ".");
 }
 
 main().catch(err => fail(err && err.stack ? err.stack : String(err)));
