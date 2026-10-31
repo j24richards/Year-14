@@ -1824,6 +1824,32 @@
   #yahoolive .yl-empty { color: var(--muted); font-style: italic; }
   #yahoolive .yl-credit { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
   #yahoolive .yl-credit a { color: inherit; }
+  #home .yl-meta { color: var(--muted); font-size: 0.8rem; margin: -6px 0 14px; }
+  #home .yl-tabs, #home .yl-weeks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  #home .yl-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 0.88rem; }
+  #home .yl-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #home .yl-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  #home .yl-game { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  #home .yl-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 12px; }
+  #home .yl-row + .yl-row { border-top: 1px solid var(--border); }
+  #home .yl-row.win { background: var(--gold-wash); font-weight: 600; }
+  #home .yl-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #home .yl-pts { font-variant-numeric: tabular-nums; }
+  #home .yl-status { font-size: 0.72rem; color: var(--muted); padding: 5px 12px; background: var(--panel-2); text-transform: uppercase; letter-spacing: 0.04em; }
+  #home .yl-mgr { color: var(--muted); font-size: 0.78rem; }
+  #home .yl-num { text-align: right; font-variant-numeric: tabular-nums; }
+  #home .yl-tx { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  #home .yl-tx:last-child { border-bottom: none; }
+  #home .yl-tx-head { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  #home .yl-add { color: var(--keeper); font-weight: 600; }
+  #home .yl-drop { color: var(--red); font-weight: 600; }
+  #home .yl-bench td { color: var(--muted); }
+  #home .yl-empty { color: var(--muted); font-style: italic; }
+  #home .yl-credit { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  #home .yl-credit a { color: inherit; }
+  #home #standings-card { overflow-x: auto; }
+  #home #standings-card .yl-credit { padding: 0 4px; }
+  @media (max-width: 700px) { #home #standings-card table { min-width: 560px; } #home #standings-card th, #home #standings-card td { padding: 8px 6px; font-size: 0.86rem; } }
   @media (max-width: 700px) { #yahoolive .yl-scroll { overflow-x: auto; padding: 10px; } #yahoolive th, #yahoolive td { padding: 8px 5px; font-size: 0.88rem; } }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
@@ -1926,16 +1952,9 @@
       <div class="countdown-label" id="countdown-label"></div>
       <a class="countdown-yahoo-link" href="https://football.fantasysports.yahoo.com/" target="_blank" rel="noopener noreferrer">Open Yahoo Fantasy Football &rarr;</a>
     </div>
-    <div class="card" id="latest-results-card" style="display:none;"></div>
+    <div class="card" id="yh-matchups"><p class="yl-empty">Loading matchups&hellip;</p></div>
     <h2 id="season-heading">Current Season Standings</h2>
-    <div class="card" id="standings-card">
-      <table>
-        <thead>
-          <tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr>
-        </thead>
-        <tbody id="standings-body"></tbody>
-      </table>
-    </div>
+    <div class="card" id="standings-card"><p class="yl-empty">Loading standings&hellip;</p></div>
     <div class="card" id="power-rankings-card" style="display:none;">
       <h3 style="margin-top:0;">Power Rankings</h3>
       <ul id="power-rankings-list" style="margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem;"></ul>
@@ -2250,22 +2269,6 @@
             <label for="admin-draftdate">Draft Date &amp; Time</label>
             <input type="datetime-local" id="admin-draftdate">
           </div>
-        </div>
-      </details>
-      <details class="card admin-details">
-        <summary class="admin-summary">Current Season Standings<span class="admin-chevron">&#9656;</span></summary>
-        <div class="admin-body">
-          <p style="color: var(--muted); margin-top: 0; font-size: 0.82rem;">Record, streak, points for, and points against, per team.</p>
-          <div id="admin-standings"></div>
-          <div class="admin-field" style="margin-top: 16px;">
-            <label for="admin-standings-paste">Paste standings from Yahoo</label>
-            <textarea id="admin-standings-paste" rows="6" placeholder="Open your league's Standings page on Yahoo, select the table, copy, and paste it here."></textarea>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button type="button" class="admin-btn admin-btn-secondary" id="admin-standings-preview-btn">Preview</button>
-            <button type="button" class="admin-btn" id="admin-standings-apply-btn" style="display: none;">Fill in the boxes above</button>
-          </div>
-          <div id="admin-standings-preview" style="margin-top: 10px; overflow-x: auto; font-size: 0.85rem;"></div>
         </div>
       </details>
       <details class="card admin-details">
@@ -6157,6 +6160,7 @@ function renderTradeAnalyzer(data) {
 
 function renderStandingsBody(data) {
   const standingsBody = document.getElementById("standings-body");
+  if (!standingsBody) return;
   standingsBody.innerHTML = "";
   const sorted = data.currentSeason.standings.slice().sort((a, b) => {
     const ra = parseRecord(a.record), rb = parseRecord(b.record);
@@ -7556,7 +7560,7 @@ function buildAdminForm(data) {
   document.getElementById("admin-keepers-visible").checked = !!data.keepersVisible;
 
   const standingsEl = document.getElementById("admin-standings");
-  standingsEl.innerHTML = "";
+  if (standingsEl) standingsEl.innerHTML = "";
   data.currentSeason.standings.forEach((row, i) => {
     const div = document.createElement("div");
     div.className = "admin-row";
@@ -7565,7 +7569,7 @@ function buildAdminForm(data) {
       "<input type=\"text\" data-idx=\"" + i + "\" class=\"admin-streak-input\" value=\"" + (row.streak || "") + "\" placeholder=\"W3\" title=\"Streak\">" +
       "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-input\" value=\"" + row.pointsFor + "\" title=\"Points For\">" +
       "<input type=\"number\" data-idx=\"" + i + "\" class=\"admin-points-against-input\" value=\"" + (row.pointsAgainst || 0) + "\" title=\"Points Against\">";
-    standingsEl.appendChild(div);
+    if (standingsEl) standingsEl.appendChild(div);
   });
 
   const badgesEl = document.getElementById("admin-badges");
@@ -10806,6 +10810,113 @@ fetchWeeklyMatchups();
       });
   }
   load();
+})();
+</script>
+
+<script>
+// Home page: standings and matchups from data/yahoo-league.json, which a
+// GitHub Action refreshes from Yahoo. Self-contained -- if the file is
+// missing or malformed, only these two cards show a friendly message.
+(function () {
+  var stEl = document.getElementById("standings-card");
+  var mxEl = document.getElementById("yh-matchups");
+  if (!stEl || !mxEl) return;
+  var DATA = null, week = null;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmt(n) { return n == null ? "–" : Number(n).toFixed(2); }
+  function weeksList() {
+    return Object.keys(DATA.scores || {}).map(Number).sort(function (a, b) { return a - b; });
+  }
+
+  // Current win/loss streak per team, from completed matchups only.
+  function streaks() {
+    var res = {};
+    weeksList().forEach(function (w) {
+      (DATA.scores[String(w)] || []).forEach(function (m) {
+        if (m.status !== "postevent" || !m.teams || m.teams.length !== 2) return;
+        m.teams.forEach(function (t) {
+          var r = m.is_tied ? "T" : (m.winner_team_key === t.team_key ? "W" : "L");
+          var s = res[t.team_key];
+          if (s && s.r === r) s.n++; else res[t.team_key] = { r: r, n: 1 };
+        });
+      });
+    });
+    return res;
+  }
+
+  function renderStandings() {
+    var st = streaks();
+    var list = (DATA.standings || []).slice().sort(function (a, b) {
+      if (a.rank != null && b.rank != null && a.rank !== b.rank) return a.rank - b.rank;
+      return (b.wins - a.wins) || (b.points_for - a.points_for);
+    });
+    var rows = list.map(function (t, i) {
+      var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
+      var s = st[t.team_key];
+      return "<tr><td>" + (i + 1) + "</td><td>" + esc(t.name) + "</td><td>" + esc((t.managers || []).join(", ")) +
+        "</td><td>" + esc(rec) + "</td><td>" + (s ? s.r + s.n : "—") + "</td><td>" + fmt(t.points_for) +
+        "</td><td>" + fmt(t.points_against) + "</td></tr>";
+    }).join("");
+    var when = DATA.updated ? new Date(DATA.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+    stEl.innerHTML = "<table><thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>Streak</th><th>Points For</th><th>Points Against</th></tr></thead><tbody>" +
+      rows + "</tbody></table>" +
+      '<p class="yl-credit">' + (when ? "Updated " + esc(when) + " · " : "") +
+      'Fantasy data provided by <a href="https://sports.yahoo.com/developer/" target="_blank" rel="noopener noreferrer">Yahoo Fantasy</a></p>';
+  }
+
+  function renderMatchups() {
+    var ws = weeksList();
+    if (!ws.length) { mxEl.innerHTML = '<p class="yl-empty">No matchups yet.</p>'; return; }
+    if (week == null || ws.indexOf(week) < 0) {
+      var cw = DATA.league && Number(DATA.league.current_week);
+      week = ws.indexOf(cw) >= 0 ? cw : ws[ws.length - 1];
+    }
+    var pills = ws.map(function (w) {
+      return '<button type="button" class="yl-btn' + (w === week ? " active" : "") + '" data-week="' + w + '">Wk ' + w + "</button>";
+    }).join("");
+    var games = (DATA.scores[String(week)] || []).map(function (m) {
+      var label = m.status === "postevent" ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming";
+      var rows = (m.teams || []).map(function (t) {
+        var win = m.winner_team_key && t.team_key === m.winner_team_key;
+        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + esc(t.name) +
+          '</span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+      }).join("");
+      return '<div class="yl-game">' + rows + '<div class="yl-status">' + label + (m.is_playoffs ? " · Playoffs" : "") + "</div></div>";
+    }).join("");
+    mxEl.innerHTML = '<div class="wr-head"><h3 style="margin: 0;">Week ' + week + ' Matchups</h3>' +
+      '<a href="#" class="wr-all-link" id="yh-all">Live Scores &rarr;</a></div>' +
+      '<div class="yl-weeks">' + pills + "</div>" +
+      '<div class="yl-games">' + (games || '<p class="yl-empty">No games this week.</p>') + "</div>";
+  }
+
+  mxEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-week]");
+    if (b) { week = Number(b.getAttribute("data-week")); renderMatchups(); return; }
+    if (e.target.closest("#yh-all")) {
+      e.preventDefault();
+      var nav = document.querySelector('nav button[data-tab="yahoolive"]');
+      if (nav) nav.click();
+    }
+  });
+
+  fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (j) {
+      if (!j || !j.standings || !j.scores) throw new Error("unexpected shape");
+      DATA = j;
+      renderMatchups();
+      renderStandings();
+    })
+    .catch(function () {
+      var msg = '<p class="yl-empty">Standings and matchups aren\'t available yet. They appear here once the weekly update has run.</p>';
+      mxEl.innerHTML = msg;
+      stEl.innerHTML = msg;
+    });
 })();
 </script>
 
