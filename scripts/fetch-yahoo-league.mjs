@@ -237,8 +237,7 @@ async function getScoreboard(key, week) {
   }).filter(m => m.teams.length);
 }
 
-async function getTransactions(key) {
-  const data = await yahoo("league/" + key + "/transactions;count=50");
+function parseTransactions(data) {
   const out = [];
   for (const tx of findAll(data, "transaction").filter(Array.isArray)) {
     const meta = flatten(tx[0] || {});
@@ -265,6 +264,33 @@ async function getTransactions(key) {
     });
   }
   return out;
+}
+
+async function getTransactions(key) {
+  return parseTransactions(await yahoo("league/" + key + "/transactions;count=50"));
+}
+
+// Every completed trade this season (the recent-transactions list above only
+// reaches back a few weeks, so trades would otherwise be missed). Used to tell
+// which players came by trade.
+async function getTrades(key) {
+  const all = new Map();
+  for (let start = 0; start < 500; start += 25) {
+    let page;
+    try {
+      page = parseTransactions(await yahoo("league/" + key + "/transactions;types=trade;start=" + start + ";count=25"));
+    } catch (err) {
+      if (start === 0) {
+        // Older/alternate spelling of the filter.
+        page = parseTransactions(await yahoo("league/" + key + "/transactions;type=trade;start=" + start + ";count=25"));
+      } else {
+        throw err;
+      }
+    }
+    for (const t of page) if (t.type === "trade" && t.status === "successful") all.set(t.id, t);
+    if (page.length < 25) break;
+  }
+  return [...all.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 }
 
 async function getRoster(teamKey) {
@@ -345,6 +371,10 @@ async function main() {
   const transactions = await getTransactions(key);
   console.log("Transactions: " + transactions.length + " recent.");
 
+  const trades = await getTrades(key);
+  console.log("Trades: " + trades.length + " completed this season, " +
+    trades.reduce((n, t) => n + t.players.length, 0) + " player moves.");
+
   const rosters = {};
   for (const t of standings) rosters[t.team_key] = await getRoster(t.team_key);
   console.log("Rosters: " + Object.keys(rosters).length + " teams, " +
@@ -357,6 +387,7 @@ async function main() {
     standings,
     scores,
     transactions,
+    trades,
     rosters
   };
 
