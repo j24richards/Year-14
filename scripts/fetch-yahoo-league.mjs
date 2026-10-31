@@ -272,24 +272,24 @@ async function getTransactions(key) {
 
 // Every completed trade this season (the recent-transactions list above only
 // reaches back a few weeks, so trades would otherwise be missed). Used to tell
-// which players came by trade.
+// which players came by trade. Walks the league's whole transaction history and
+// keeps the trades, rather than trusting a server-side filter.
 async function getTrades(key) {
   const all = new Map();
-  for (let start = 0; start < 500; start += 25) {
-    let page;
-    try {
-      page = parseTransactions(await yahoo("league/" + key + "/transactions;types=trade;start=" + start + ";count=25"));
-    } catch (err) {
-      if (start === 0) {
-        // Older/alternate spelling of the filter.
-        page = parseTransactions(await yahoo("league/" + key + "/transactions;type=trade;start=" + start + ";count=25"));
-      } else {
-        throw err;
-      }
+  let seen = 0;
+  const types = {};
+  for (let start = 0; start < 5000; start += 25) {
+    const page = parseTransactions(await yahoo("league/" + key + "/transactions;start=" + start + ";count=25"));
+    if (!page.length) break;
+    seen += page.length;
+    for (const t of page) {
+      types[t.type || "?"] = (types[t.type || "?"] || 0) + 1;
+      if (t.type === "trade" && t.status === "successful") all.set(t.id, t);
     }
-    for (const t of page) if (t.type === "trade" && t.status === "successful") all.set(t.id, t);
     if (page.length < 25) break;
   }
+  console.log("Scanned " + seen + " transactions: " +
+    Object.entries(types).map(([k, v]) => k + " " + v).join(", ") + ".");
   return [...all.values()].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 }
 
