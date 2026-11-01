@@ -1935,28 +1935,28 @@
   </button>
   <div class="mobile-nav-menu" id="mobile-nav-menu" hidden>
     <button type="button" class="mobile-nav-item active" data-tab="home">Home</button>
-    <div class="mobile-nav-group-label">Season</div>
-    <button type="button" class="mobile-nav-item" data-tab="yahoolive">Live Scores</button>
-    <button type="button" class="mobile-nav-item" data-tab="results">Results</button>
-    <button type="button" class="mobile-nav-item" data-tab="waivers">Waivers</button>
-    <button type="button" class="mobile-nav-item" data-tab="trades">Trades</button>
-    <button type="button" class="mobile-nav-item" data-tab="freeagents">Free Agents</button>
-    <button type="button" class="mobile-nav-item" data-tab="teams2026">Teams</button>
-    <div class="mobile-nav-group-label">Keepers &amp; Draft</div>
-    <button type="button" class="mobile-nav-item" data-tab="keepers">Keepers</button>
-    <button type="button" class="mobile-nav-item" data-tab="keeperplanner">Keeper Planner</button>
-    <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer">Trade Analyzer</button>
-    <button type="button" class="mobile-nav-item" data-tab="draft">2026 Draft</button>
-    <button type="button" class="mobile-nav-item" data-tab="draftorder">Draft Order</button>
-    <button type="button" class="mobile-nav-item" data-tab="mockdraft">Mock Draft</button>
-    <div class="mobile-nav-group-label">2025 Archive</div>
-    <button type="button" class="mobile-nav-item" data-tab="teams">2025 Teams</button>
-    <button type="button" class="mobile-nav-item" data-tab="draft2025">2025 Draft</button>
-    <button type="button" class="mobile-nav-item" data-tab="trades2025">2025 Trades</button>
-    <button type="button" class="mobile-nav-item" data-tab="history">History</button>
-    <div class="mobile-nav-group-label">Rules &amp; Export</div>
-    <button type="button" class="mobile-nav-item" data-tab="rules">Rules</button>
-    <button type="button" class="mobile-nav-item" data-tab="export">Export</button>
+    <button type="button" class="mobile-nav-group-label" data-grp="season" aria-expanded="false">Season</button>
+    <button type="button" class="mobile-nav-item" data-tab="yahoolive" data-g="season" hidden>Live Scores</button>
+    <button type="button" class="mobile-nav-item" data-tab="results" data-g="season" hidden>Results</button>
+    <button type="button" class="mobile-nav-item" data-tab="waivers" data-g="season" hidden>Waivers</button>
+    <button type="button" class="mobile-nav-item" data-tab="trades" data-g="season" hidden>Trades</button>
+    <button type="button" class="mobile-nav-item" data-tab="freeagents" data-g="season" hidden>Free Agents</button>
+    <button type="button" class="mobile-nav-item" data-tab="teams2026" data-g="season" hidden>Teams</button>
+    <button type="button" class="mobile-nav-group-label" data-grp="keepers" aria-expanded="false">Keepers &amp; Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="keepers" data-g="keepers" hidden>Keepers</button>
+    <button type="button" class="mobile-nav-item" data-tab="keeperplanner" data-g="keepers" hidden>Keeper Planner</button>
+    <button type="button" class="mobile-nav-item" data-tab="tradeanalyzer" data-g="keepers" hidden>Trade Analyzer</button>
+    <button type="button" class="mobile-nav-item" data-tab="draft" data-g="keepers" hidden>2026 Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="draftorder" data-g="keepers" hidden>Draft Order</button>
+    <button type="button" class="mobile-nav-item" data-tab="mockdraft" data-g="keepers" hidden>Mock Draft</button>
+    <button type="button" class="mobile-nav-group-label" data-grp="archive" aria-expanded="false">2025 Archive</button>
+    <button type="button" class="mobile-nav-item" data-tab="teams" data-g="archive" hidden>2025 Teams</button>
+    <button type="button" class="mobile-nav-item" data-tab="draft2025" data-g="archive" hidden>2025 Draft</button>
+    <button type="button" class="mobile-nav-item" data-tab="trades2025" data-g="archive" hidden>2025 Trades</button>
+    <button type="button" class="mobile-nav-item" data-tab="history" data-g="archive" hidden>History</button>
+    <button type="button" class="mobile-nav-group-label" data-grp="more" aria-expanded="false">Rules &amp; Export</button>
+    <button type="button" class="mobile-nav-item" data-tab="rules" data-g="more" hidden>Rules</button>
+    <button type="button" class="mobile-nav-item" data-tab="export" data-g="more" hidden>Export</button>
   </div>
 </div>
 
@@ -11533,6 +11533,20 @@ fetchWeeklyMatchups();
   .mockdraft-rank-help, .mockdraft-rank-msg { color: var(--muted); font-size: 0.82rem; margin: 4px 0; }
   .mockdraft-rank-saved-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 0.9rem; }
 
+  /* phone menu: collapsible groups (shared by both sites) */
+  .mobile-nav-toggle { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 36px 12px 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; font-family: inherit; min-height: 44px; cursor: pointer; }
+  .mobile-nav-menu { position: absolute; left: 16px; right: 16px; top: 100%; margin-top: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-height: 70vh; overflow-y: auto; z-index: 50; }
+  .mobile-nav-menu[hidden] { display: none; }
+  .mobile-nav-item { display: block; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--border); color: var(--text); padding: 12px 14px; font-size: 0.95rem; font-family: inherit; cursor: pointer; min-height: 44px; }
+  .mobile-nav-item[hidden] { display: none !important; }
+  .mobile-nav-item[data-g] { padding-left: 28px; background: var(--panel-2); font-size: 0.92rem; }
+  .mobile-nav-item.active { background: var(--red); color: #fff; font-weight: 600; }
+  .mobile-nav-group-label { display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; padding: 0 14px; min-height: 44px; border: none; border-bottom: 1px solid var(--border); background: none; color: var(--text); font-family: inherit; font-size: 0.95rem; font-weight: 600; letter-spacing: 0; text-transform: none; text-align: left; cursor: pointer; }
+  .mobile-nav-group-label::after { content: "\25B8"; color: var(--muted); font-size: 0.85rem; transition: transform 0.15s; }
+  .mobile-nav-group-label.open::after { transform: rotate(90deg); color: var(--gold); }
+  .mobile-nav-group-label.open { color: var(--gold); }
+  .mobile-nav select#mobile-nav-select { display: none; }
+
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 </style>
@@ -12643,6 +12657,31 @@ fetchWeeklyMatchups();
     var b = e.target.closest("nav:not(.yh-tabbar) button[data-tab], .mobile-nav-item[data-tab]");
     if (b) setTimeout(function () { activate(b.dataset.tab, false); setHash(b.dataset.tab); }, 0);
   });
+
+  // ---- phone menu: groups start collapsed; tap a group to show its pages ----------------
+  function menuGroups(open) {
+    document.querySelectorAll(".mobile-nav-group-label").forEach(function (l) {
+      var on = l.getAttribute("data-grp") === open;
+      l.setAttribute("aria-expanded", on ? "true" : "false"); l.classList.toggle("open", on);
+    });
+    document.querySelectorAll(".mobile-nav-item[data-g]").forEach(function (i) { i.hidden = i.getAttribute("data-g") !== open; });
+  }
+  menuGroups(null);
+  var mtg = $("mobile-nav-toggle"), mmenu = $("mobile-nav-menu");
+  if (mtg && mmenu) {
+    if (window.YH_OWN_MENU) {
+      mtg.addEventListener("click", function () { var w = mmenu.hidden; mmenu.hidden = !w; mtg.setAttribute("aria-expanded", String(w)); });
+      document.addEventListener("click", function (e) {
+        if (mmenu.hidden || mmenu.contains(e.target) || mtg.contains(e.target)) return;
+        mmenu.hidden = true; mtg.setAttribute("aria-expanded", "false");
+      });
+    }
+    mtg.addEventListener("click", function () { menuGroups(null); });
+    mmenu.addEventListener("click", function (e) {
+      var l = e.target.closest(".mobile-nav-group-label"); if (!l) return;
+      menuGroups(l.getAttribute("aria-expanded") === "true" ? null : l.getAttribute("data-grp"));
+    });
+  }
 
   var msel = $("mobile-nav-select");
   if (msel) msel.addEventListener("change", function () { var t = msel.value; setTimeout(function () { activate(t, true); setHash(t); }, 0); });
