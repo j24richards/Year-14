@@ -10965,9 +10965,9 @@ fetchWeeklyMatchups();
     }
     var rows = list.map(function (t) {
       var rec = t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "");
-      return "<tr><td>" + esc(t.rank) + '</td><td class="standings-team-cell">' + (t.team_key ? ylAv(t.name, t.team_key) : "") + "<span>" + esc(t.name) +
+      return "<tr><td>" + esc(t.rank) + '</td><td class="standings-team-cell"><span class="yh-tlink">' + (t.team_key ? ylAv(t.name, t.team_key) : "") + "<span>" + esc(t.name) +
         (t.managers && t.managers.length ? '<br><span class="yl-mgr">' + esc(t.managers.join(", ")) + "</span>" : "") +
-        '</span></td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
+        '</span></span></td><td class="yl-num">' + esc(rec) + '</td><td class="yl-num">' + fmt(t.points_for) +
         '</td><td class="yl-num">' + fmt(t.points_against) + "</td></tr>";
     }).join("");
     return picker + '<div class="card yl-scroll"><table><thead><tr><th>#</th><th>Team</th><th class="yl-num">Record</th><th class="yl-num">PF</th><th class="yl-num">PA</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
@@ -11168,7 +11168,7 @@ fetchWeeklyMatchups();
   @media (min-width: 1020px) {
     main { max-width: 1240px; }
     #home.active { display: block; }
-    #home .yh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 24px; align-items: start; }
+    #home .yh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 24px; align-items: start; }
     #home .yh-main, #home .yh-side { display: block; min-width: 0; }
   }
   /* Scoreboard strip */
@@ -11248,6 +11248,23 @@ fetchWeeklyMatchups();
   .yh-hidden-tabs { display: none !important; }
   .yh-skel { }
   .yh-note a, #freeagents .yh-note a { color: var(--link); }
+
+  /* Team cells: keep the table cell a real cell so row borders line up; flex lives on the link */
+  #home .standings-team-cell, #team .standings-team-cell, #yahoolive .standings-team-cell { display: table-cell; vertical-align: middle; }
+  .yh-tlink { gap: 8px; }
+  .yh-tlink > span:last-child { min-width: 0; }
+  #team .yh-back { color: var(--link); }
+  #team td.n { white-space: nowrap; }
+  #yahoolive .yl-btn.active { background: var(--panel); border-color: var(--red); color: var(--text); font-weight: 700; box-shadow: inset 0 -3px 0 var(--red); }
+  #yh-strip .yh-strip-row { scrollbar-width: thin; }
+  #power-rankings-table th, #power-rankings-table td { padding-left: 6px; padding-right: 6px; }
+  @media (max-width: 640px) {
+    #home #standings-card table, #home #yh-playoffs table { min-width: 0 !important; width: 100%; }
+    #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
+    #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 5px; font-size: 0.84rem; }
+    #home #yh-playoffs .yh-pill { white-space: nowrap; font-size: 0.68rem; padding: 1px 6px; }
+    #home #yh-insights th, #home #yh-insights td { padding: 7px 5px; font-size: 0.82rem; }
+  }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
@@ -12014,7 +12031,7 @@ fetchWeeklyMatchups();
   function teamBars(key) {
     var ws = M.fw.filter(function (w) { return M.wk[key][w] != null; });
     if (ws.length < 2) return "";
-    var W = 640, H = 170, pl = 8, pb = 22, pt = 18, n = ws.length, vals = ws.map(function (w) { return M.wk[key][w]; });
+    var W = window.innerWidth < 640 ? 340 : 640, H = window.innerWidth < 640 ? 160 : 170, pl = 8, pb = 22, pt = 18, n = ws.length, vals = ws.map(function (w) { return M.wk[key][w]; });
     var mx = Math.max.apply(null, vals.concat([M.lg])) * 1.08, bw = (W - pl * 2) / n, ph = H - pt - pb;
     function y(v) { return H - pb - (v / mx) * ph; }
     var bars = ws.map(function (w, i) {
@@ -12465,7 +12482,7 @@ fetchWeeklyMatchups();
   }
   function currentId() { var s = document.querySelector("main section.active"); return s ? s.id : "home"; }
   function mark() {
-    var cur = currentId(), direct = false;
+    var cur = currentId(), direct = false; if (cur === "team") cur = "home";
     bar.querySelectorAll("button[data-go]").forEach(function (b) {
       var on = b.getAttribute("data-go") === cur; if (on) direct = true;
       if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
