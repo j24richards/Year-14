@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@600&display=swap" rel="stylesheet">
-<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<script>try{var t=localStorage.getItem("theme"),ok={paper:1,warm:1,softdark:1},pref=ok[t]?t:t==="light"?"paper":t==="dark"?"softdark":"auto",r=document.documentElement;r.setAttribute("data-theme-pref",pref);r.setAttribute("data-theme",pref==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"softdark":"paper"):pref);}catch(e){}</script>
 <style>
   header { position: relative; }
   .theme-toggle { position: absolute; top: 10px; right: 12px; z-index: 2; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; padding: 4px 11px; font: inherit; font-size: 0.78rem; cursor: pointer; }
@@ -11665,6 +11665,46 @@ fetchWeeklyMatchups();
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
+
+  /* ---- color themes: Paper, Warm, Soft dark (set on <html data-theme>) ---- */
+  :root[data-theme="paper"] {
+    color-scheme: light;
+    --bg: #f4f6f9; --panel: #ffffff; --panel-2: #e9edf3; --border: #d3dae5;
+    --text: #141c28; --muted: #546378; --accent: #1c3557;
+    --red: #c4271a; --gold: #c4271a; --silver: #8591a4; --bronze: #a8643a;
+    --gold-wash: rgba(196,39,26, 0.09); --keeper: #1a7f37;
+    --injury-risk: #9a5f08; --injury-risk-wash: rgba(154,95,8, 0.14); --rookie-tag: #2a5aa0;
+    --good: #1a7f37; --warn: #9a5f08; --bad: #c62828; --info: #2a5aa0; --link: #c4271a; --shadow: 0 1px 3px rgba(20,28,40,0.10);
+  }
+  :root[data-theme="warm"] {
+    color-scheme: light;
+    --bg: #f3eee4; --panel: #fffcf6; --panel-2: #ebe4d6; --border: #d9d0be;
+    --text: #221e19; --muted: #665d50; --accent: #2b3a55;
+    --red: #b3301e; --gold: #b3301e; --silver: #8d8574; --bronze: #a8643a;
+    --gold-wash: rgba(179,48,30, 0.09); --keeper: #2a7a3b;
+    --injury-risk: #946010; --injury-risk-wash: rgba(148,96,16, 0.14); --rookie-tag: #1d559f;
+    --good: #2a7a3b; --warn: #946010; --bad: #b3301e; --info: #1d559f; --link: #b3301e; --shadow: 0 1px 3px rgba(34,30,25,0.10);
+  }
+  :root[data-theme="softdark"] {
+    color-scheme: dark;
+    --bg: #15171c; --panel: #1e2128; --panel-2: #2a2e37; --border: #363c48;
+    --text: #eceef2; --muted: #a7aebb; --accent: #3b4a66;
+    --red: #ff7461; --gold: #ff7461; --silver: #9aa3b2; --bronze: #c98b52;
+    --gold-wash: rgba(255,116,97, 0.09); --keeper: #4cc26a;
+    --injury-risk: #e8a33d; --injury-risk-wash: rgba(232,163,61, 0.14); --rookie-tag: #7aaeea;
+    --good: #4cc26a; --warn: #e8a33d; --bad: #ff7a70; --info: #7aaeea; --link: #ff7461; --shadow: 0 1px 2px rgba(0,0,0,0.45);
+  }
+
+  .theme-toggle { white-space: nowrap; }
+  footer, footer a, .yh-footnote a { color: #dbe7f7; }
+  .theme-menu { position: fixed; top: 48px; right: 12px; z-index: 1000; width: 250px; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); padding: 6px; }
+  .theme-menu[hidden] { display: none; }
+  .theme-menu button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 10px; border: 0; background: none; color: inherit; font: inherit; text-align: left; border-radius: 10px; cursor: pointer; }
+  .theme-menu button:hover, .theme-menu button:focus-visible { background: var(--panel-2); outline: none; }
+  .theme-menu button b { display: block; font-size: 0.98rem; font-weight: 650; }
+  .theme-menu button small { display: block; font-size: 0.8rem; color: var(--muted); }
+  .theme-menu .sw { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); }
+  .theme-menu button[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--red); }
 </style>
 <script>
 (function () {
@@ -12696,19 +12736,40 @@ fetchWeeklyMatchups();
 (function () {
   var btn = document.getElementById("theme-toggle");
   if (!btn) return;
-  var order = ["auto", "light", "dark"], labels = { auto: "\u25D0 Auto", light: "\u2600 Light", dark: "\u263E Dark" };
-  function current() { try { var t = localStorage.getItem("theme"); return t === "light" || t === "dark" ? t : "auto"; } catch (e) { return "auto"; } }
-  function apply(t) {
-    if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
-    btn.textContent = labels[t];
-    btn.setAttribute("aria-label", "Colour theme: " + t + ". Tap to change.");
+  var OPTS = [["auto", "Auto", "Follows your phone"], ["paper", "Paper", "Light and clean"], ["warm", "Warm", "Light, soft cream"], ["softdark", "Soft dark", "Charcoal, easy on the eyes"]];
+  var SW = { auto: "linear-gradient(135deg,#ffffff 50%,#1e2128 50%)", paper: "linear-gradient(135deg,#f4f6f9 50%,#ffffff 50%)", warm: "linear-gradient(135deg,#f3eee4 50%,#fffcf6 50%)", softdark: "linear-gradient(135deg,#15171c 50%,#2a2e37 50%)" };
+  var root = document.documentElement, mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+  function pref() { try { var t = localStorage.getItem("theme"); return t === "paper" || t === "warm" || t === "softdark" ? t : t === "light" ? "paper" : t === "dark" ? "softdark" : "auto"; } catch (e) { return "auto"; } }
+  function label(p) { for (var i = 0; i < OPTS.length; i++) if (OPTS[i][0] === p) return OPTS[i][1]; return "Auto"; }
+  var menu = document.createElement("div");
+  menu.className = "theme-menu"; menu.hidden = true; menu.setAttribute("role", "menu"); menu.setAttribute("aria-label", "Color theme");
+  menu.innerHTML = OPTS.map(function (o) {
+    return '<button type="button" role="menuitemradio" data-theme-opt="' + o[0] + '"><span class="sw" style="background:' + SW[o[0]] + '"></span><span><b>' + o[1] + "</b><small>" + o[2] + "</small></span></button>";
+  }).join("");
+  (btn.parentNode || document.body).appendChild(menu);
+  function apply(p) {
+    root.setAttribute("data-theme-pref", p);
+    root.setAttribute("data-theme", p === "auto" ? (mq && mq.matches ? "softdark" : "paper") : p);
+    btn.textContent = "\u25D0 " + label(p);
+    btn.setAttribute("aria-label", "Color theme: " + label(p) + ". Tap to change.");
+    btn.setAttribute("aria-haspopup", "menu");
+    var bs = menu.querySelectorAll("button");
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute("aria-checked", bs[i].getAttribute("data-theme-opt") === p ? "true" : "false");
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) { var bg = getComputedStyle(root).getPropertyValue("--accent").trim(); if (bg) tc.setAttribute("content", bg); }
   }
-  apply(current());
-  btn.addEventListener("click", function () {
-    var next = order[(order.indexOf(current()) + 1) % order.length];
-    try { if (next === "auto") localStorage.removeItem("theme"); else localStorage.setItem("theme", next); } catch (e) {}
-    apply(next);
+  function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  btn.addEventListener("click", function (e) { e.stopPropagation(); var r = btn.getBoundingClientRect(); menu.style.top = Math.round(r.bottom + 8) + "px"; menu.hidden = !menu.hidden; btn.setAttribute("aria-expanded", String(!menu.hidden)); });
+  menu.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-theme-opt]"); if (!b) return;
+    var p = b.getAttribute("data-theme-opt");
+    try { if (p === "auto") localStorage.removeItem("theme"); else localStorage.setItem("theme", p); } catch (err) {}
+    apply(p); close();
   });
+  document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); } });
+  if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (pref() === "auto") apply("auto"); });
+  apply(pref());
 })();
 </script>
 <script>window.YH_GROUPS = [{"id": "season", "label": "Season", "tabs": [["yahoolive", "Live Scores"], ["results", "Results"], ["waivers", "Waivers"], ["trades", "Trades"], ["freeagents", "Free Agents"], ["teams2026", "Teams"]]}, {"id": "keepers", "label": "Keepers & Draft", "tabs": [["keepers", "Keepers"], ["keeperplanner", "Keeper Planner"], ["tradeanalyzer", "Trade Analyzer"], ["draft", "2026 Draft"], ["draftorder", "Draft Order"], ["mockdraft", "Mock Draft"]]}, {"id": "archive", "label": "2025 Archive", "tabs": [["teams", "2025 Teams"], ["draft2025", "2025 Draft"], ["trades2025", "2025 Trades"], ["history", "History"]]}, {"id": "more", "label": "Rules & Export", "tabs": [["rules", "Rules"], ["export", "Export"]]}];</script>
