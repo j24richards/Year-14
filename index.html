@@ -11610,6 +11610,27 @@ fetchWeeklyMatchups();
   @media (max-width: 640px) { #yh-insights table.yh-tally th.n { font-size: 0.68rem !important; } #yh-insights table.yh-tally td { font-size: 0.8rem !important; } }
   @media (max-width: 640px) { #home #yh-playoffs td, #home #yh-playoffs .yh-tlink { white-space: normal; } #home #yh-playoffs td:first-child, #home #yh-playoffs td.yh-odds { white-space: nowrap; } }
 
+  /* ---- matchups: make each game read as its own card ---- */
+  #home .yl-games { gap: 16px; }
+  #home .yl-game { position: relative; background: var(--panel-2); border: 1px solid var(--border); border-left: 5px solid var(--border); border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+  #home .yl-game.live { border-left-color: var(--red); }
+  #home .yl-game.fin { border-left-color: var(--rookie-tag); }
+  #home .yl-game.up { border-left-style: dashed; }
+  #home .yl-game:hover, #home .yl-game.open { box-shadow: 0 4px 12px rgba(0,0,0,0.28); }
+  #home .yl-game .yl-row { padding: 11px 14px; background: var(--panel); }
+  #home .yl-game .yl-row + .yl-row { border-top: 2px solid var(--panel-2); position: relative; }
+  #home .yl-game .yl-row + .yl-row::before { content: "VS"; position: absolute; left: 14px; top: -9px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; line-height: 1; color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; z-index: 1; }
+  #home .yl-game .yl-pts { font-size: 1.2rem; font-weight: 700; }
+  #home .yl-game .yl-row.lead { box-shadow: inset 3px 0 0 var(--red); font-weight: 700; }
+  #home .yl-game .yl-row.lead .yl-pts { color: var(--red); }
+  #home .yl-game.fin .yl-row.win { box-shadow: inset 3px 0 0 var(--rookie-tag); background: var(--gold-wash); }
+  #home .yl-game.fin .yl-row:not(.win) { opacity: 0.72; }
+  #home .yl-game .yh-prob { height: 5px; background: var(--border); }
+  #home .yl-game .yh-prob > span { background: var(--rookie-tag); }
+  #home .yl-game .yl-status { padding: 7px 14px; font-weight: 650; border-top: 1px solid var(--border); }
+  #home .yl-game.live .yl-status { color: var(--red); }
+  @media (max-width: 640px) { #home .yl-games { grid-template-columns: 1fr; gap: 14px; } }
+
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 </style>
@@ -12282,11 +12303,12 @@ fetchWeeklyMatchups();
       var showProb = !final && m.teams.length === 2 && m.teams.every(function (t) { return t.win_probability != null; });
       var rows = (m.teams || []).map(function (t) {
         var win = m.winner_team_key && t.team_key === m.winner_team_key, sub = "";
+        var lead = !final && m.status === "midevent" && m.teams.length === 2 && m.teams.every(function (x) { return x.points != null; }) && t.points > Math.max.apply(null, m.teams.filter(function (x) { return x !== t; }).map(function (x) { return x.points; }));
         if (!final && t.projected != null) sub = '<span class="yh-sub">Proj ' + fmt(t.projected) + (showProb ? " · " + Math.round(t.win_probability * 100) + "%" : "") + "</span>";
-        return '<div class="yl-row' + (win ? " win" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
+        return '<div class="yl-row' + (win ? " win" : "") + (lead ? " lead" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
       var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
-      var html = '<div class="yl-game yh-game' + (final ? " fin" : "") + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
+      var html = '<div class="yl-game yh-game' + (final ? " fin" : m.status === "midevent" ? " live" : " up") + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
         rows + bar + '<div class="yl-status">' + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + " · tap for lineups</div></div>";
       if (openKey === key) {
         html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button><div class="yh-lineup-cols">' +
