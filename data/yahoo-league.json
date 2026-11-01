@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-10-31T20:06:22.847Z",
+  "updated": "2026-11-01T17:41:41.875Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1353,8 +1353,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 118.89,
-            "win_probability": 0.41000000000000003
+            "projected": 134.05,
+            "win_probability": 0.54
           },
           {
             "team_key": "470.l.390478.t.7",
@@ -1365,8 +1365,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 26.2,
-            "projected": 128.66,
-            "win_probability": 0.59
+            "projected": 128.34,
+            "win_probability": 0.45999999999999996
           }
         ]
       },
@@ -1387,8 +1387,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 118.34,
-            "win_probability": 0.42000000000000004
+            "projected": 118.52,
+            "win_probability": 0.33999999999999997
           },
           {
             "team_key": "470.l.390478.t.3",
@@ -1399,8 +1399,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 35.7,
-            "projected": 116.42,
-            "win_probability": 0.58
+            "projected": 125.65,
+            "win_probability": 0.66
           }
         ]
       },
@@ -1421,8 +1421,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 94.06,
-            "win_probability": 0.25
+            "projected": 108.46,
+            "win_probability": 0.37
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -1433,8 +1433,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 13.3,
-            "projected": 122.23,
-            "win_probability": 0.75
+            "projected": 122.56,
+            "win_probability": 0.63
           }
         ]
       },
@@ -1455,8 +1455,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 132.43,
-            "win_probability": 0.8400000000000001
+            "projected": 132.57,
+            "win_probability": 0.79
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1467,8 +1467,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 88.43,
-            "win_probability": 0.15999999999999992
+            "projected": 95.34,
+            "win_probability": 0.20999999999999996
           }
         ]
       },
@@ -1489,8 +1489,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 23.2,
-            "projected": 113.6,
-            "win_probability": 0.28
+            "projected": 102.84,
+            "win_probability": 0.19999999999999996
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1501,14 +1501,123 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 140.17,
-            "win_probability": 0.72
+            "projected": 140.4,
+            "win_probability": 0.8
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 223,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1793554698,
+      "date": "2026-11-01T17:38:18.000Z",
+      "players": [
+        {
+          "name": "Falcons",
+          "team": "Atl",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        },
+        {
+          "name": "Kaelon Black",
+          "team": "SF",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 222,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1793554505,
+      "date": "2026-11-01T17:35:05.000Z",
+      "players": [
+        {
+          "name": "Chase McLaughlin",
+          "team": "TB",
+          "pos": "K",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        },
+        {
+          "name": "Kyle Pitts Sr.",
+          "team": "Atl",
+          "pos": "TE",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 221,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1793522854,
+      "date": "2026-11-01T08:47:34.000Z",
+      "players": [
+        {
+          "name": "Commanders",
+          "team": "Was",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.4"
+        },
+        {
+          "name": "Tyler Shough",
+          "team": "NO",
+          "pos": "QB",
+          "action": "drop",
+          "from": "470.l.390478.t.4",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 220,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1793522749,
+      "date": "2026-11-01T08:45:49.000Z",
+      "players": [
+        {
+          "name": "J.K. Dobbins",
+          "team": "Den",
+          "pos": "RB",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.4"
+        }
+      ]
+    },
+    {
+      "id": 219,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1793506424,
+      "date": "2026-11-01T04:13:44.000Z",
+      "players": [
+        {
+          "name": "Jason Myers",
+          "team": "Sea",
+          "pos": "K",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.3"
+        }
+      ]
+    },
     {
       "id": 218,
       "type": "add",
@@ -5709,12 +5818,6 @@
         "slot": "BN"
       },
       {
-        "name": "Kaelon Black",
-        "team": "SF",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
         "name": "Emmett Johnson",
         "team": "KC",
         "pos": "RB",
@@ -5724,12 +5827,6 @@
         "name": "Kyle Monangai",
         "team": "Chi",
         "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Kyle Pitts Sr.",
-        "team": "Atl",
-        "pos": "TE",
         "slot": "BN"
       },
       {
@@ -5749,6 +5846,18 @@
         "team": "NO",
         "pos": "WR",
         "slot": "IR"
+      },
+      {
+        "name": "Chase McLaughlin",
+        "team": "TB",
+        "pos": "K",
+        "slot": "K"
+      },
+      {
+        "name": "Falcons",
+        "team": "Atl",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.3": [
@@ -5837,6 +5946,12 @@
         "slot": "IR"
       },
       {
+        "name": "Jason Myers",
+        "team": "Sea",
+        "pos": "K",
+        "slot": "K"
+      },
+      {
         "name": "Rams",
         "team": "LAR",
         "pos": "DEF",
@@ -5857,8 +5972,8 @@
         "slot": "RB"
       },
       {
-        "name": "TreVeyon Henderson",
-        "team": "NE",
+        "name": "J.K. Dobbins",
+        "team": "Den",
         "pos": "RB",
         "slot": "RB"
       },
@@ -5893,8 +6008,8 @@
         "slot": "W/R/T"
       },
       {
-        "name": "RJ Harvey",
-        "team": "Den",
+        "name": "TreVeyon Henderson",
+        "team": "NE",
         "pos": "RB",
         "slot": "BN"
       },
@@ -5911,12 +6026,6 @@
         "slot": "BN"
       },
       {
-        "name": "Tyler Shough",
-        "team": "NO",
-        "pos": "QB",
-        "slot": "BN"
-      },
-      {
         "name": "Tyreek Hill",
         "team": "Mia",
         "pos": "WR",
@@ -5929,6 +6038,12 @@
         "slot": "BN"
       },
       {
+        "name": "RJ Harvey",
+        "team": "Den",
+        "pos": "RB",
+        "slot": "IR"
+      },
+      {
         "name": "Travis Etienne Jr.",
         "team": "NO",
         "pos": "RB",
@@ -5939,6 +6054,12 @@
         "team": "Min",
         "pos": "K",
         "slot": "K"
+      },
+      {
+        "name": "Commanders",
+        "team": "Was",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.5": [
@@ -6157,14 +6278,14 @@
         "slot": "WR"
       },
       {
-        "name": "A.J. Brown",
-        "team": "NE",
+        "name": "DJ Moore",
+        "team": "Buf",
         "pos": "WR",
         "slot": "WR"
       },
       {
-        "name": "DJ Moore",
-        "team": "Buf",
+        "name": "Jakobi Meyers",
+        "team": "Jax",
         "pos": "WR",
         "slot": "WR"
       },
@@ -6175,10 +6296,16 @@
         "slot": "TE"
       },
       {
-        "name": "Jakobi Meyers",
-        "team": "Jax",
+        "name": "Keon Coleman",
+        "team": "Buf",
         "pos": "WR",
         "slot": "W/R/T"
+      },
+      {
+        "name": "A.J. Brown",
+        "team": "NE",
+        "pos": "WR",
+        "slot": "BN"
       },
       {
         "name": "Cam Skattebo",
@@ -6195,12 +6322,6 @@
       {
         "name": "Devaughn Vele",
         "team": "NO",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "Keon Coleman",
-        "team": "Buf",
         "pos": "WR",
         "slot": "BN"
       },
@@ -6255,8 +6376,8 @@
         "slot": "WR"
       },
       {
-        "name": "Josh Downs",
-        "team": "Ind",
+        "name": "Rashee Rice",
+        "team": "KC",
         "pos": "WR",
         "slot": "WR"
       },
@@ -6271,6 +6392,12 @@
         "team": "NYJ",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Josh Downs",
+        "team": "Ind",
+        "pos": "WR",
+        "slot": "BN"
       },
       {
         "name": "Brock Purdy",
@@ -6294,12 +6421,6 @@
         "name": "Jonah Coleman",
         "team": "Den",
         "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Rashee Rice",
-        "team": "KC",
-        "pos": "WR",
         "slot": "BN"
       },
       {
