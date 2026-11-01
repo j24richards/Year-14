@@ -11261,7 +11261,8 @@ fetchWeeklyMatchups();
   @media (max-width: 640px) {
     #home #standings-card table, #home #yh-playoffs table { min-width: 0 !important; width: 100%; }
     #home #yh-playoffs th:nth-child(3), #home #yh-playoffs td:nth-child(3), #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
-    #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 5px; font-size: 0.84rem; }
+    #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 4px; font-size: 0.84rem; }
+    #home #yh-playoffs .yh-av, #home #yh-playoffs .team-badge { display: none; }
     #home #yh-playoffs .yh-pill { white-space: nowrap; font-size: 0.68rem; padding: 1px 6px; }
     #home #yh-insights th, #home #yh-insights td { padding: 7px 5px; font-size: 0.82rem; }
     #team table th, #team table td { padding: 8px 4px; font-size: 0.84rem; }
@@ -11931,10 +11932,10 @@ fetchWeeklyMatchups();
         var gb = ((last.wins - t.wins) + (t.losses - last.losses)) / 2, status, detail;
         if (i < cut) {
           var cush = ((t.wins - firstOut.wins) + (firstOut.losses - t.losses)) / 2;
-          status = cush <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill in">In</span>';
+          status = cush <= 1 ? '<span class="yh-pill bub">Bubble</span>' : '<span class="yh-pill in">In</span>';
           detail = cush + " game" + (cush === 1 ? "" : "s") + " clear" + (i === cut - 1 ? " of the line" : "");
         } else {
-          status = gb <= 1 ? '<span class="yh-pill bub">On the bubble</span>' : '<span class="yh-pill out">Out</span>';
+          status = gb <= 1 ? '<span class="yh-pill bub">Bubble</span>' : '<span class="yh-pill out">Out</span>';
           detail = gb + " game" + (gb === 1 ? "" : "s") + " back";
         }
         if (i >= cut && t.wins + left < last.wins) { status = '<span class="yh-pill out">Eliminated</span>'; detail = "can't catch #" + cut; }
