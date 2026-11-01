@@ -11583,6 +11583,32 @@ fetchWeeklyMatchups();
   .yh-install-link { color: inherit; text-decoration: underline; }
   #yh-install .yh-ins-x:focus:not(:focus-visible) { outline: none; }
 
+  /* award tally */
+  #yh-insights .yh-tally td.yh-zero { color: var(--muted); opacity: 0.6; }
+  #yh-insights .yh-tally td.n, #yh-insights .yh-tally th.n { text-align: center; padding-left: 4px; padding-right: 4px; }
+  #yh-insights .yh-tallylog { margin-top: 12px; }
+  #yh-insights .yh-tallylog summary { cursor: pointer; color: var(--gold); font-weight: 600; font-size: 0.9rem; padding: 6px 0; }
+  #yh-insights .yh-tl { font-size: 0.82rem; line-height: 1.45; padding: 7px 0; border-top: 1px solid var(--border); color: var(--muted); }
+  #yh-insights .yh-tl strong { color: var(--text); display: block; }
+  @media (max-width: 640px) { #yh-insights .yh-tally td .yh-av, #yh-insights .yh-tally td .team-badge { display: none; } #yh-insights .yh-tally td, #yh-insights .yh-tally th { font-size: 0.8rem; } }
+  #yh-insights .yh-tally { table-layout: fixed; width: 100%; min-width: 0; }
+  #yh-insights .yh-tally th:first-child { width: 34%; }
+  #yh-insights .yh-tally td.standings-team-cell { white-space: normal; overflow-wrap: anywhere; line-height: 1.2; }
+  #yh-insights .yh-tally th { white-space: nowrap; }
+  @media (max-width: 640px) {
+    #yh-insights table.yh-tally th.n, #yh-insights table.yh-tally td.n { padding-left: 1px; padding-right: 1px; font-size: 0.76rem; }
+    #yh-insights table.yh-tally th:first-child { width: 31%; }
+    #yh-insights table.yh-tally td:first-child, #yh-insights table.yh-tally th:first-child { padding-left: 6px; padding-right: 4px; }
+  }
+  @media (max-width: 640px) {
+    #yh-insights table.yh-tally th.n { padding: 7px 0 !important; font-size: 0.66rem; letter-spacing: 0; }
+    #yh-insights table.yh-tally td.n { padding-left: 0 !important; padding-right: 0 !important; }
+    #yh-insights table.yh-tally th:first-child { width: 28%; }
+  }
+  @media (max-width: 640px) { #yh-insights table.yh-tally th.n { text-transform: none !important; letter-spacing: 0 !important; font-size: 0.7rem; } }
+  @media (max-width: 640px) { #yh-insights table.yh-tally th.n { font-size: 0.62rem; font-weight: 700; } #yh-insights table.yh-tally th:first-child { width: 26%; } }
+  @media (max-width: 640px) { #yh-insights table.yh-tally th.n { font-size: 0.68rem !important; } #yh-insights table.yh-tally td { font-size: 0.8rem !important; } }
+
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 </style>
@@ -12072,11 +12098,43 @@ fetchWeeklyMatchups();
       '</tbody></table></div><div class="yh-sub2">Latest moves</div><ul class="yh-feed">' + feed + "</ul>";
   }
 
+
+  // ---- running tally of the weekly awards -------------------------------------
+  function tallyAll() {
+    var T = {}, log = [];
+    M.order.forEach(function (k) { T[k] = { k: k, hi: 0, blow: 0, close: 0, mgr: 0, lo: 0, blunder: 0 }; });
+    M.fw.forEach(function (w) {
+      var A = weekAwards(w); if (!A) return;
+      function add(t, f) { if (t && t.team_key && T[t.team_key]) T[t.team_key][f]++; }
+      function addK(k, f) { if (k && T[k]) T[k][f]++; }
+      function win(g) { return g.a.points >= g.b.points ? g.a : g.b; }
+      add(A.hi.t, "hi"); add(A.lo.t, "lo"); add(win(A.blow), "blow"); add(win(A.close), "close");
+      if (A.bestMgr) addK(A.bestMgr.k, "mgr");
+      var bl = A.blunder && A.blunder.left > 0.5 ? A.blunder.k : null; if (bl) addK(bl, "blunder");
+      log.push({ w: w, hi: A.hi.t.team_key, lo: A.lo.t.team_key, blow: win(A.blow).team_key, close: win(A.close).team_key, mgr: A.bestMgr ? A.bestMgr.k : null, blunder: bl });
+    });
+    return { T: T, log: log };
+  }
+  function renderTally() {
+    if (!M.fw.length) return '<p class="yh-empty">The tally starts once a week is complete.</p>';
+    var R = tallyAll(), rows = Object.keys(R.T).map(function (k) { var t = R.T[k]; t.honors = t.hi + t.blow + t.close + t.mgr; t.misses = t.lo + t.blunder; return t; })
+      .sort(function (a, b) { return (b.honors - a.honors) || (a.misses - b.misses) || (nm(a.k) < nm(b.k) ? -1 : 1); });
+    function c(n, bad) { return '<td class="n' + (n ? (bad ? " yh-neg" : " yh-pos") : " yh-zero") + '">' + (n || "·") + "</td>"; }
+    var html = '<div class="yh-sub2" style="margin-top:0">Season tally after ' + M.fw.length + " week" + (M.fw.length === 1 ? "" : "s") + '</div><div class="yh-scroll"><table class="yh-tally"><thead><tr><th>Team</th><th class="n" title="Highest score">Top</th><th class="n" title="Biggest blowout">Blow</th><th class="n" title="Closest game won">Close</th><th class="n" title="Best manager">Mgr</th><th class="n" title="Lowest score">Low</th><th class="n" title="Bench blunder">Bench</th></tr></thead><tbody>' +
+      rows.map(function (t) { return "<tr>" + nameCell(nm(t.k), t.k) + c(t.hi) + c(t.blow) + c(t.close) + c(t.mgr) + c(t.lo, true) + c(t.blunder, true) + "</tr>"; }).join("") +
+      '</tbody></table></div><p class="yh-note"><strong>Top</strong> highest score of the week. <strong>Blow</strong> biggest blowout win. <strong>Close</strong> closest win. <strong>Mgr</strong> best share of the best possible lineup. <strong>Low</strong> lowest score. <strong>Bench</strong> most points left on the bench. Sorted by good awards, then fewest bad ones.</p>';
+    html += '<details class="yh-tallylog"><summary>Week by week</summary>' + R.log.slice().reverse().map(function (e) {
+      function n(k) { return k ? esc(nm(k)) : "–"; }
+      return '<div class="yh-tl"><strong>Week ' + e.w + "</strong> Top: " + n(e.hi) + " · Blowout: " + n(e.blow) + " · Close: " + n(e.close) + " · Mgr: " + n(e.mgr) + " · Low: " + n(e.lo) + " · Bench: " + n(e.blunder) + "</div>";
+    }).join("") + "</details>";
+    return html;
+  }
+
   // ---- insights shell ----------------------------------------------------------
-  var TABS = [["awards", "Weekly awards"], ["trends", "Trends"], ["luck", "Luck & schedule"], ["waivers", "Waiver wire"]];
+  var TABS = [["awards", "Weekly awards"], ["tally", "Award tally"], ["trends", "Trends"], ["luck", "Luck & schedule"], ["waivers", "Waiver wire"]];
   function renderInsights() {
     if (!inEl) return;
-    var body = tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
+    var body = tab === "tally" ? renderTally() : tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
     inEl.innerHTML = '<h3>League insights</h3><div class="yh-tabs" role="tablist">' + TABS.map(function (t) {
       return '<button type="button" class="yh-tab" role="tab" data-itab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + "</button>";
     }).join("") + '</div><div id="yh-ibody">' + body + "</div>";
@@ -12085,7 +12143,7 @@ fetchWeeklyMatchups();
   }
   function renderBody() {
     var b = document.getElementById("yh-ibody"); if (!b) return renderInsights();
-    b.innerHTML = tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
+    b.innerHTML = tab === "tally" ? renderTally() : tab === "trends" ? renderTrends() : tab === "luck" ? renderLuck() : tab === "waivers" ? renderWaivers() : renderAwards();
     if (tab === "trends") wireChart();
   }
 
