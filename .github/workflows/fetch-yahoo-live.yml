@@ -1,0 +1,109 @@
+name: Live scores (game days)
+
+# Keeps scores close to live while NFL games are on.
+#
+# One run stays open for about five hours and checks Yahoo every ~75 seconds.
+# Each time something changed it writes the new scores to a small Firebase
+# document (live/scores), and the site updates by itself within seconds. It
+# also saves data/yahoo-league.json now and then (at most every 8 minutes, so
+# GitHub Pages is not asked to rebuild too often); that file is the fallback
+# if Firebase is ever unavailable.
+#
+# Windows (UTC): Sunday from 13:00 until Monday 05:00, Monday night
+# (Tuesday 00:00-05:00) and Thursday night (Friday 00:00-05:00).
+# A run started outside those windows checks once and stops. Hourly start
+# times overlap on purpose: GitHub often skips scheduled starts, and the
+# concurrency rule below lets one run wait in line while another is going.
+#
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT (Firebase key file)
+# plus the Yahoo secrets and the YAHOO_LEAGUE_ID variable already in use.
+
+on:
+  schedule:
+    - cron: "5 13-23 * 9-12,1 0"
+    - cron: "5 0-4 * 9-12,1 1,2,5"
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How long to keep checking, in minutes"
+        default: "320"
+      force:
+        description: "Keep checking even outside game windows (for testing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# Shares its name with the other league-data workflow so they never write at
+# the same time. A waiting run is replaced by a newer one; that is expected.
+concurrency:
+  group: yahoo-league-data
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install the Firebase library
+        run: npm install --no-save --no-audit --no-fund firebase-admin@12
+
+      - name: Check Yahoo every ~75 seconds
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          YAHOO_LEAGUE_ID: ${{ vars.YAHOO_LEAGUE_ID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MINUTES: ${{ github.event.inputs.minutes || '320' }}
+          FORCE: ${{ github.event.inputs.force || 'false' }}
+          LIVE: "true"
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          END=$(( $(date +%s) + MINUTES * 60 ))
+          LAST=0
+
+          in_window() {
+            local d h
+            d=$(date -u +%u); h=$(date -u +%-H)
+            case "$d" in
+              7) [ "$h" -ge 13 ] ;;
+              1|2|5) [ "$h" -lt 5 ] ;;
+              *) return 1 ;;
+            esac
+          }
+
+          save() {
+            if [[ -z "$(git status --porcelain data/)" ]]; then return 0; fi
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/yahoo-league.json data/yahoo-lineups.json
+            git commit -q -m "Update league data from Yahoo"
+            if git pull -q --rebase origin "$BRANCH" && git push -q origin "HEAD:$BRANCH"; then
+              LAST=$(date +%s)
+              echo "Saved the data files."
+            else
+              echo "Could not push; starting again from the latest copy."
+              git rebase --abort 2>/dev/null || true
+              git fetch -q origin "$BRANCH"
+              git reset -q --hard "origin/$BRANCH"
+            fi
+          }
+
+          while true; do
+            node scripts/fetch-yahoo-league.mjs || echo "Yahoo fetch failed; will try again."
+            node scripts/push-live.mjs || echo "Firebase push failed; the file update still covers it."
+            NOW=$(date +%s)
+            if [ $(( NOW - LAST )) -ge 480 ]; then save; fi
+            if [ "$NOW" -ge "$END" ]; then break; fi
+            if [ "$FORCE" != "true" ] && ! in_window; then break; fi
+            sleep 75
+          done
+          save

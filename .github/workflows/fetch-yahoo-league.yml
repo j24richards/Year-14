@@ -5,8 +5,8 @@ name: Fetch league data from Yahoo
 # and secrets as the ADP refresh. NFL season only (September through January).
 #
 # When it runs (all times UTC, so they line up with US game windows):
-#   - every 30 minutes on Sunday afternoon/evening and during the Sunday-,
-#     Monday- and Thursday-night games, so scores stay close to live
+#   - game days are handled by the separate "Live scores (game days)"
+#     workflow, which checks every minute or so
 #   - Tuesday 09:00, once Monday night is final
 #   - daily at 12:00, to pick up waiver moves and trades
 # A run only commits when something actually changed, so quiet stretches add
@@ -19,8 +19,6 @@ name: Fetch league data from Yahoo
 
 on:
   schedule:
-    - cron: "*/30 17-23 * 9-12,1 0"
-    - cron: "*/30 0-4 * 9-12,1 1,2,5"
     - cron: "0 9 * 9-12,1 2"
     - cron: "0 12 * 9-12,1 *"
   workflow_dispatch:
