@@ -11258,7 +11258,9 @@ fetchWeeklyMatchups();
   #yahoolive .yl-btn.active { background: var(--panel); border-color: var(--red); color: var(--text); font-weight: 700; box-shadow: inset 0 -3px 0 var(--red); }
   #yh-strip .yh-strip-row { scrollbar-width: thin; }
   #power-rankings-table th, #power-rankings-table td { padding-left: 6px; padding-right: 6px; }
+  .yh-sm { display: none; }
   @media (max-width: 640px) {
+    .yh-lg { display: none; } .yh-sm { display: inline; }
     #home #standings-card table, #home #yh-playoffs table { min-width: 0 !important; width: 100%; }
     #home #yh-playoffs th:nth-child(3), #home #yh-playoffs td:nth-child(3), #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
     #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 4px; font-size: 0.84rem; }
@@ -11945,7 +11947,7 @@ fetchWeeklyMatchups();
         return "<tr><td>" + (i + 1) + "</td>" + nameCell(t.name, t.team_key) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + status + "</td><td>" + detail + "</td>" + odds + "</tr>";
       }).join("");
       html = "<h3>Playoff picture</h3><p class=\"yh-note\" style=\"margin-top:0\">Top " + cut + " advance. " + left + " regular-season week" + (left === 1 ? "" : "s") + " left (playoffs start Week " + start + ").</p>" +
-        '<div style="overflow-x:auto"><table style="min-width:' + (sim ? 640 : 420) + 'px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th>' + (sim ? '<th>Make playoffs</th><th>#1 seed</th>' : "") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        '<div style="overflow-x:auto"><table style="min-width:' + (sim ? 640 : 420) + 'px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th>' + (sim ? '<th><span class="yh-lg">Make playoffs</span><span class="yh-sm">Odds</span></th><th>#1 seed</th>' : "") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
         (sim ? '<p class="yh-note">Odds come from 4,000 simulated finishes of the remaining schedule, each team scoring around its season average. They\'re an estimate, not a promise.</p>' : "");
     } else {
       var rounds = weeksList().filter(function (w) { return w >= start; });
