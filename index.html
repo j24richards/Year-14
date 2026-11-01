@@ -12206,6 +12206,13 @@ fetchWeeklyMatchups();
     #sync-note { margin: 0 0 10px; }
     #home .commish-note { padding: 12px 16px 14px; border-radius: 12px; font-size: 1rem; }
   }
+
+  /* ===== Desktop header: centred in the content column, same edges as the page ===== */
+  @media (min-width: 900px) {
+    header { --gx: max(20px, calc((100vw - var(--wrap, 1120px)) / 2 + 20px)); grid-template-columns: auto auto; justify-content: center; padding-left: 20px; padding-right: 20px; }
+    nav { justify-content: center; padding-left: 20px; padding-right: 20px; }
+    .theme-toggle { right: var(--gx, 20px); }
+  }
 </style>
 <script>
 (function () {
