@@ -5269,11 +5269,24 @@ function buildTeamCard(t, includeMatchup) {
     // matchup/weather column instead for the current season.
     const colCount = 4;
     html += "<table><thead><tr><th>Player</th><th>NFL</th>" + (includeMatchup ? "" : "<th>Cost</th>") + "<th>Kept</th>" + (includeMatchup ? "<th>This Week</th>" : "") + "</tr></thead><tbody>";
+    const keptInfo = {};
+    if (includeMatchup && typeof CURRENT_DATA !== "undefined" && CURRENT_DATA) {
+      const sel = (CURRENT_DATA.keeperSelections || []).find(k => k.team === t.team);
+      if (sel && sel.players) {
+        let rr = {}; try { rr = resolveTeamKeeperRounds(CURRENT_DATA, t.team) || {}; } catch (e) {}
+        sel.players.forEach(n => { const r = rr[n] != null ? rr[n] : getKeeperRound(CURRENT_DATA, t.team, n); keptInfo[kpNorm(n)] = r || 0; });
+      }
+    }
+    const keptCell = p => {
+      const ki = includeMatchup ? keptInfo[kpNorm(p.player)] : undefined;
+      if (!p.kept && ki === undefined) return "";
+      return "<span class=\"kept-yes\" title=\"Kept for this season\">★</span>" + (ki ? " <span class=\"cost-badge\" title=\"Kept in the " + ordinal(ki) + " round\">" + ordinal(ki) + "</span>" : "");
+    };
     const renderRow = p => {
       const cost = p.keeperCost ? "<span class=\"cost-badge\">" + ordinal(p.keeperCost) + "</span>" : "";
       const costCell = includeMatchup ? "" : "<td>" + cost + "</td>";
       const matchupCell = includeMatchup ? "<td class=\"matchup-cell\" data-nfl-team=\"" + (p.nfl || "") + "\">" + matchupCellHtml(p.nfl) + "</td>" : "";
-      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td>" + costCell + "<td>" + (p.kept ? "<span class=\"kept-yes\">★</span>" : "") + "</td>" + matchupCell + "</tr>";
+      return "<tr><td>" + p.player + "</td><td>" + p.nfl + "</td>" + costCell + "<td>" + keptCell(p) + "</td>" + matchupCell + "</tr>";
     };
     posOrder.forEach(pos => {
       if (groups[pos] && groups[pos].length) {
@@ -9899,7 +9912,20 @@ function refreshPublicSections(data) {
 // and badges.
 window.SiteTeams = {
   match: name => yahooMatchName(CURRENT_DATA, name),
-  badge: name => teamBadgeHtml(name)
+  badge: name => teamBadgeHtml(name),
+  kept: (teamName, playerName) => {
+    try {
+      const d = CURRENT_DATA; if (!d || !d.keeperSelections) return null;
+      const tn = yNorm(teamName), pn = yNorm(playerName);
+      const sel = d.keeperSelections.find(k => yNorm(k.team) === tn);
+      if (!sel || !sel.players) return null;
+      const hit = sel.players.find(x => { const m = yNorm(x); return m === pn || (m.length >= 8 && pn.length >= 8 && (m.startsWith(pn) || pn.startsWith(m))); });
+      if (!hit) return null;
+      let rr = {}; try { rr = resolveTeamKeeperRounds(d, sel.team) || {}; } catch (e) {}
+      const round = rr[hit] != null ? rr[hit] : getKeeperRound(d, sel.team, hit);
+      return { round: round || null };
+    } catch (e) { return null; }
+  }
 };
 
 fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
@@ -11272,6 +11298,8 @@ fetchWeeklyMatchups();
     #team td .yh-av, #team td .team-badge { display: none; }
   }
   @media (max-width: 640px) { #yh-hometabs { gap: 5px; } #yh-hometabs .yh-subtab { padding: 6px 9px; font-size: 0.8rem; } }
+  .yh-kept { color: var(--gold); font-weight: 700; font-size: 0.74rem; white-space: nowrap; }
+  .kept-yes { white-space: nowrap; }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
@@ -11871,6 +11899,14 @@ fetchWeeklyMatchups();
   // ---- matchups ----------------------------------------------------------------
   var SLOTS = ["QB", "RB", "WR", "TE", "W/R/T", "W/R", "FLEX", "K", "DEF", "BN", "IR"];
   function slotRank(s) { var i = SLOTS.indexOf(s); return i < 0 ? 50 : i; }
+  function keptMark(team, pname) {
+    try {
+      if (!window.SiteTeams || !window.SiteTeams.kept) return "";
+      var k = window.SiteTeams.kept(window.SiteTeams.match(team.name), pname); if (!k) return "";
+      function ord(n) { var s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+      return ' <span class="yh-kept" title="Kept for this season' + (k.round ? " (" + ord(k.round) + " round)" : "") + '">&#9733;' + (k.round ? " " + ord(k.round) : "") + "</span>";
+    } catch (e) { return ""; }
+  }
   function lineupTable(team, wk) {
     var src = LINEUPS || DATA.lineups;
     if (!src) return "<h4>" + esc(team.name) + '</h4><p class="yl-empty">Loading lineups&hellip;</p>';
@@ -11881,7 +11917,7 @@ fetchWeeklyMatchups();
     var body = rows.map(function (p) {
       var bench = p.slot === "BN" || p.slot === "IR";
       if (!bench && p.points != null) total += p.points;
-      return '<tr class="' + (bench ? "bn" : "") + '"><td>' + esc(p.slot || "") + "</td><td>" + esc(p.name) + ' <span class="yh-sub" style="display:inline">' +
+      return '<tr class="' + (bench ? "bn" : "") + '"><td>' + esc(p.slot || "") + "</td><td>" + esc(p.name) + keptMark(team, p.name) + ' <span class="yh-sub" style="display:inline">' +
         esc(p.pos || "") + (p.team ? " · " + esc(String(p.team).toUpperCase()) : "") + '</span></td><td class="n">' + (p.points == null ? "–" : fmt(p.points)) + "</td></tr>";
     }).join("");
     var e = lineupEff(rows);
