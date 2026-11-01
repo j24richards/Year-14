@@ -11820,6 +11820,132 @@ fetchWeeklyMatchups();
   }
   nav button.active { color: var(--text) !important; }
   header p { color: var(--muted); font-style: normal; font-size: 0.8rem; letter-spacing: 0; margin: 2px 0 0; }
+
+  /* ===== Redesign stage 2: every other page ===== */
+  /* page intros: smaller, calmer */
+  section > h2 + p, section > h2 + p + p { font-size: 0.9rem; line-height: 1.5; color: var(--muted); font-style: normal; margin-top: -4px; }
+  section > p[style*="italic"], section > .card > p[style*="italic"] { font-size: 0.95rem; }
+  #sync-note { font-size: 0.8rem; color: var(--muted); text-align: left; padding: 8px 20px 0; max-width: none; margin: 0; }
+  #sync-note a { color: var(--link) !important; }
+
+  /* single scrolling row for every pill / week / filter strip */
+  #yahoolive .yl-tabs, #yahoolive .yl-weeks, #yh-insights .yh-tabs, #freeagents #fa-pos, .wr-weeks {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; gap: 8px; padding-bottom: 2px;
+  }
+  #yahoolive .yl-tabs::-webkit-scrollbar, #yh-insights .yh-tabs::-webkit-scrollbar, #freeagents #fa-pos::-webkit-scrollbar, .wr-weeks::-webkit-scrollbar { display: none; }
+  #yahoolive .yl-btn, #yh-insights .yh-tab, #freeagents .fa-chip, .wr-week-btn {
+    flex: none; border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 999px;
+    padding: 9px 15px; min-height: 40px; font-size: 0.92rem; font-weight: 500; box-shadow: none; white-space: nowrap;
+  }
+  #yahoolive .yl-btn.active, #yh-insights .yh-tab[aria-selected="true"], #freeagents .fa-chip[aria-pressed="true"], .wr-week-btn.active,
+  :root[data-theme] #yahoolive .yl-btn.active, :root[data-theme] #freeagents .fa-chip[aria-pressed="true"] {
+    background: var(--text) !important; color: var(--bg) !important; border-color: var(--text) !important; font-weight: 650; box-shadow: none;
+  }
+
+  /* inputs and selects: big enough to tap */
+  #yahoolive select, #yh-insights select, #freeagents select, #freeagents input[type="search"], #results select {
+    min-height: 44px; font-size: 1rem; border-radius: 12px; background: var(--panel); color: var(--text); border: 1px solid var(--border); padding: 8px 12px;
+  }
+  #freeagents .fa-controls { gap: 12px; }
+  #freeagents input[type="search"] { flex: 1 1 100%; }
+  #yl-week { width: 100%; }
+  #yh-insights .yh-btn { min-height: 40px; border-radius: 999px; padding: 8px 14px; font-size: 0.9rem; background: var(--panel); }
+  #yh-insights .yh-controls { gap: 8px; }
+
+  /* Live Scores banner: quiet */
+  #yh-phase .yh-banner { border: 1px solid var(--border); border-left: 1px solid var(--border); box-shadow: none; border-radius: 16px; padding: 14px 16px; }
+  #yh-phase .yh-title { font-size: 1.25rem; }
+  #yh-phase .yh-chip { font-size: 0.84rem; }
+  #yh-phase .yh-fresh { font-size: 0.8rem; line-height: 1.4; }
+  .yl-meta { font-size: 0.88rem; color: var(--muted); margin: -4px 0 12px; }
+
+  /* Live Scores cards: same as Home */
+  #yahoolive .yl-games { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+  #yahoolive .yl-game, #yahoolive .yl-game.live, #yahoolive .yl-game.fin, #yahoolive .yl-game.up { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 16px 4px; overflow: hidden; }
+  #yahoolive .yl-game .yl-row { background: transparent; box-shadow: none; padding: 12px 0; align-items: center; gap: 12px; border-radius: 0; }
+  #yahoolive .yl-game .yl-row + .yl-row { border-top: 1px solid var(--border); }
+  #yahoolive .yl-game .yl-row + .yl-row::before { display: none; }
+  #yahoolive .yl-game .yl-name { gap: 12px; min-width: 0; }
+  #yahoolive .yl-game .yl-name > :first-child { flex: none; }
+  #yahoolive .yl-game .yh-nm, #yahoolive .yl-game .yl-name > span:last-child { font-size: 1.05rem; font-weight: 600; line-height: 1.25; color: var(--muted); }
+  #yahoolive .yl-game .yl-pts { font-size: 1.5rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #yahoolive .yl-game .yl-row.lead .yh-nm, #yahoolive .yl-game .yl-row.lead .yl-pts, #yahoolive .yl-game.fin .yl-row.win .yh-nm, #yahoolive .yl-game.fin .yl-row.win .yl-pts,
+  #yahoolive .yl-game .yl-row.win .yl-name > span:last-child, #yahoolive .yl-game .yl-row.lead .yl-name > span:last-child { color: var(--text); font-weight: 700; }
+  #yahoolive .yl-game .yl-status { background: transparent; border-top: 1px solid var(--border); padding: 9px 0; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  #yahoolive .yl-game .yh-prob { height: 4px; border-radius: 2px; background: var(--panel-2); }
+  #yahoolive .yl-game .yh-prob > span { background: var(--red); border-radius: 2px; }
+
+  /* Results */
+  .wr-games { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+  .wr-game { border-radius: 14px; background: var(--panel); }
+  .wr-side { padding: 13px 16px; gap: 12px; font-size: 1.02rem; background: transparent; }
+  .wr-side.wr-win { background: transparent; }
+  .wr-side .wr-score { font-size: 1.15rem; font-weight: 600; }
+  .wr-side.wr-win .wr-score { font-weight: 800; }
+  #results .card > h3 { font-size: 1.05rem; color: var(--muted); }
+
+  /* Waivers + Trades: one stacked row per transaction on phones */
+  @media (max-width: 640px) {
+    #waivers .card, #trades .card, #trades2025 .card, #waivers2026 .card { overflow: visible; padding: 4px 16px; }
+    #waivers table, #waivers tbody, #waivers tr, #waivers td,
+    #trades table, #trades tbody, #trades tr, #trades td,
+    #trades2025 table, #trades2025 tbody, #trades2025 tr, #trades2025 td { display: block; width: auto; }
+    #waivers thead, #trades thead, #trades2025 thead { display: none; }
+    #waivers tr, #trades tr, #trades2025 tr { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; row-gap: 3px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    #waivers tr:last-child, #trades tr:last-child, #trades2025 tr:last-child { border-bottom: 0; }
+    #waivers td, #trades td, #trades2025 td { padding: 0; border: 0; font-size: 1rem; line-height: 1.35; text-align: left; }
+    #waivers td:nth-child(2), #trades td:nth-child(2), #trades2025 td:nth-child(2) { grid-column: 1; grid-row: 1; font-weight: 700; }
+    #waivers td:nth-child(1), #trades td:nth-child(1), #trades2025 td:nth-child(1) { grid-column: 2; grid-row: 1; color: var(--muted); font-size: 0.85rem; white-space: nowrap; align-self: center; }
+    #waivers td:nth-child(3), #waivers td:nth-child(4), #trades td:nth-child(3), #trades2025 td:nth-child(3) { grid-column: 1 / -1; }
+    #waivers td:nth-child(3)::before { content: "Added  "; color: var(--good); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    #waivers td:nth-child(4)::before { content: "Dropped  "; color: var(--bad); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  }
+
+  /* Free agents + Power: fewer columns, readable names */
+  #power-rankings-card tr > :nth-child(5):not(:last-child) { display: none; }
+  #power-rankings-card td.standings-team-cell { min-width: 0; }
+  #power-rankings-card td.standings-team-cell span:last-child { overflow-wrap: anywhere; }
+  #freeagents td, #freeagents th { padding-left: 6px; padding-right: 6px; }
+  #freeagents td { font-size: 1rem; }
+
+  /* Insights: flat award cards */
+  #yh-insights .yh-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; }
+  #yh-insights .yh-award { background: var(--panel); border-radius: 14px; padding: 14px 16px; box-shadow: none; }
+  #yh-insights .yh-award .k { font-size: 0.72rem; }
+  #yh-insights .yh-award .v { font-size: 1.1rem; margin-top: 4px; gap: 8px; }
+  #yh-insights .yh-award .d { font-size: 0.9rem; margin-top: 3px; }
+
+  /* Wide tables: scroll inside the card with a sticky first column */
+  @media (max-width: 640px) {
+    #draftorder .card, #draft .card, #draft2025 .card, #keepers .card, #trades2025 .card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #draftorder table { min-width: 720px; }
+    #draftorder td:first-child, #draftorder th:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; }
+  }
+
+  /* Champions board: one calm list */
+  .champ-board { grid-template-columns: 1fr; gap: 10px; }
+  .champ-card { display: flex; align-items: center; gap: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: none; }
+  .champ-card:hover { transform: none; box-shadow: none; }
+  .champ-card .champ-year { margin: 0; min-width: 48px; font-size: 0.9rem; }
+  .champ-card .champ-team { font-size: 1.1rem; }
+  .champ-card .champ-team svg { color: var(--gold); }
+
+  @media (max-width: 640px) {
+    #power-rankings-card table, #freeagents table { table-layout: fixed; width: 100%; }
+    #power-rankings-card th:nth-child(1), #power-rankings-card td:nth-child(1) { width: 34px; }
+    #power-rankings-card th:nth-child(3), #power-rankings-card td:nth-child(3) { width: 76px; }
+    #power-rankings-card th { font-size: 0.64rem; letter-spacing: 0.02em; }
+    #power-rankings-card th:nth-child(4), #power-rankings-card td:nth-child(4) { width: 62px; }
+    #power-rankings-card tr > :last-child { width: 58px; }
+    #power-rankings-card th, #power-rankings-card td { padding-left: 4px; padding-right: 4px; white-space: nowrap; }
+    #power-rankings-card td.standings-team-cell, #power-rankings-card td.standings-team-cell * { white-space: normal; overflow-wrap: anywhere; }
+    #freeagents th:nth-child(2), #freeagents td:nth-child(2) { width: 52px; }
+    #freeagents th:nth-child(3), #freeagents td:nth-child(3) { width: 70px; }
+    #freeagents th:nth-child(4), #freeagents td:nth-child(4) { width: 58px; }
+    #freeagents th { font-size: 0.64rem; letter-spacing: 0.02em; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+    #freeagents td { overflow-wrap: anywhere; }
+    #freeagents .card { overflow-x: auto; }
+  }
 </style>
 <script>
 (function () {
