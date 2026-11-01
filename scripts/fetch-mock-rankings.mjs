@@ -17,7 +17,8 @@ if (!res.ok) { console.error("FFC replied", res.status); process.exit(1); }
 const body = await res.json();
 const list = Array.isArray(body.players) ? body.players : [];
 console.log("status:", body.status, "players:", list.length, "meta:", JSON.stringify(body.meta || {}).slice(0, 300));
-if (list.length < 100) { console.error("Too few players returned; leaving the file alone."); process.exit(1); }
+if (list.length < 30) { console.error("Too few players returned; leaving the file alone."); process.exit(1); }
+if (list.length < 150) console.log("Note: FFC only returns players drafted in its recent window, so this is a partial list; everyone else keeps his Yahoo spot on the site.");
 if (list[0]) console.log("sample:", JSON.stringify(list[0]));
 
 const players = list
@@ -32,7 +33,7 @@ const label = SCORING === "ppr" ? "Fantasy Football Calculator (PPR)" : SCORING 
 const m = body.meta || {};
 out.sets.ffc = {
   label,
-  note: `Mock-draft ADP from fantasyfootballcalculator.com, ${TEAMS}-team ${SCORING}, ${YEAR}` + (m.total_drafts ? ` (${m.total_drafts} drafts)` : "") + ".",
+  note: `Mock-draft ADP from fantasyfootballcalculator.com, ${TEAMS}-team ${SCORING}, ${YEAR}` + (m.total_drafts ? ` (${m.total_drafts} drafts, ${m.start_date || ""} to ${m.end_date || ""})` : "") + `. ${players.length} players ranked` + (players.length < 150 ? "; everyone else keeps his Yahoo spot." : "."),
   source: "https://fantasyfootballcalculator.com/adp/" + SCORING + "/" + TEAMS + "-team/all",
   fetched: new Date().toISOString().slice(0, 10),
   players
