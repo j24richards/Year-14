@@ -11547,6 +11547,15 @@ fetchWeeklyMatchups();
   .mobile-nav-group-label.open { color: var(--gold); }
   .mobile-nav select#mobile-nav-select { display: none; }
 
+  /* team cards on narrow phones: the table must stay inside the card */
+  @media (max-width: 480px) {
+    #teams .team-card, #teams2026 .team-card { padding: 12px 10px; }
+    #teams .team-card table, #teams2026 .team-card table { width: 100%; }
+    #teams .team-card th, #teams .team-card td, #teams2026 .team-card th, #teams2026 .team-card td { white-space: normal; padding: 6px 3px; }
+    #teams .team-card td:nth-child(2), #teams2026 .team-card td:nth-child(2) { white-space: nowrap; }
+    #teams .team-card .cost-badge, #teams2026 .team-card .cost-badge, #teams .team-card .kept-yes, #teams2026 .team-card .kept-yes { white-space: nowrap; }
+  }
+
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 </style>
