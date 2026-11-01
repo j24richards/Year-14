@@ -1896,6 +1896,26 @@
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+  /* text on accent backgrounds, Soft dark */
+  :root[data-theme="softdark"] .mobile-nav-item.active,
+  :root[data-theme="softdark"] nav button.active,
+  :root[data-theme="softdark"] .nav-group-toggle.active-group,
+  :root[data-theme="softdark"] .nav-group-menu button.active,
+  :root[data-theme="softdark"] .mockdraft-view-btn.active,
+  :root[data-theme="softdark"] .mockdraft-grid-cell-onclock,
+  :root[data-theme="softdark"] .mockdraft-filter-chip.active,
+  :root[data-theme="softdark"] .mockdraft-draft-btn,
+  :root[data-theme="softdark"] .mockdraft-paused-badge,
+  :root[data-theme="softdark"] .admin-btn,
+  :root[data-theme="softdark"] #yh-insights .yh-tab[aria-selected="true"],
+  :root[data-theme="softdark"] .yh-subtab[aria-selected="true"],
+  :root[data-theme="softdark"] #freeagents .fa-chip[aria-pressed="true"],
+  :root[data-theme="softdark"] #yh-install-bar .yh-ins-go,
+  :root[data-theme="softdark"] #yh-install .yh-ins-tabs button[aria-selected="true"],
+  :root[data-theme="softdark"] #yh-install .yh-ins-n,
+  :root[data-theme="softdark"] #yh-install .yh-ins-btn { color: #15171c; }
+</style>
 </head>
 <body>
 
@@ -11696,7 +11716,7 @@ fetchWeeklyMatchups();
   }
 
   .theme-toggle { white-space: nowrap; }
-  footer, footer a, .yh-footnote a { color: #dbe7f7; }
+  footer a, .yh-footnote a { color: var(--muted); }
   .theme-menu { position: fixed; top: 48px; right: 12px; z-index: 1000; width: 250px; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,0.3); padding: 6px; }
   .theme-menu[hidden] { display: none; }
   .theme-menu button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 10px; border: 0; background: none; color: inherit; font: inherit; text-align: left; border-radius: 10px; cursor: pointer; }
@@ -11705,6 +11725,99 @@ fetchWeeklyMatchups();
   .theme-menu button small { display: block; font-size: 0.8rem; color: var(--muted); }
   .theme-menu .sw { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); }
   .theme-menu button[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--red); }
+
+  /* ===== Redesign: slim shell, one menu, flat sections, bigger type (Home first) ===== */
+  header { padding: 14px 20px; text-align: left; background: var(--bg); background-image: none; color: var(--text); border-top: 0; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0; font-family: inherit; font-size: 1.05rem; font-weight: 800; letter-spacing: 0.16em; color: var(--text); text-shadow: none; }
+  header h1 .yr-accent { color: var(--red); font-weight: 800; }
+  .header-last-updated { display: none; }
+  .theme-toggle { top: 50%; right: 16px; transform: translateY(-50%); background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; font-size: 0.82rem; min-height: 34px; }
+  .theme-toggle:hover { background: var(--panel-2); }
+  nav { justify-content: flex-start; gap: 2px; padding: 0 12px; background: var(--bg); border-bottom: 1px solid var(--border); flex-wrap: nowrap; overflow-x: auto; }
+  nav button { background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; color: var(--muted); padding: 14px 14px 11px; font-size: 0.98rem; font-weight: 600; }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--text); border-bottom-color: var(--red); background: none; }
+  footer { background: var(--bg); color: var(--muted); border-top: 1px solid var(--border); font-size: 0.85rem; }
+  @media (max-width: 640px) {
+    html { font-size: 17px; }
+    header { padding: 12px 16px; }
+    header h1 { font-size: 0.95rem; letter-spacing: 0.16em; }
+    .mobile-nav { display: none; }
+    .sync-note { margin: 10px 16px 0; font-size: 0.8rem; }
+  }
+
+  /* Home: sections sit on the page instead of in boxes */
+  #home > .card { background: transparent; border: 0; box-shadow: none; padding: 0; margin: 0 0 24px; }
+  #home .commish-note { background: none; border: 0; border-left: 3px solid var(--red); border-radius: 0; padding: 2px 0 2px 14px; margin: 0 0 18px; font-style: normal; color: var(--muted); font-size: 0.98rem; line-height: 1.5; box-shadow: none; }
+  #home .commish-note:empty { display: none; }
+  #yh-hometabs { display: flex; flex-wrap: nowrap; gap: 4px; background: var(--panel-2); border: 0; border-radius: 12px; padding: 4px; margin: 4px 0 18px; overflow-x: auto; scrollbar-width: none; }
+  #yh-hometabs .yh-subtab { flex: 1 0 auto; border: 0; background: transparent; color: var(--muted); border-radius: 9px; padding: 10px 14px; min-height: 44px; font-size: 0.95rem; font-weight: 600; }
+  #yh-hometabs .yh-subtab:hover { color: var(--text); }
+  #yh-hometabs .yh-subtab[aria-selected="true"] { background: var(--panel); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .yh-subnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; margin-bottom: 18px; }
+  .yh-subnav::-webkit-scrollbar { display: none; }
+  .yh-subnav .yh-subtab { flex: 0 0 auto; white-space: nowrap; border: 0; background: var(--panel-2); min-height: 40px; padding: 8px 16px; }
+  #home .wr-head h3, #home #yh-matchups h3 { font-size: 1.35rem; margin: 0; color: var(--text); }
+  #home .wr-all-link { font-weight: 650; }
+
+  /* Week picker: arrows either side of the week */
+  #yh-matchups .yh-weeknav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 14px; }
+  #yh-matchups .yh-wk { flex: none; width: 48px; height: 48px; border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 12px; font-size: 1.4rem; cursor: pointer; }
+  #yh-matchups .yh-wk:disabled { opacity: 0.35; cursor: default; }
+  #yh-matchups .yh-weeknav select { flex: 1; min-width: 0; height: 48px; text-align: center; text-align-last: center; font-weight: 700; font-size: 1.05rem; background: transparent; border: 0; color: var(--text); appearance: none; -webkit-appearance: none; }
+
+  /* Matchup cards */
+  #home .yl-games { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+  #home .yl-game, #home .yl-game.live, #home .yl-game.fin, #home .yl-game.up { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); padding: 12px 16px 6px; }
+  #home .yl-game:hover, #home .yl-game.open { border-color: var(--red); box-shadow: var(--shadow); }
+  #home .yl-game .yh-gh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  #home .yl-game .yh-chip2 { display: inline-flex; align-items: center; gap: 7px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  #home .yl-game .yh-chip2.live { color: var(--good); }
+  #home .yl-game .yh-chip2 i { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; }
+  #home .yl-game .yh-chev { color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  #home .yl-game .yl-row { background: transparent; box-shadow: none; padding: 10px 0; align-items: center; gap: 12px; }
+  #home .yl-game .yl-row + .yl-row { border-top: 1px solid var(--border); }
+  #home .yl-game .yl-row + .yl-row::before { display: none; }
+  #home .yl-game .yh-nm { font-size: 1.05rem; font-weight: 600; line-height: 1.25; color: var(--muted); }
+  #home .yl-game .yh-sub { font-size: 0.84rem; font-weight: 400; color: var(--muted); }
+  #home .yl-game .yl-pts { font-size: 1.5rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #home .yl-game .yl-row.lead, #home .yl-game.fin .yl-row.win { box-shadow: none; background: transparent; font-weight: 700; opacity: 1; }
+  #home .yl-game .yl-row.lead .yh-nm, #home .yl-game .yl-row.lead .yl-pts, #home .yl-game.fin .yl-row.win .yh-nm, #home .yl-game.fin .yl-row.win .yl-pts { color: var(--text); }
+  #home .yl-game .yl-row.lead .yl-pts { color: var(--text); }
+  #home .yl-game.fin .yl-row:not(.win) { opacity: 1; }
+  #home .yl-game .yh-prob { height: 4px; border-radius: 2px; margin: 4px 0 8px; background: var(--panel-2); }
+  #home .yl-game .yh-prob > span { background: var(--red); border-radius: 2px; }
+  #home .yl-game .yl-av, #home .yl-game .yh-av, #home .yl-game .yl-name > span:first-child { flex: none; }
+
+  /* Standings rows */
+  #home #standings-card table td, #home #standings-card table th { padding-top: 14px; padding-bottom: 14px; }
+  #home #standings-card table td { font-size: 1.02rem; }
+  #home #standings-card tr.yh-in td:first-child { box-shadow: none; }
+  #home #standings-card tr.yh-cut td { border-bottom: 2px solid var(--good); }
+  @media (max-width: 640px) {
+    #yh-strip { display: none; }
+    #home #standings-card table td:nth-child(4) { font-size: 1.15rem; font-weight: 700; }
+  }
+
+  /* fixes after first look */
+  #yh-hometabs .yh-subtab { flex: 1 1 auto; padding: 10px 6px; font-size: 0.84rem; min-width: 0; }
+  .yh-subnav .yh-subtab[aria-selected="true"] { background: var(--text); color: var(--bg); font-weight: 650; }
+  #home .yl-game .yl-name { gap: 12px; }
+  #home .yl-game .yl-name > :first-child { flex: none; }
+  #home #standings-card table { table-layout: auto; width: 100%; }
+  #home #standings-card table th { font-size: 0.66rem; letter-spacing: 0.03em; white-space: nowrap; padding-left: 6px; padding-right: 6px; }
+  #home #standings-card table td { padding-left: 6px; padding-right: 6px; }
+  #home #standings-card table td:nth-child(4), #home #standings-card table td:nth-child(6) { white-space: nowrap; }
+  #home #standings-card table td:nth-child(6) { color: var(--muted); font-size: 0.95rem; }
+  #home #standings-card .standings-team-cell { min-width: 0; }
+  #yh-matchups .yh-weeknav { max-width: 460px; margin-left: auto; margin-right: auto; }
+  @media (max-width: 640px) {
+    #home #standings-card table { table-layout: fixed; }
+    #home #standings-card table th:nth-child(1), #home #standings-card table td:nth-child(1) { width: 52px; }
+    #home #standings-card table th:nth-child(4), #home #standings-card table td:nth-child(4) { width: 66px; }
+    #home #standings-card table th:nth-child(6), #home #standings-card table td:nth-child(6) { width: 88px; }
+    #home #standings-card .standings-team-cell, #home #standings-card .standings-team-cell *, #home #standings-card .yh-tlink { overflow-wrap: anywhere; white-space: normal; }
+  }
 </style>
 <script>
 (function () {
@@ -12366,9 +12479,10 @@ fetchWeeklyMatchups();
       var cw = DATA.league && Number(DATA.league.current_week);
       week = ws.indexOf(cw) >= 0 ? cw : ws[ws.length - 1];
     }
-    var picker = '<p class="yh-pick"><select id="yh-week" aria-label="Choose a week">' + ws.map(function (w) {
+    var wi = ws.indexOf(week);
+    var picker = '<div class="yh-weeknav"><button type="button" class="yh-wk" data-wk="-1" aria-label="Previous week"' + (wi <= 0 ? " disabled" : "") + '>&lsaquo;</button><select id="yh-week" aria-label="Choose a week">' + ws.map(function (w) {
       return '<option value="' + w + '"' + (w === week ? " selected" : "") + ">Week " + w + "</option>";
-    }).join("") + "</select></p>";
+    }).join("") + '</select><button type="button" class="yh-wk" data-wk="1" aria-label="Next week"' + (wi >= ws.length - 1 ? " disabled" : "") + '>&rsaquo;</button></div>';
     var ms = DATA.scores[String(week)] || [];
     var games = ms.map(function (m, idx) {
       var final = m.status === "postevent", label = final ? "Final" : m.status === "midevent" ? "In progress" : "Upcoming", key = week + ":" + idx;
@@ -12380,8 +12494,9 @@ fetchWeeklyMatchups();
         return '<div class="yl-row' + (win ? " win" : "") + (lead ? " lead" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
       var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
+      var gh = '<div class="yh-gh"><span class="yh-chip2' + (m.status === "midevent" ? " live" : "") + '">' + (m.status === "midevent" ? "<i></i>" : "") + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + '</span><span class="yh-chev" aria-hidden="true">' + (openKey === key ? "\u2303" : "\u203A") + "</span></div>";
       var html = '<div class="yl-game yh-game' + (final ? " fin" : m.status === "midevent" ? " live" : " up") + (openKey === key ? " open" : "") + '" data-key="' + key + '" role="button" tabindex="0" aria-expanded="' + (openKey === key) + '" title="Show lineups">' +
-        rows + bar + '<div class="yl-status">' + label + (m.is_playoffs ? (m.is_consolation ? " · Consolation" : " · Playoffs") : "") + " · tap for lineups</div></div>";
+        gh + rows + bar + "</div>";
       if (openKey === key) {
         html += '<div class="yh-lineup"><button type="button" class="yh-close" data-close="1" aria-label="Close lineups">&times;</button><div class="yh-lineup-cols">' +
           m.teams.map(function (t) { return "<div>" + lineupTable(t, week) + "</div>"; }).join("") + "</div></div>";
@@ -12657,6 +12772,12 @@ fetchWeeklyMatchups();
     if (open && open.scrollIntoView) open.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
   mxEl.addEventListener("click", function (e) {
+    var wb = e.target.closest("[data-wk]");
+    if (wb) {
+      var sel = document.getElementById("yh-week"), ni = sel ? sel.selectedIndex + Number(wb.getAttribute("data-wk")) : -1;
+      if (sel && ni >= 0 && ni < sel.options.length) { sel.selectedIndex = ni; week = Number(sel.value); openKey = null; renderMatchups(); }
+      return;
+    }
     if (e.target.closest("#yh-all")) {
       e.preventDefault();
       var nav = document.querySelector('nav button[data-tab="yahoolive"]'); if (nav) nav.click();
