@@ -11946,6 +11946,73 @@ fetchWeeklyMatchups();
     #freeagents td { overflow-wrap: anywhere; }
     #freeagents .card { overflow-x: auto; }
   }
+
+  /* ===== Stage 3: Teams, Keeper Planner, Trade Analyzer, Mock Draft, archive ===== */
+  @media (max-width: 640px) {
+    /* team cards fold up; tap the name to open */
+    .team-card.tc-fold{ padding: 4px 16px; }
+    .team-card.tc-fold > h3{ display: flex; align-items: center; gap: 12px; margin: 0; padding: 14px 0 4px; cursor: pointer; font-size: 1.1rem; }
+    .team-card.tc-fold > h3::after{ content: "\203A"; margin-left: auto; font-size: 1.5rem; line-height: 1; color: var(--muted); transform: rotate(90deg); transition: transform .15s; }
+    .team-card.tc-fold.tc-open > h3::after{ transform: rotate(-90deg); }
+    .team-card.tc-fold .manager{ padding-bottom: 12px; }
+    .team-card.tc-fold:not(.tc-open) > :not(h3):not(.manager){ display: none; }
+    .team-card.tc-fold:not(.tc-open) .manager{ padding-bottom: 10px; margin-bottom: 0; }
+    .team-card table th { font-size: 0.66rem; }
+    .team-card table td { padding: 10px 6px; font-size: 1rem; }
+    .team-card tr.pos-group td { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); background: transparent; padding: 16px 6px 4px; border-bottom: 1px solid var(--border); }
+
+    /* Keeper Planner: one stacked row per player */
+    #kp-table, #kp-table tbody { display: block; }
+    #kp-table tr:first-child { display: none; }
+    #kp-table tr { display: grid; grid-template-columns: 44px 44px 1fr 1fr; column-gap: 8px; row-gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: center; }
+    #kp-table td { display: block; padding: 0; border: 0; font-size: 0.95rem; color: var(--muted); }
+    #kp-table td:nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+    #kp-table td:nth-child(1) input { width: 26px; height: 26px; }
+    #kp-table td:nth-child(2) { grid-column: 2 / 4; grid-row: 1; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    #kp-table td:nth-child(6) { grid-column: 4; grid-row: 1; text-align: right; font-size: 1.1rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+    #kp-table td:nth-child(3) { grid-column: 2; grid-row: 2; }
+    #kp-table td:nth-child(4) { grid-column: 3; grid-row: 2; }
+    #kp-table td:nth-child(5) { grid-column: 4; grid-row: 2; text-align: right; }
+    #kp-table td:nth-child(4)::before { content: "Cost "; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    #kp-table td:nth-child(5)::before { content: "Market "; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    #kp-table td:nth-child(7) { grid-column: 2 / -1; grid-row: 3; font-size: 0.82rem !important; }
+    #kp-table td:nth-child(7):empty { display: none; }
+    #keeperplanner .card > div[style*="overflow"] { overflow: visible !important; }
+    #kp-team { width: 100%; }
+
+    /* Trade Analyzer: lists full height, verdict pinned above the tab bar */
+    .trade-analyzer-sides { display: block; }
+    .trade-analyzer-side { margin-bottom: 18px; }
+    .trade-analyzer-roster { max-height: none !important; overflow: visible !important; }
+    #ta-result { position: sticky; bottom: calc(66px + env(safe-area-inset-bottom, 0px)); z-index: 5; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; box-shadow: 0 -6px 18px rgba(0,0,0,.12); margin-top: 14px; }
+    #ta-result .ta-empty-note { margin: 0; font-size: 0.88rem; }
+    #ta-result:has(#ta-scale-wrap[style*="display: none"]) { position: static; box-shadow: none; border: 0; padding: 4px 0; background: transparent; }
+    #ta-suggest-btn { min-height: 44px; border-radius: 999px; }
+
+    /* Mock draft + planner + analyzer: calmer intros, bigger taps */
+    #mockdraft .card > p { font-size: 0.9rem; line-height: 1.5; }
+    #mockdraft .card button, #mockdraft .card .md-team-btn { min-height: 48px; border-radius: 12px; font-size: 1rem; }
+
+    /* Rules: plain label / value list */
+    #rules table, #rules tbody, #rules tr, #rules td { display: block; }
+    #rules tr { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    #rules td { padding: 0; border: 0; font-size: 1rem; }
+    #rules td:first-child { color: var(--muted); }
+    #rules td:last-child { text-align: right; font-weight: 600; max-width: 55vw; }
+    #rules thead { display: none; }
+
+    /* 2025 draft grid: scroll inside the card, round column pinned */
+    #draft2025 .card table { min-width: 640px; }
+    #draft2025 .card td:first-child, #draft2025 .card th:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; }
+
+    #history .card, #trades2025 .card, #draft2025 .card, #draft .card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* back to top */
+    #yh-top { position: fixed; right: 14px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 1.2rem; box-shadow: var(--shadow); z-index: 40; display: none; }
+    #yh-top.show { display: block; }
+  }
+  #yh-top { display: none; }
+  @media (max-width: 640px) { #yh-top.show { display: block; } }
 </style>
 <script>
 (function () {
@@ -13405,6 +13472,39 @@ fetchWeeklyMatchups();
     for (w in p.scores) out.scores[w] = p.scores[w];
     return out;
   };
+})();
+
+</script>
+<script>
+/* Stage 3: phone helpers. Team cards fold up on phones (tap a team to open it). */
+(function () {
+  var mq = window.matchMedia("(max-width: 640px)");
+  var GRIDS = "#teams2026-grid .team-card, #teams-grid .team-card, #draft2025-grid .team-card, #draft-grid .team-card";
+  function cards() { return document.querySelectorAll(GRIDS); }
+  function setup() {
+    cards().forEach(function (c) {
+      var h = c.querySelector("h3");
+      if (h && !h.hasAttribute("role")) { c.classList.add("tc-fold"); h.setAttribute("role", "button"); h.setAttribute("tabindex", "0"); h.setAttribute("aria-expanded", c.classList.contains("tc-open") ? "true" : "false"); }
+    });
+  }
+  function toggle(h) {
+    var c = h.closest(".team-card"); if (!c || !mq.matches || !c.classList.contains("tc-fold")) return;
+    var open = c.classList.toggle("tc-open"); h.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  document.addEventListener("click", function (e) { var h = e.target.closest && e.target.closest(".team-card > h3"); if (h) toggle(h); });
+  document.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".team-card > h3")) { e.preventDefault(); toggle(e.target); } });
+  ["teams2026-grid", "teams-grid", "draft2025-grid", "draft-grid"].forEach(function (id) {
+    var g = document.getElementById(id); if (!g) return;
+    new MutationObserver(setup).observe(g, { childList: true });
+  });
+  setup();
+})();
+/* Back-to-top button on long phone pages */
+(function () {
+  var b = document.createElement("button"); b.id = "yh-top"; b.type = "button"; b.setAttribute("aria-label", "Back to top"); b.textContent = "\u2191";
+  document.body.appendChild(b);
+  b.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+  var t; window.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { b.classList.toggle("show", window.scrollY > 1400); }, 80); }, { passive: true });
 })();
 
 </script>
