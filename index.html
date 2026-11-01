@@ -472,7 +472,7 @@
     white-space: nowrap;
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   }
-  .draft-grade-good { background: #1a8f3f; }
+  .draft-grade-good { background: #16793a; }
   .draft-grade-mid { background: #56637d; }
   .draft-grade-bad { background: #b3401a; }
   .draft-grade-keeper { margin-left: 4px; }
@@ -5177,7 +5177,7 @@ function teamBadgeHtml(teamName) {
   }
   const initials = teamName.split(/\s+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const hue = hashHue(teamName);
-  return "<span class=\"team-badge team-badge-initials\" style=\"background: hsl(" + hue + ", 60%, 40%);\" aria-hidden=\"true\">" + initials + "</span>";
+  return "<span class=\"team-badge team-badge-initials\" style=\"background: hsl(" + hue + ", 62%, 29%);\" aria-hidden=\"true\">" + initials + "</span>";
 }
 
 function levenshteinDistance(a, b) {
@@ -11818,6 +11818,8 @@ fetchWeeklyMatchups();
     #home #standings-card table th:nth-child(6), #home #standings-card table td:nth-child(6) { width: 88px; }
     #home #standings-card .standings-team-cell, #home #standings-card .standings-team-cell *, #home #standings-card .yh-tlink { overflow-wrap: anywhere; white-space: normal; }
   }
+  nav button.active { color: var(--text) !important; }
+  header p { color: var(--muted); font-style: normal; font-size: 0.8rem; letter-spacing: 0; margin: 2px 0 0; }
 </style>
 <script>
 (function () {
