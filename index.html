@@ -12013,6 +12013,24 @@ fetchWeeklyMatchups();
   }
   #yh-top { display: none; }
   @media (max-width: 640px) { #yh-top.show { display: block; } }
+
+  /* ===== Stage 3b: leftovers ===== */
+  #kp-table td.kp-pos-edge { color: var(--good) !important; }
+  #kp-table td.kp-neg-edge { color: var(--bad) !important; }
+  #trades2025 .card:has(#trades2025-body:empty) table { display: none; }
+  #trades2025 .card:has(#trades2025-body:empty)::before { content: "No 2025 trades were recorded."; display: block; color: var(--muted); padding: 14px 4px; font-size: 0.95rem; }
+  @media (max-width: 640px) {
+    #yh-install-bar { flex-wrap: wrap; padding: 12px 14px; }
+    #yh-install-bar .yh-ins-btxt { font-size: 0.95rem; }
+    #yh-install-bar .yh-ins-bx { order: 2; }
+    #yh-install-bar .yh-ins-go { order: 3; flex: 1 1 100%; min-height: 46px; font-size: 0.95rem; }
+  }
+  @media (max-width: 640px) {
+    /* Mock Draft: Start button always reachable above the tab bar */
+    #mockdraft-start-btn { position: sticky; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 6; width: 100%; min-height: 52px; font-size: 1.05rem; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.22); margin-top: 8px; }
+    #mockdraft-start-btn:disabled { opacity: .55; }
+    .mockdraft-view-btn { min-height: 44px; border-radius: 999px; padding: 8px 16px; }
+  }
 </style>
 <script>
 (function () {
@@ -13505,6 +13523,19 @@ fetchWeeklyMatchups();
   document.body.appendChild(b);
   b.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
   var t; window.addEventListener("scroll", function () { clearTimeout(t); t = setTimeout(function () { b.classList.toggle("show", window.scrollY > 1400); }, 80); }, { passive: true });
+})();
+/* Keeper Planner: colour the Edge column green / red */
+(function () {
+  var card = document.querySelector("#keeperplanner .card"); if (!card) return;
+  function paint() {
+    card.querySelectorAll("#kp-table tr").forEach(function (tr, i) {
+      if (!i) return; var td = tr.children[5]; if (!td) return;
+      var t = (td.textContent || "").trim(); td.classList.remove("kp-pos-edge", "kp-neg-edge");
+      if (/^\+/.test(t)) td.classList.add("kp-pos-edge"); else if (/^[-−]\s*\d/.test(t)) td.classList.add("kp-neg-edge");
+    });
+  }
+  new MutationObserver(function () { paint(); }).observe(card, { childList: true, subtree: true });
+  paint();
 })();
 
 </script>
