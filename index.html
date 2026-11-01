@@ -11923,7 +11923,8 @@ fetchWeeklyMatchups();
   }
 
   /* Champions board: one calm list */
-  .champ-board { grid-template-columns: 1fr; gap: 10px; }
+  .champ-board { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  @media (max-width: 640px) { .champ-board { grid-template-columns: 1fr; gap: 10px; } }
   .champ-card { display: flex; align-items: center; gap: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: none; }
   .champ-card:hover { transform: none; box-shadow: none; }
   .champ-card .champ-year { margin: 0; min-width: 48px; font-size: 0.9rem; }
@@ -12030,6 +12031,67 @@ fetchWeeklyMatchups();
     #mockdraft-start-btn { position: sticky; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 6; width: 100%; min-height: 52px; font-size: 1.05rem; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.22); margin-top: 8px; }
     #mockdraft-start-btn:disabled { opacity: .55; }
     .mockdraft-view-btn { min-height: 44px; border-radius: 999px; padding: 8px 16px; }
+  }
+
+  /* ===== Desktop: use the width ===== */
+  @media (min-width: 1100px) {
+    main { max-width: 1120px; }
+    section > h2 + p, section > h2 + p + p { max-width: 760px; }
+    #draftorder th:first-child, #draftorder td:first-child { white-space: nowrap; min-width: 64px; }
+    #draftorder th { white-space: normal; font-size: 0.64rem; padding-left: 6px; padding-right: 6px; }
+    #draftorder th:first-child { padding-right: 14px; }
+  }
+
+  /* ===== Desktop polish: make it feel designed ===== */
+  @media (min-width: 900px) {
+    header { --gx: max(36px, calc((100vw - 1120px) / 2 + 20px)); padding: 18px var(--gx) 16px; background: var(--panel); border-top: 4px solid var(--red); border-bottom: 0; }
+    header h1 { font-size: 1.2rem; letter-spacing: 0.22em; }
+    .theme-toggle { right: var(--gx, 36px); }
+    nav { padding: 0 max(30px, calc((100vw - 1120px) / 2 + 14px)); background: var(--panel); border-bottom: 1px solid var(--border); box-shadow: 0 6px 16px -14px rgba(0,0,0,.35); }
+    nav button { font-size: 0.95rem; font-weight: 600; padding: 15px 18px 12px; letter-spacing: 0.01em; }
+    nav button.active { border-bottom-width: 3px; }
+    main { padding-top: 34px; }
+    section > h2 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.015em; line-height: 1.1; margin-bottom: 18px; }
+    section > h2 + p { font-size: 0.98rem; }
+    h3 { letter-spacing: -0.005em; }
+
+    /* cards: crisp edge + soft lift */
+    .card, .team-card, .wr-game, #yahoolive .yl-game, #home .yl-game { border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px -12px rgba(16,24,40,.18); }
+    #home .yl-game, #yahoolive .yl-game { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    #home .yl-game:hover, #yahoolive .yl-game:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(16,24,40,.08), 0 14px 30px -12px rgba(16,24,40,.28); }
+    .card { padding: 22px 24px; }
+
+    /* tables: header band, row hover, tabular numbers */
+    table th { background: var(--panel-2); color: var(--muted); font-size: 0.7rem; letter-spacing: 0.08em; padding: 11px 12px; border-bottom: 1px solid var(--border); }
+    table th:first-child { border-top-left-radius: 8px; } table th:last-child { border-top-right-radius: 8px; }
+    table td { padding: 12px 12px; }
+    tbody tr:hover td { background: color-mix(in srgb, var(--panel-2) 70%, transparent); }
+    #draftorder tbody tr:hover td { background: var(--panel-2); }
+    #home #standings-card td:first-child, #home #yh-playoffs td:first-child, #power-rankings-card td:first-child { font-weight: 800; }
+    #home #standings-card td:nth-child(4) { font-weight: 700; }
+
+    /* Home: segmented control and week picker */
+    #yh-hometabs { padding: 5px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--border); }
+    #yh-hometabs .yh-subtab { padding: 11px 8px; font-size: 0.95rem; border-radius: 10px; }
+    #yh-hometabs .yh-subtab[aria-selected="true"] { background: var(--panel); box-shadow: 0 1px 3px rgba(16,24,40,.18); color: var(--text); font-weight: 700; }
+    #home > .card, #home h2 { }
+
+    /* award cards: accent edge */
+    #yh-insights .yh-award { border-left: 4px solid var(--red); }
+    #yh-insights .yh-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    #yh-insights .yh-award .v { font-size: 1.2rem; }
+
+    /* team cards a touch roomier with a coloured top edge */
+    .team-card { border-top: 3px solid var(--red); padding: 18px 20px; }
+    .champ-card { border-top: 3px solid var(--gold); }
+
+    /* Live Scores / Results cards bigger type */
+    #yahoolive .yl-game .yl-pts { font-size: 1.7rem; }
+    #yahoolive .yl-game .yh-nm { font-size: 1.1rem; }
+    .wr-side { font-size: 1.05rem; }
+
+    /* footer */
+    footer { padding: 28px 24px 40px; }
   }
 </style>
 <script>
