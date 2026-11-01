@@ -8412,6 +8412,226 @@ const MOCK_DRAFT_POOL_RAW = [
 
 const MOCK_DRAFT_POOL = MOCK_DRAFT_POOL_RAW.map(r => ({ player: r[0], nfl: r[1], pos: r[2] }));
 
+// ---------------------------------------------------------------------
+// Mock draft: choose which ranking the player list and the bots follow.
+// The built-in order (the pool above) is Yahoo's ADP. Extra sets come from
+// data/mock-rankings.json (Fantasy Football Calculator, refreshed weekly by
+// a GitHub Action), a league-adjusted re-rank, and lists a visitor pastes in
+// (kept in that browser only). Everything downstream just follows the order
+// of MOCK_STATE.available, so choosing a set only changes that order.
+// ---------------------------------------------------------------------
+const MOCK_RANK_SITE = "y14";
+const MOCK_RANK_ADJUST = 0; // QB spots gained for this league's 6-pt passing TD (0 = no league adjustment)
+const MOCK_RANK_STATE = { choice: "yahoo", sets: {}, loaded: false, custom: [], lastLabel: "Yahoo ADP", lastNote: "" };
+const MOCK_RANK_KEY = "mockRankings:" + MOCK_RANK_SITE;
+const MOCK_RANK_PICK_KEY = "mockRankChoice:" + MOCK_RANK_SITE;
+
+function mrNorm(s) {
+  return String(s || "").toLowerCase().replace(/[’']/g, "").replace(/\./g, "")
+    .replace(/[^a-z0-9 ]+/g, " ").replace(/\b(jr|sr|ii|iii|iv|v)\b/g, " ").replace(/\s+/g, " ").trim();
+}
+function mrTeam(t) {
+  const x = String(t || "").toUpperCase();
+  return ({ JAC: "JAX", WSH: "WAS", LA: "LAR", ARZ: "ARI", SD: "LAC", STL: "LAR", OAK: "LV", LVR: "LV", GBP: "GB", KCC: "KC", NEP: "NE", NOS: "NO", SFO: "SF", TBB: "TB" })[x] || x;
+}
+let _mrIdx = null;
+function mrIndex() {
+  if (_mrIdx) return _mrIdx;
+  const byName = new Map(), defTeam = new Map(), defNick = new Map(), pos = new Map();
+  MOCK_DRAFT_POOL.forEach((p, i) => {
+    pos.set(p, i);
+    if (p.pos === "DEF") { defTeam.set(mrTeam(p.nfl), p); defNick.set(mrNorm(p.player), p); }
+    else if (!byName.has(mrNorm(p.player))) byName.set(mrNorm(p.player), p);
+  });
+  _mrIdx = { byName, defTeam, defNick, pos };
+  return _mrIdx;
+}
+function mrLoad(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
+function mrSave(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+
+// Order the pool: ranked players take their rank, everyone else keeps his
+// default slot, so an incomplete list never buries players it left out.
+function mrSortPool(keyFn) {
+  const idx = mrIndex();
+  return MOCK_DRAFT_POOL.map(p => ({ p, k: keyFn(p, idx.pos.get(p) + 1), i: idx.pos.get(p) }))
+    .sort((a, b) => a.k - b.k || a.i - b.i).map(x => x.p);
+}
+function mrFromRanked(entries) {
+  const rank = new Map();
+  entries.forEach(p => { if (p && !rank.has(p)) rank.set(p, rank.size + 1); });
+  return mrSortPool((p, def) => rank.has(p) ? rank.get(p) : def + 0.5);
+}
+function mrMatchFfc(set) {
+  const idx = mrIndex(), out = [];
+  let hit = 0;
+  (set.players || []).forEach(r => {
+    const name = r[0], pos = r[1], team = r[2];
+    const p = pos === "DEF" ? (idx.defTeam.get(mrTeam(team)) || idx.defNick.get(mrNorm(name))) : idx.byName.get(mrNorm(name));
+    if (p) { out.push(p); hit++; }
+  });
+  return { order: mrFromRanked(out), matched: hit, total: (set.players || []).length };
+}
+function mrParsePaste(text) {
+  const idx = mrIndex(), found = [], miss = [];
+  String(text || "").split(/\r?\n/).forEach(raw => {
+    const line = raw.trim();
+    if (!line) return;
+    const toks = mrNorm(line).split(" ").filter(Boolean);
+    let hit = null;
+    for (let n = 4; n >= 2 && !hit; n--) {
+      for (let i = 0; i + n <= toks.length && !hit; i++) {
+        hit = idx.byName.get(toks.slice(i, i + n).join(" ")) || null;
+      }
+    }
+    if (!hit) {
+      for (let i = 0; i < toks.length && !hit; i++) hit = idx.defNick.get(toks[i]) || null;
+    }
+    if (hit) found.push(hit);
+    else if (toks.filter(t => /^[a-z]{3,}$/.test(t)).length >= 2) miss.push(line.slice(0, 40));
+  });
+  return { entries: found, miss };
+}
+
+function mrOptions() {
+  const opts = [{ id: "yahoo", label: "Yahoo ADP (default)", note: "The site's built-in order, refreshed from Yahoo." }];
+  Object.keys(MOCK_RANK_STATE.sets).forEach(id => {
+    const s = MOCK_RANK_STATE.sets[id];
+    opts.push({ id: "set:" + id, label: s.label || id, note: s.note || "", fetched: s.fetched });
+  });
+  if (MOCK_RANK_ADJUST) opts.push({ id: "adjusted", label: "League-adjusted (QBs boosted)", note: "Yahoo's order with every QB moved up " + MOCK_RANK_ADJUST + " spots, because this league pays 6 points for a passing TD (Yahoo's default is 4)." });
+  MOCK_RANK_STATE.custom.forEach(c => opts.push({ id: "custom:" + c.id, label: "★ " + c.name, note: "Your pasted list: " + c.names.length + " players ranked; anyone you left out keeps his default spot." }));
+  return opts;
+}
+function mrResolve(choice) {
+  if (choice === "adjusted" && MOCK_RANK_ADJUST) {
+    return { label: "League-adjusted", order: mrSortPool((p, def) => def - (p.pos === "QB" ? MOCK_RANK_ADJUST : 0) - (p.pos === "QB" ? 0.25 : 0)) };
+  }
+  if (choice.indexOf("set:") === 0) {
+    const s = MOCK_RANK_STATE.sets[choice.slice(4)];
+    if (s) { const m = mrMatchFfc(s); return { label: s.label || "Alternate ranking", order: m.order, matched: m.matched, total: m.total }; }
+  }
+  if (choice.indexOf("custom:") === 0) {
+    const c = MOCK_RANK_STATE.custom.find(x => "custom:" + x.id === choice);
+    if (c) {
+      const byExact = new Map(MOCK_DRAFT_POOL.map(p => [p.player, p]));
+      const ents = c.names.map(n => byExact.get(n)).filter(Boolean);
+      return { label: c.name, order: mrFromRanked(ents), matched: ents.length, total: c.names.length };
+    }
+  }
+  return { label: "Yahoo ADP", order: MOCK_DRAFT_POOL.slice() };
+}
+function mockRankedPool() {
+  let r;
+  try { r = mrResolve(MOCK_RANK_STATE.choice); } catch (e) { r = null; }
+  if (!r) r = { label: "Yahoo ADP", order: MOCK_DRAFT_POOL.slice() };
+  MOCK_RANK_STATE.lastLabel = r.label;
+  return r.order;
+}
+
+function mrRefreshUI() {
+  const sel = document.getElementById("mockdraft-rank-select");
+  if (!sel) return;
+  const opts = mrOptions();
+  if (!opts.some(o => o.id === MOCK_RANK_STATE.choice)) MOCK_RANK_STATE.choice = "yahoo";
+  sel.innerHTML = "";
+  opts.forEach(o => {
+    const el = document.createElement("option");
+    el.value = o.id; el.textContent = o.label;
+    sel.appendChild(el);
+  });
+  sel.value = MOCK_RANK_STATE.choice;
+  const cur = opts.find(o => o.id === MOCK_RANK_STATE.choice);
+  const note = document.getElementById("mockdraft-rank-note");
+  if (note && cur) {
+    let extra = "";
+    try {
+      const r = mrResolve(cur.id);
+      if (r.total != null && r.matched < r.total) extra = " " + r.matched + " of " + r.total + " players matched this league's pool.";
+    } catch (e) {}
+    note.textContent = (cur.note || "") + extra + (cur.fetched ? " Updated " + cur.fetched + "." : "");
+  }
+  const list = document.getElementById("mockdraft-rank-saved");
+  if (list) {
+    list.innerHTML = "";
+    MOCK_RANK_STATE.custom.forEach(c => {
+      const row = document.createElement("div");
+      row.className = "mockdraft-rank-saved-row";
+      const nm = document.createElement("span");
+      nm.textContent = "★ " + c.name + " (" + c.names.length + ")";
+      const del = document.createElement("button");
+      del.type = "button"; del.className = "admin-btn admin-btn-secondary"; del.textContent = "Delete";
+      del.addEventListener("click", () => {
+        MOCK_RANK_STATE.custom = MOCK_RANK_STATE.custom.filter(x => x.id !== c.id);
+        mrSave(MOCK_RANK_KEY, MOCK_RANK_STATE.custom);
+        mrRefreshUI();
+      });
+      row.appendChild(nm); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+}
+
+function mrInitUI() {
+  if (document.getElementById("mockdraft-rank-box")) { mrRefreshUI(); return; }
+  const setup = document.getElementById("mockdraft-setup");
+  const startBtn = document.getElementById("mockdraft-start-btn");
+  if (!setup || !startBtn) return;
+  const saved = mrLoad(MOCK_RANK_KEY);
+  MOCK_RANK_STATE.custom = Array.isArray(saved) ? saved.filter(c => c && c.id && c.name && Array.isArray(c.names)) : [];
+  const pick = mrLoad(MOCK_RANK_PICK_KEY);
+  if (typeof pick === "string") MOCK_RANK_STATE.choice = pick;
+  const box = document.createElement("div");
+  box.id = "mockdraft-rank-box";
+  box.className = "mockdraft-rank-box";
+  box.innerHTML =
+    '<label for="mockdraft-rank-select" class="mockdraft-rank-title">Player rankings</label>' +
+    '<select id="mockdraft-rank-select" class="mockdraft-rank-select"></select>' +
+    '<div class="mockdraft-rank-note" id="mockdraft-rank-note"></div>' +
+    '<details class="mockdraft-rank-paste"><summary>Add my own ranking (paste a list)</summary>' +
+    '<p class="mockdraft-rank-help">Copy a top-200 list from anywhere (FantasyPros, the Fantasy Footballers, your own sheet) and paste it here, best player first. Rank numbers, positions and teams on each line are ignored. It stays in this browser only.</p>' +
+    '<input type="text" id="mockdraft-rank-name" maxlength="40" placeholder="Name this list, e.g. Footballers UDK">' +
+    '<textarea id="mockdraft-rank-text" rows="7" placeholder="1. Jahmyr Gibbs&#10;2. Bijan Robinson&#10;3. Ja\'Marr Chase&#10;..."></textarea>' +
+    '<button type="button" class="admin-btn" id="mockdraft-rank-save">Save ranking</button>' +
+    '<div class="mockdraft-rank-msg" id="mockdraft-rank-msg" role="status"></div>' +
+    '<div id="mockdraft-rank-saved"></div></details>';
+  setup.insertBefore(box, startBtn);
+  document.getElementById("mockdraft-rank-select").addEventListener("change", e => {
+    MOCK_RANK_STATE.choice = e.target.value;
+    mrSave(MOCK_RANK_PICK_KEY, MOCK_RANK_STATE.choice);
+    mrRefreshUI();
+  });
+  document.getElementById("mockdraft-rank-save").addEventListener("click", () => {
+    const msg = document.getElementById("mockdraft-rank-msg");
+    const nameEl = document.getElementById("mockdraft-rank-name");
+    const txt = document.getElementById("mockdraft-rank-text").value;
+    const res = mrParsePaste(txt);
+    const seen = new Set(), names = [];
+    res.entries.forEach(p => { if (!seen.has(p.player)) { seen.add(p.player); names.push(p.player); } });
+    if (names.length < 10) { msg.textContent = "I could only match " + names.length + " players. Paste one player per line, best first, using full names."; return; }
+    const nm = (nameEl.value || "").trim() || ("My ranking " + (MOCK_RANK_STATE.custom.length + 1));
+    const id = String(Date.now());
+    MOCK_RANK_STATE.custom = MOCK_RANK_STATE.custom.filter(c => c.name !== nm).concat([{ id, name: nm, names }]).slice(-6);
+    mrSave(MOCK_RANK_KEY, MOCK_RANK_STATE.custom);
+    MOCK_RANK_STATE.choice = "custom:" + id;
+    mrSave(MOCK_RANK_PICK_KEY, MOCK_RANK_STATE.choice);
+    msg.textContent = "Saved " + names.length + " players" + (res.miss.length ? "; " + res.miss.length + " lines didn't match a player here (e.g. " + res.miss.slice(0, 3).join("; ") + ")." : ".") + " It's selected for your next mock draft.";
+    document.getElementById("mockdraft-rank-text").value = "";
+    mrRefreshUI();
+  });
+  mrRefreshUI();
+  if (!MOCK_RANK_STATE.loaded) {
+    MOCK_RANK_STATE.loaded = true;
+    fetch("data/mock-rankings.json?cb=" + Math.floor(Date.now() / 3600000), { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j && j.sets) { MOCK_RANK_STATE.sets = j.sets; mrRefreshUI(); } })
+      .catch(() => {});
+  }
+}
+function mrAfterStart() {
+  const t = document.querySelector(".mockdraft-begin-text");
+  if (t && MOCK_RANK_STATE.lastLabel !== "Yahoo ADP") t.textContent = "Rosters are set and the board is ready — rankings: " + MOCK_RANK_STATE.lastLabel + ". Start the draft whenever you are.";
+}
+
 const MOCK_STATE = {
   active: false,
   started: false,
@@ -9030,6 +9250,7 @@ function mockBestAvailable(teamName, round) {
 
 function initMockDraftTab(data) {
   if (MOCK_STATE.active) return;
+  try { mrInitUI(); } catch (e) { console.warn(e); }
   const grid = document.getElementById("mockdraft-team-grid");
   if (!grid) return;
   const { teamNames } = buildMockDraftPickList(data);
@@ -9083,7 +9304,9 @@ function startMockDraft() {
   MOCK_STATE.pickList = picks;
   MOCK_STATE.pickIndex = 0;
   const keptNames = getAllKeptPlayerNames(CURRENT_DATA);
-  MOCK_STATE.available = keptNames.size ? MOCK_DRAFT_POOL.filter(p => !keptNames.has(p.player)) : MOCK_DRAFT_POOL.slice();
+  const rankedPool = mockRankedPool();
+  MOCK_STATE.available = keptNames.size ? rankedPool.filter(p => !keptNames.has(p.player)) : rankedPool.slice();
+  setTimeout(mrAfterStart, 0);
   MOCK_STATE.rosters = {};
   teamNames.forEach(n => { MOCK_STATE.rosters[n] = getTeamKeptRosterEntries(CURRENT_DATA, n); });
   MOCK_STATE.log = [];
@@ -11300,6 +11523,15 @@ fetchWeeklyMatchups();
   @media (max-width: 640px) { #yh-hometabs { gap: 5px; } #yh-hometabs .yh-subtab { padding: 6px 9px; font-size: 0.8rem; } }
   .yh-kept { color: var(--gold); font-weight: 700; font-size: 0.74rem; white-space: nowrap; }
   .kept-yes { white-space: nowrap; }
+  .mockdraft-rank-box { margin: 14px 0 6px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+  .mockdraft-rank-title { display: block; font-weight: 700; margin-bottom: 6px; }
+  .mockdraft-rank-select { width: 100%; max-width: 420px; padding: 10px; font-size: 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); }
+  .mockdraft-rank-note { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
+  .mockdraft-rank-paste { margin-top: 10px; }
+  .mockdraft-rank-paste summary { cursor: pointer; color: var(--gold); font-weight: 600; font-size: 0.9rem; padding: 6px 0; }
+  .mockdraft-rank-paste input, .mockdraft-rank-paste textarea { width: 100%; box-sizing: border-box; margin: 6px 0; padding: 10px; font-size: 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-family: inherit; }
+  .mockdraft-rank-help, .mockdraft-rank-msg { color: var(--muted); font-size: 0.82rem; margin: 4px 0; }
+  .mockdraft-rank-saved-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 0.9rem; }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
