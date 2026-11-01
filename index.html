@@ -11208,7 +11208,7 @@ fetchWeeklyMatchups();
   #team .yh-stat { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); }
   #team .yh-stat .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 650; }
   #team .yh-stat .v { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-  #team .yh-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  #team .yh-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; }
   #team td.n, #team th.n { text-align: right; font-variant-numeric: tabular-nums; }
   #team .yh-res-w { color: var(--good); font-weight: 700; } #team .yh-res-l { color: var(--bad); font-weight: 700; }
   /* Free agents */
@@ -11270,9 +11270,9 @@ fetchWeeklyMatchups();
     #home #yh-playoffs .yh-av, #home #yh-playoffs .team-badge { display: none; }
     #home #yh-playoffs .yh-pill { white-space: nowrap; font-size: 0.68rem; padding: 1px 6px; }
     #home #yh-insights th, #home #yh-insights td { padding: 7px 5px; font-size: 0.82rem; }
+    #waivers, #waivers2026 { overflow-x: auto; }
     #team table th, #team table td { padding: 8px 4px; font-size: 0.84rem; }
-    #team .yh-av, #team .team-badge { transform: scale(0.85); }
-    #team .yh-thead .yh-av { transform: none; }
+    #team td .yh-av, #team td .team-badge { display: none; }
   }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
