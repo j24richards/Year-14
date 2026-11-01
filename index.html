@@ -11260,10 +11260,13 @@ fetchWeeklyMatchups();
   #power-rankings-table th, #power-rankings-table td { padding-left: 6px; padding-right: 6px; }
   @media (max-width: 640px) {
     #home #standings-card table, #home #yh-playoffs table { min-width: 0 !important; width: 100%; }
-    #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
+    #home #yh-playoffs th:nth-child(3), #home #yh-playoffs td:nth-child(3), #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
     #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 5px; font-size: 0.84rem; }
     #home #yh-playoffs .yh-pill { white-space: nowrap; font-size: 0.68rem; padding: 1px 6px; }
     #home #yh-insights th, #home #yh-insights td { padding: 7px 5px; font-size: 0.82rem; }
+    #team table th, #team table td { padding: 8px 4px; font-size: 0.84rem; }
+    #team .yh-av, #team .team-badge { transform: scale(0.85); }
+    #team .yh-thead .yh-av { transform: none; }
   }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
@@ -12064,7 +12067,7 @@ fetchWeeklyMatchups();
       var me = g.a.team_key === key ? g.a : g.b, op = g.a.team_key === key ? g.b : g.a, res = "&ndash;", cls = "";
       if (g.final) { if (g.m.is_tied) res = "T"; else if (g.m.winner_team_key === key) { res = "W"; cls = "yh-res-w"; } else { res = "L"; cls = "yh-res-l"; } }
       else if (g.m.status === "midevent") res = "Live";
-      var score = g.final || g.m.status === "midevent" ? fmt(me.points) + " &ndash; " + fmt(op.points) : "&ndash;";
+      var score = g.final || g.m.status === "midevent" ? f1(me.points) + " &ndash; " + f1(op.points) : "&ndash;";
       return "<tr><td>" + g.w + (g.playoff ? (g.m.is_consolation ? " &middot; C" : " &middot; P") : "") + "</td>" + nameCell(op.name, op.team_key) + '<td class="n">' + score + '</td><td class="n ' + cls + '">' + res + "</td></tr>";
     }).join("");
     M.rem.forEach(function (g) {
