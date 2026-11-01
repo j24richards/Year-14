@@ -11159,18 +11159,13 @@ fetchWeeklyMatchups();
   }
 
 /* ---- layout: two-column Home, section tabs, sticky menu, phone tweaks ---- */
-  #home .yh-layout, #home .yh-main, #home .yh-side { display: contents; }
-  #home.active { display: flex; flex-direction: column; }
-  #home #yh-strip { order: 0; } #home #commish-note { order: 1; } #home #countdown-card { order: 2; }
-  #home #yh-phase { order: 3; } #home #yh-matchups { order: 4; } #home #season-heading { display: none; }
-  #home #standings-card { order: 6; } #home #yh-playoffs { order: 7; } #home #yh-insights { order: 8; }
-  #home #power-rankings-card { order: 9; } #home .player-search-card { order: 10; }
-  @media (min-width: 1020px) {
-    main { max-width: 1240px; }
-    #home.active { display: block; }
-    #home .yh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 24px; align-items: start; }
-    #home .yh-main, #home .yh-side { display: block; min-width: 0; }
-  }
+  #home #season-heading { display: none; }
+  #home:not([data-htab="matchups"]) #yh-matchups, #home:not([data-htab="standings"]) #standings-card, #home:not([data-htab="playoffs"]) #yh-playoffs, #home:not([data-htab="insights"]) #yh-insights, #home:not([data-htab="power"]) #power-rankings-card { display: none !important; }
+  #home[data-htab="matchups"] #yh-strip .yh-strip-row, #home[data-htab="matchups"] #yh-strip .yh-strip-label { display: none; }
+  #yh-hometabs { border-bottom: 0; padding-bottom: 0; margin-bottom: 14px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  #yh-hometabs::-webkit-scrollbar { display: none; }
+  #yh-hometabs .yh-subtab { flex: 0 0 auto; white-space: nowrap; }
+  #yahoolive > #yh-phase, #keepers > .player-search-card { margin-top: 0; }
   /* Scoreboard strip */
   #yh-strip { margin: 0 0 18px; }
   #yh-strip .yh-strip-row { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
@@ -11276,6 +11271,7 @@ fetchWeeklyMatchups();
     #team th { font-size: 0.66rem; letter-spacing: 0; }
     #team td .yh-av, #team td .team-badge { display: none; }
   }
+  @media (max-width: 640px) { #yh-hometabs { gap: 5px; } #yh-hometabs .yh-subtab { padding: 6px 9px; font-size: 0.8rem; } }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
@@ -12003,6 +11999,7 @@ fetchWeeklyMatchups();
   if (stripEl) stripEl.addEventListener("click", function (e) {
     var g = e.target.closest(".yh-sg"); if (!g) return;
     week = Number(g.getAttribute("data-w")); openKey = week + ":" + g.getAttribute("data-i");
+    if (window.YH_homeTab) window.YH_homeTab("matchups", true);
     loadLineups(false); renderMatchups();
     var t = mxEl.querySelector(".yh-lineup") || mxEl; if (t.scrollIntoView) t.scrollIntoView({ block: "start", behavior: "smooth" });
   });
@@ -12014,26 +12011,10 @@ fetchWeeklyMatchups();
     if (ps && cw >= ps) return "playoffs";
     return "regular";
   }
-  // Put the cards in the order that matters for this part of the season.
   function placeHome() {
     var home = document.getElementById("home"); if (!home) return;
-    var ph = phaseOf(); home.setAttribute("data-phase", ph);
-    function el(id) { return id === "search" ? home.querySelector(".player-search-card") : document.getElementById(id); }
-    var plan = {
-      regular: { m: ["yh-matchups", "standings-card", "yh-playoffs", "yh-insights"], s: ["yh-phase", "power-rankings-card", "search"] },
-      playoffs: { m: ["yh-playoffs", "yh-matchups", "standings-card", "yh-insights"], s: ["yh-phase", "power-rankings-card", "search"] },
-      complete: { m: ["yh-phase", "yh-playoffs", "standings-card", "yh-insights", "yh-matchups"], s: ["power-rankings-card", "search"] }
-    }[ph];
-    var main = home.querySelector(".yh-main"), side = home.querySelector(".yh-side");
-    if (main && side) {
-      plan.m.forEach(function (id) { var e = el(id); if (e) main.appendChild(e); });
-      plan.s.forEach(function (id) { var e = el(id); if (e) side.appendChild(e); });
-    }
-    var n = 3;
-    var phone = ph === "regular" ? ["yh-phase", "yh-matchups", "standings-card", "yh-playoffs", "yh-insights", "power-rankings-card", "search"]
-      : ph === "playoffs" ? ["yh-phase", "yh-playoffs", "yh-matchups", "standings-card", "yh-insights", "power-rankings-card", "search"]
-      : ["yh-phase", "yh-playoffs", "standings-card", "yh-insights", "yh-matchups", "power-rankings-card", "search"];
-    phone.forEach(function (id) { var e = el(id); if (e) e.style.order = String(n++); });
+    home.setAttribute("data-phase", phaseOf());
+    if (window.YH_syncHomeTabs) window.YH_syncHomeTabs();
   }
 
   // ---- team page ------------------------------------------------------------------------
@@ -12298,20 +12279,42 @@ fetchWeeklyMatchups();
   function $(id) { return document.getElementById(id); }
   function isTab(id) { var s = $(id); return !!(s && s.parentNode && s.parentNode.tagName === "MAIN"); }
 
-  // ---- two-column Home ---------------------------------------------------------
-  (function layoutHome() {
-    var home = $("home");
-    if (!home || home.querySelector(".yh-layout")) return;
-    var main = ["yh-matchups", "season-heading", "standings-card", "yh-insights"].map($).filter(Boolean);
-    var side = ["yh-phase", "yh-playoffs", "power-rankings-card"].map($).filter(Boolean);
-    var search = home.querySelector(".player-search-card"); if (search) side.push(search);
-    if (!main.length) return;
-    var layout = document.createElement("div"), m = document.createElement("div"), s = document.createElement("div");
-    layout.className = "yh-layout"; m.className = "yh-main"; s.className = "yh-side";
-    main[0].parentNode.insertBefore(layout, main[0]);
-    layout.appendChild(m); layout.appendChild(s);
-    main.forEach(function (el) { m.appendChild(el); });
-    side.forEach(function (el) { s.appendChild(el); });
+  // ---- Home: one panel at a time ---------------------------------------------------------
+  var HT = [["matchups", "Matchups", "yh-matchups"], ["standings", "Standings", "standings-card"], ["playoffs", "Playoffs", "yh-playoffs"], ["insights", "Insights", "yh-insights"], ["power", "Power", "power-rankings-card"]];
+  var homeTabName = "matchups";
+  function panelHidden(id) { var e = $(id); return !e || e.style.display === "none"; }
+  function syncHomeTabs() {
+    var bar = $("yh-hometabs"), home = $("home"); if (!bar || !home) return;
+    bar.querySelectorAll(".yh-subtab").forEach(function (b) {
+      var t = HT.filter(function (x) { return x[0] === b.getAttribute("data-ht"); })[0];
+      b.style.display = t && t[0] !== "matchups" && panelHidden(t[2]) ? "none" : "";
+      b.setAttribute("aria-selected", b.getAttribute("data-ht") === homeTabName ? "true" : "false");
+    });
+    var cur = HT.filter(function (x) { return x[0] === homeTabName; })[0];
+    if (cur && cur[0] !== "matchups" && panelHidden(cur[2]) && $(cur[2]) && $(cur[2]).textContent.trim() === "" ) { /* still loading: keep */ }
+    home.setAttribute("data-htab", homeTabName);
+  }
+  window.YH_syncHomeTabs = syncHomeTabs;
+  function homeTab(name, push) {
+    if (!HT.some(function (x) { return x[0] === name; })) name = "matchups";
+    homeTabName = name; syncHomeTabs();
+    if (!isTab("home")) return;
+    if (push) { activate("home", false); setHash(name === "matchups" ? "home" : "home/" + name); }
+  }
+  window.YH_homeTab = homeTab;
+  (function homeTabs() {
+    var home = $("home"), mx = $("yh-matchups"); if (!home || !mx || $("yh-hometabs")) return;
+    var bar = document.createElement("div");
+    bar.id = "yh-hometabs"; bar.className = "yh-subnav yh-hometabs"; bar.setAttribute("role", "tablist"); bar.setAttribute("aria-label", "Home sections");
+    bar.innerHTML = HT.map(function (t) { return '<button type="button" class="yh-subtab" role="tab" data-ht="' + t[0] + '" aria-selected="' + (t[0] === "matchups") + '">' + t[1] + "</button>"; }).join("");
+    mx.parentNode.insertBefore(bar, mx);
+    var strip = $("yh-strip"); if (strip) bar.parentNode.insertBefore(strip, mx);
+    bar.addEventListener("click", function (e) { var b = e.target.closest("[data-ht]"); if (b) homeTab(b.getAttribute("data-ht"), true); });
+    if (window.MutationObserver) {
+      var mo = new MutationObserver(syncHomeTabs);
+      HT.forEach(function (t) { var el = $(t[2]); if (el) mo.observe(el, { attributes: true, attributeFilter: ["style"] }); });
+    }
+    syncHomeTabs();
   })();
 
   // Hide the commissioner note when it is empty.
@@ -12341,7 +12344,7 @@ fetchWeeklyMatchups();
     var sel = $("mobile-nav-select"); if (sel && sel.querySelector('option[value="' + tab + '"]')) sel.value = tab;
     var menu = $("mobile-nav-menu"), tg = $("mobile-nav-toggle");
     if (menu) menu.hidden = true; if (tg) tg.setAttribute("aria-expanded", "false");
-    document.querySelectorAll(".yh-subtab").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-sub") === tab ? "true" : "false"); });
+    document.querySelectorAll(".yh-subtab[data-sub]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-sub") === tab ? "true" : "false"); });
     if (scroll !== false) window.scrollTo(0, 0);
     return true;
   }
@@ -12359,6 +12362,8 @@ fetchWeeklyMatchups();
     var m = h.match(/^team\/(\d+)/);
     if (m) { if (window.YH && window.YH.showTeam) window.YH.showTeam(m[1], true); else window.YH_PENDING_TEAM = m[1]; return; }
     var tab = h.split("/")[0];
+    if (tab === "home" && h.split("/")[1]) homeTab(h.split("/")[1], false);
+    else if (tab === "home") homeTab(homeTabName, false);
     var cur = document.querySelector("main section.active");
     if (isTab(tab) && (!cur || cur.id !== tab)) activate(tab, true);
   }
@@ -12388,8 +12393,14 @@ fetchWeeklyMatchups();
       s.insertBefore(bar, s.firstChild);
     });
   });
+  // The week banner lives on the Season page and Find a Player on Keepers & Draft.
+  (function relocate() {
+    function after(secId, el) { var sec = $(secId); if (!sec || !el) return; var bar = sec.querySelector(":scope > .yh-subnav"); sec.insertBefore(el, bar ? bar.nextSibling : sec.firstChild); }
+    after("yahoolive", $("yh-phase"));
+    var search = document.querySelector("#home .player-search-card"); if (search) after("keepers", search);
+  })();
   document.addEventListener("click", function (e) {
-    var b = e.target.closest(".yh-subtab"); if (!b) return;
+    var b = e.target.closest(".yh-subtab[data-sub]"); if (!b) return;
     var id = b.getAttribute("data-sub"); activate(id, false); setHash(id);
   });
   // Quick-link buttons anywhere (Home phase links etc.).
