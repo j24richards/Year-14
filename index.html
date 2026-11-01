@@ -11507,7 +11507,7 @@ fetchWeeklyMatchups();
   @media (max-width: 640px) {
     .yh-lg { display: none; } .yh-sm { display: inline; }
     #home #standings-card table, #home #yh-playoffs table { min-width: 0 !important; width: 100%; }
-    #home #yh-playoffs th:nth-child(3), #home #yh-playoffs td:nth-child(3), #home #yh-playoffs th:nth-child(5), #home #yh-playoffs td:nth-child(5), #home #yh-playoffs th:nth-child(7), #home #yh-playoffs td:nth-child(7), #home #yh-playoffs .yh-track { display: none; }
+    #home #yh-playoffs table.yh-sim th:nth-child(4), #home #yh-playoffs table.yh-sim td:nth-child(4), #home #yh-playoffs table.yh-sim th:nth-child(6), #home #yh-playoffs table.yh-sim td:nth-child(6), #home #yh-playoffs .yh-track { display: none; }
     #home #yh-playoffs th, #home #yh-playoffs td { padding: 8px 3px; font-size: 0.8rem; }
     #home #yh-playoffs th { font-size: 0.66rem; letter-spacing: 0; }
     #home #yh-playoffs .yh-odds { white-space: nowrap; }
@@ -11608,6 +11608,7 @@ fetchWeeklyMatchups();
   @media (max-width: 640px) { #yh-insights table.yh-tally th.n { text-transform: none !important; letter-spacing: 0 !important; font-size: 0.7rem; } }
   @media (max-width: 640px) { #yh-insights table.yh-tally th.n { font-size: 0.62rem; font-weight: 700; } #yh-insights table.yh-tally th:first-child { width: 26%; } }
   @media (max-width: 640px) { #yh-insights table.yh-tally th.n { font-size: 0.68rem !important; } #yh-insights table.yh-tally td { font-size: 0.8rem !important; } }
+  @media (max-width: 640px) { #home #yh-playoffs td, #home #yh-playoffs .yh-tlink { white-space: normal; } #home #yh-playoffs td:first-child, #home #yh-playoffs td.yh-odds { white-space: nowrap; } }
 
   header { background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 56px), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 55%); }
   header h1 { text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
@@ -12317,14 +12318,14 @@ fetchWeeklyMatchups();
           status = gb <= 1 ? '<span class="yh-pill bub">Bubble</span>' : '<span class="yh-pill out">Out</span>';
           detail = gb + " game" + (gb === 1 ? "" : "s") + " back";
         }
-        if (i >= cut && t.wins + left < last.wins) { status = '<span class="yh-pill out">Eliminated</span>'; detail = "can't catch #" + cut; }
+        if (i >= cut && t.wins + left < last.wins) { status = '<span class="yh-pill out">Eliminated</span>'; detail = gb + " game" + (gb === 1 ? "" : "s") + " back"; }
         var s = sim && sim[t.team_key];
         var odds = s ? '<td class="yh-odds"><span class="yh-track" aria-hidden="true"><i style="width:' + Math.round(s.made * 100) + '%"></i></span>' + pctLabel(s.made) + "</td>" +
           '<td class="yh-odds">' + pctLabel(s.top) + "</td>" : "";
-        return "<tr><td>" + (i + 1) + "</td>" + nameCell(t.name, t.team_key) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + status + "</td><td>" + detail + "</td>" + odds + "</tr>";
+        return "<tr><td>" + (i + 1) + "</td>" + nameCell(t.name, t.team_key) + "<td>" + esc(t.wins + "-" + t.losses + (t.ties ? "-" + t.ties : "")) + "</td><td>" + detail + "</td>" + odds + "</tr>";
       }).join("");
       html = "<h3>Playoff picture</h3><p class=\"yh-note\" style=\"margin-top:0\">Top " + cut + " advance. " + left + " regular-season week" + (left === 1 ? "" : "s") + " left (playoffs start Week " + start + ").</p>" +
-        '<div style="overflow-x:auto"><table style="min-width:' + (sim ? 640 : 420) + 'px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Status</th><th>Gap</th>' + (sim ? '<th><span class="yh-lg">Make playoffs</span><span class="yh-sm">Odds</span></th><th>#1 seed</th>' : "") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        '<div style="overflow-x:auto"><table class="yh-po' + (sim ? " yh-sim" : "") + '" style="min-width:' + (sim ? 560 : 360) + 'px"><thead><tr><th>#</th><th>Team</th><th>Record</th><th>Gap</th>' + (sim ? '<th><span class="yh-lg">Make playoffs</span><span class="yh-sm">Odds</span></th><th>#1 seed</th>' : "") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
         (sim ? '<p class="yh-note">Odds come from 4,000 simulated finishes of the remaining schedule, each team scoring around its season average. They\'re an estimate, not a promise.</p>' : "");
     } else {
       var rounds = weeksList().filter(function (w) { return w >= start; });
