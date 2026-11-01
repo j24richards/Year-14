@@ -11042,6 +11042,27 @@ let FIRESTORE_APP = null;
 let unsubscribeLeagueData = null;
 let hasLoadedOnce = false;
 
+// Live scores: a GitHub Action writes the current week's scores, standings and
+// lineups to the Firestore document live/scores every minute or so on game
+// days. Listeners elsewhere on the page (Home, Live Scores) pick it up from
+// the "yh-live" event. If the document is missing or unreadable nothing
+// happens and the pages keep using data/yahoo-league.json as before.
+let LIVE_UNSUB = null;
+function subscribeLive() {
+  if (LIVE_UNSUB) return;
+  try {
+    LIVE_UNSUB = onSnapshot(doc(FIRESTORE_DB, "live", "scores"), (snap) => {
+      try {
+        if (!snap.exists()) return;
+        const j = JSON.parse(snap.data().json);
+        if (!j || !j.standings || !j.scores) return;
+        window.YH_LIVE_LAST = j;
+        window.dispatchEvent(new CustomEvent("yh-live", { detail: j }));
+      } catch (e) { /* ignore a bad update */ }
+    }, () => { /* no access: stay on the file data */ });
+  } catch (e) { /* ignore */ }
+}
+
 // Subscribes to the live league-data document instead of fetching it once,
 // so any change a commissioner saves from the Admin panel shows up on
 // every other open tab/device without a manual refresh. The first snapshot
@@ -11056,6 +11077,7 @@ function loadAndRender() {
       FIRESTORE_APP = initializeApp(firebaseConfig);
       FIRESTORE_DB = getFirestore(FIRESTORE_APP);
       FIRESTORE_AUTH = getAuth(FIRESTORE_APP);
+      subscribeLive();
     }
     FIRESTORE_REF = doc(FIRESTORE_DB, "site", "leagueData");
 
@@ -11291,7 +11313,8 @@ fetchWeeklyMatchups();
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (j) {
         if (!j || !j.standings || !j.scores) throw new Error("unexpected shape");
-        DATA = j;
+        DATA = window.YH_LIVE_LAST && window.YH_mergeLive ? window.YH_mergeLive(j, window.YH_LIVE_LAST) : j;
+        j = DATA;
         var when = j.updated ? new Date(j.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
         meta.textContent = (j.league && j.league.current_week ? "Week " + j.league.current_week + " · " : "") + (when ? "Updated " + when : "");
         week = j.league && j.league.current_week ? j.league.current_week : null;
@@ -11301,6 +11324,15 @@ fetchWeeklyMatchups();
         body.innerHTML = '<p class="yl-empty">Live scores aren\'t available yet. They appear here once the weekly update has run.</p>';
       });
   }
+  window.addEventListener("yh-live", function (e) {
+    if (!DATA || !window.YH_mergeLive) return;
+    var m = window.YH_mergeLive(DATA, e.detail);
+    if (m === DATA) return;
+    DATA = m;
+    var when = m.updated ? new Date(m.updated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+    meta.textContent = (m.league && m.league.current_week ? "Week " + m.league.current_week + " · " : "") + (when ? "Updated " + when : "");
+    render();
+  });
   load();
 })();
 </script>
@@ -12570,7 +12602,10 @@ fetchWeeklyMatchups();
     lineupsLoading = true;
     fetch("data/yahoo-lineups.json?v=" + Date.now(), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { LINEUPS = (j && j.lineups) || {}; })
+      .then(function (j) {
+        LINEUPS = (j && j.lineups) || {};
+        if (window.YH_LIVE_LAST && window.YH_LIVE_LAST.lineups) LINEUPS = Object.assign({}, LINEUPS, window.YH_LIVE_LAST.lineups);
+      })
       .catch(function () { LINEUPS = LINEUPS || {}; })
       .then(function () { lineupsLoading = false; if (DATA) { renderMatchups(); renderBody(); refreshTeam(); } });
   }
@@ -12619,6 +12654,7 @@ fetchWeeklyMatchups();
 
   // ---- load and keep fresh ---------------------------------------------------------
   function apply(j, first) {
+    if (window.YH_LIVE_LAST && window.YH_mergeLive) j = window.YH_mergeLive(j, window.YH_LIVE_LAST);
     DATA = j; loadedAt = Date.now(); renderAll();
     if (window.YH_PENDING_TEAM) { var pid = window.YH_PENDING_TEAM; window.YH_PENDING_TEAM = null; showTeam(pid, true); }
     if (first) loadLineups(false); else if (LINEUPS) loadLineups(true);
@@ -12627,9 +12663,16 @@ fetchWeeklyMatchups();
     if (document.visibilityState !== "visible" || !DATA) return;
     fetch("data/yahoo-league.json?v=" + Date.now(), { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { if (j && j.standings && j.scores && j.updated !== DATA.updated) apply(j, false); })
+      .then(function (j) { if (j && j.standings && j.scores && String(j.updated || "") > String(DATA.updated || "")) apply(j, false); })
       .catch(function () {});
   }
+  window.addEventListener("yh-live", function (e) {
+    if (!DATA || !window.YH_mergeLive) return;
+    var m = window.YH_mergeLive(DATA, e.detail);
+    if (m === DATA) return;
+    if (LINEUPS && e.detail.lineups) LINEUPS = Object.assign({}, LINEUPS, e.detail.lineups);
+    DATA = m; loadedAt = Date.now(); renderAll();
+  });
   setInterval(function () { tickAgo(); }, 30000);
   setInterval(function () { if (hasLive() || (DATA && Date.now() - loadedAt > 600000)) poll(); }, 120000);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && DATA && Date.now() - loadedAt > 120000) poll(); });
@@ -13029,6 +13072,29 @@ fetchWeeklyMatchups();
   function init() { updateBar(); footerLink(); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
   window.addEventListener("resize", updateBar);
+})();
+
+</script>
+<script>
+(function () {
+  "use strict";
+  // Folds a live update (standings, this week's scores and lineups, pushed to
+  // Firebase every minute or so on game days) into the full league data that
+  // was loaded from data/yahoo-league.json. Returns the same object when the
+  // update is not newer, so callers can skip a redraw.
+  window.YH_mergeLive = function (base, p) {
+    if (!base || !p || !p.scores || !p.standings) return base;
+    if (base.updated && p.updated && String(p.updated) <= String(base.updated)) return base;
+    var out = {}, k, w;
+    for (k in base) out[k] = base[k];
+    out.updated = p.updated;
+    out.league = p.league || base.league;
+    out.standings = p.standings;
+    out.scores = {};
+    for (w in base.scores) out.scores[w] = base.scores[w];
+    for (w in p.scores) out.scores[w] = p.scores[w];
+    return out;
+  };
 })();
 
 </script>
