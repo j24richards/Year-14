@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="page-title">Year 14 — Fantasy Football History</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20120%20120%22%3E%0A%3Cpath%20d%3D%22M60%204%20L110%2019%20V58%20C110%2090%2086%20108%2060%20118%20C34%20108%2010%2090%2010%2058%20V19%20Z%22%20fill%3D%22%23c4271a%22%2F%3E%0A%3Cpath%20d%3D%22M60%2011%20L103%2024%20V58%20C103%2085%2082%20101%2060%20110%20C38%20101%2017%2085%2017%2058%20V24%20Z%22%20fill%3D%22%23141c28%22%2F%3E%0A%3Cg%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M46%2028H74%22%2F%3E%3Cpath%20d%3D%22M52%2022V34M60%2022V34M68%2022V34%22%2F%3E%3C%2Fg%3E%0A%3Cg%20transform%3D%22translate%2822%2040%29%20scale%281.0%29%22%20fill%3D%22%23ffffff%22%3E%3Cpolygon%20points%3D%220%2C14%2015%2C0%2026%2C0%2026%2C44%2015%2C44%2015%2C12%203%2C22%22%2F%3E%3Cg%20transform%3D%22translate%2834%200%29%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M22%200H34V28H42V38H34V44H23V38H0V28ZM23%2012V28H11Z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a1a33">
@@ -1922,6 +1922,11 @@
 <header>
   <button type="button" class="theme-toggle" id="theme-toggle">◐ Auto</button>
   <div class="header-last-updated" id="header-last-updated"></div>
+  <span class="brand-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+<path d="M60 4 L110 19 V58 C110 90 86 108 60 118 C34 108 10 90 10 58 V19 Z" fill="#c4271a"/>
+<path d="M60 11 L103 24 V58 C103 85 82 101 60 110 C38 101 17 85 17 58 V24 Z" fill="#141c28"/>
+<g stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M46 28H74"/><path d="M52 22V34M60 22V34M68 22V34"/></g>
+<g transform="translate(22 40) scale(1.0)" fill="#ffffff"><polygon points="0,14 15,0 26,0 26,44 15,44 15,12 3,22"/><g transform="translate(34 0)"><path fill-rule="evenodd" d="M22 0H34V28H42V38H34V44H23V38H0V28ZM23 12V28H11Z"/></g></g></svg></span>
   <h1 id="page-heading">Year <span class="yr-accent">14</span></h1>
 </header>
 
@@ -12093,6 +12098,16 @@ fetchWeeklyMatchups();
     /* footer */
     footer { padding: 28px 24px 40px; }
   }
+
+  /* ===== League logo in the header ===== */
+  header { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px; justify-items: start; }
+  header > h1, header > p { grid-column: 2; }
+  .brand-logo { grid-column: 1; grid-row: 1 / span 2; display: block; width: 30px; height: 30px; }
+  .brand-logo svg { display: block; width: 100%; height: 100%; }
+  header > p { grid-row: 2; }
+  header > h1 { grid-row: 1; }
+  @media (min-width: 900px) { .brand-logo { width: 46px; height: 46px; } header { column-gap: 16px; } }
+  @media (min-width: 900px) { header h1 { font-size: 1.45rem; } header > p { font-size: 0.9rem; } }
 </style>
 <script>
 (function () {
