@@ -33,6 +33,9 @@ const REFRESH_TOKEN = process.env.YAHOO_REFRESH_TOKEN;
 const LEAGUE_ID = String(process.env.YAHOO_LEAGUE_ID || "").trim();
 const WEEK = String(process.env.WEEK || "").trim();
 const DRY_RUN = String(process.env.DRY_RUN || "").toLowerCase() === "true";
+// LIVE=true: light refresh for game days -- only standings, this week's scores
+// and lineups. Transactions, rosters, schedule and free agents are kept as saved.
+const LIVE = String(process.env.LIVE || "").toLowerCase() === "true";
 const OUT_FILE = process.env.OUT_FILE || "data/yahoo-league.json";
 const LINEUPS_FILE = process.env.LINEUPS_FILE || OUT_FILE.replace(/[^/\\]*$/, "yahoo-lineups.json");
 const FA_FILE = process.env.FA_FILE || OUT_FILE.replace(/[^/\\]*$/, "yahoo-freeagents.json");
@@ -457,7 +460,7 @@ async function main() {
   if (!standings.length) fail("No teams came back from standings. Leaving the file untouched.");
 
   const current = league.current_week || 1;
-  const weeks = WEEK ? parseWeeks(WEEK) : (current > 1 ? [current - 1, current] : [current]);
+  const weeks = WEEK ? parseWeeks(WEEK) : LIVE ? [current] : (current > 1 ? [current - 1, current] : [current]);
   const prior = readExisting();
   // Copy, don't alias: merging new weeks in must not alter `prior`, or the
   // "did anything change?" comparison below would always say no.
@@ -472,7 +475,8 @@ async function main() {
   // Kept apart from `scores` so unplayed weeks never look like results. Weeks
   // already saved are reused; a failure here never blocks the rest.
   const schedule = {};
-  try {
+  if (LIVE && prior && prior.schedule) Object.assign(schedule, prior.schedule);
+  else try {
     const lastRegular = (league.playoff_start_week || (league.end_week ? league.end_week - 3 : 14)) - 1;
     const priorSched = prior && prior.schedule ? prior.schedule : {};
     for (let w = current + 1; w <= lastRegular; w++) {
@@ -487,9 +491,9 @@ async function main() {
     if (prior && prior.schedule) Object.assign(schedule, prior.schedule);
   }
 
-  const all = await getAllTransactions(key);
-  const trades = all.filter(t => t.type === "trade");
-  const transactions = all.filter(t => t.type !== "commish");
+  const all = LIVE && prior ? [] : await getAllTransactions(key);
+  const trades = LIVE && prior ? (prior.trades || []) : all.filter(t => t.type === "trade");
+  const transactions = LIVE && prior ? (prior.transactions || []) : all.filter(t => t.type !== "commish");
   console.log("Transactions: " + transactions.length + " this season (commissioner moves left out), " + trades.length + " trades (" +
     trades.reduce((n, t) => n + t.players.length, 0) + " player moves).");
 
@@ -514,12 +518,13 @@ async function main() {
   }
 
   const rosters = {};
-  for (const t of standings) rosters[t.team_key] = await getRoster(t.team_key);
+  if (LIVE && prior && prior.rosters) Object.assign(rosters, prior.rosters);
+  else for (const t of standings) rosters[t.team_key] = await getRoster(t.team_key);
   console.log("Rosters: " + Object.keys(rosters).length + " teams, " +
     Object.values(rosters).reduce((n, r) => n + r.length, 0) + " players.");
 
   let freeAgents = null;
-  try {
+  if (!LIVE) try {
     freeAgents = await getFreeAgents(key);
     console.log("Free agents: " + freeAgents.length + " players (" + freeAgents.filter(p => p.owned != null).length + " with ownership).");
   } catch (err) {
