@@ -2100,7 +2100,7 @@
 
   <section id="draft">
     <h2 id="draft-heading">Draft Results</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Every team's picks, round by round.</p>
+    <p style="color: var(--muted); margin-top: -6px;">Every team's picks, round by round. An asterisk (*) marks a kept player.</p>
     <div class="teams-grid" id="draft-grid"></div>
     <p id="draft-empty-note" style="color: var(--muted); font-style: italic; display:none; margin: 10px 0 0;">
       Draft results will appear here once the commissioner enters them after the draft.
@@ -5696,6 +5696,12 @@ function computeDraftGrades(data) {
   return { teamGrades: teamGrades, keeperGrades: keeperGrades };
 }
 
+function draftKeptStar(data, team, raw) {
+  const sel = (data.keeperSelections || []).find(k => k.team === team);
+  if (!sel || !(sel.players || []).length) return "";
+  const nm = String(typeof parseDraftPlayerField === "function" ? parseDraftPlayerField(raw).name : raw).trim().toLowerCase();
+  return sel.players.some(x => String(x).trim().toLowerCase() === nm) ? " <span class=\"kept-star\" data-tip=\"Kept player: a keeper, not drafted in this round.\" tabindex=\"0\">*</span>" : "";
+}
 function renderDraftResults(data) {
   document.getElementById("draft-heading").textContent = data.currentSeason.year + " Draft Results";
   const draftGrid = document.getElementById("draft-grid");
@@ -5730,7 +5736,7 @@ function renderDraftResults(data) {
         } else if (teamGrade && teamGrade.worstPick && teamGrade.worstPick.player === p.player) {
           rowAttr = " class=\"draft-pick-reach\" title=\"Biggest reach of this team's picks\"";
         }
-        html += "<tr" + rowAttr + "><td>" + p.round + "</td><td>" + p.player + "</td></tr>";
+        html += "<tr" + rowAttr + "><td>" + p.round + "</td><td>" + p.player + draftKeptStar(data, teamName, p.player) + "</td></tr>";
       });
       html += "</tbody></table>";
       card.innerHTML = html;
@@ -12242,6 +12248,8 @@ fetchWeeklyMatchups();
   [data-tip] { cursor: help; }
   th[data-tip] { text-decoration: underline dotted; text-decoration-color: var(--muted); text-underline-offset: 4px; }
   .draft-grade[data-tip]:focus-visible, .yh-pill[data-tip]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+  .kept-star { color: var(--gold); font-weight: 800; margin-left: 3px; }
 </style>
 <script>
 (function () {
