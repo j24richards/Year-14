@@ -5717,10 +5717,10 @@ function renderDraftResults(data) {
       const teamGrade = grades && grades.teamGrades[teamName];
       const keeperGrade = grades && grades.keeperGrades && grades.keeperGrades[teamName];
       const gradeBadge = teamGrade
-        ? " <span class=\"draft-grade draft-grade-" + draftGradeClass(teamGrade.grade) + "\" title=\"Draft grade, against the rest of the league\">" + teamGrade.grade + "</span>"
+        ? " <span class=\"draft-grade draft-grade-" + draftGradeClass(teamGrade.grade) + "\" title=\"Draft grade: how this team's draft picks compare with the rest of the league (C is about average). On the rows, a green bar marks the best-value pick and an amber bar the biggest reach.\">" + teamGrade.grade + "</span>"
         : "";
       const keeperBadge = keeperGrade
-        ? " <span class=\"draft-grade draft-grade-keeper draft-grade-" + draftGradeClass(keeperGrade.grade) + "\" title=\"Keeper grade, against the rest of the league\"><span class=\"keeper-icon\" aria-hidden=\"true\">&#128274;</span>" + keeperGrade.grade + "</span>"
+        ? " <span class=\"draft-grade draft-grade-keeper draft-grade-" + draftGradeClass(keeperGrade.grade) + "\" title=\"Keeper grade: how good this team's keepers are compared with other teams' keepers.\"><span class=\"keeper-icon\" aria-hidden=\"true\">&#128274;</span>" + keeperGrade.grade + "</span>"
         : "";
       let html = "<h3>" + teamName + gradeBadge + keeperBadge + "</h3><table><thead><tr><th>Rd</th><th>Player</th></tr></thead><tbody>";
       picks.forEach(p => {
@@ -12235,6 +12235,13 @@ fetchWeeklyMatchups();
   @media (min-width: 900px) { .brand-logo { width: 124px; height: 124px; } header { column-gap: 26px; padding-top: 14px; padding-bottom: 12px; } header h1 { font-size: 2rem; } header > p { font-size: 1.1rem; } }
   @media (min-width: 1500px) { .brand-logo { width: 148px; height: 148px; } header { column-gap: 30px; } header h1 { font-size: 2.3rem; } header > p { font-size: 1.2rem; } }
   @media (min-width: 900px) { header > h1 { align-self: center; } header:has(> p:not(:empty)) > h1 { align-self: end; } header > p { align-self: start; margin-top: 6px; } }
+
+  /* Hover / tap tips */
+  #yh-tip { position: fixed; z-index: 400; max-width: 270px; padding: 9px 12px; border-radius: 10px; background: #1d2230; color: #f3f5f9; font-size: 0.82rem; line-height: 1.4; font-weight: 500; letter-spacing: 0; text-transform: none; box-shadow: 0 8px 24px rgba(0,0,0,.35); pointer-events: none; border: 1px solid rgba(255,255,255,.12); }
+  #yh-tip[hidden] { display: none; }
+  [data-tip] { cursor: help; }
+  th[data-tip] { text-decoration: underline dotted; text-decoration-color: var(--muted); text-underline-offset: 4px; }
+  .draft-grade[data-tip]:focus-visible, .yh-pill[data-tip]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 </style>
 <script>
 (function () {
@@ -13765,6 +13772,92 @@ fetchWeeklyMatchups();
   }
   new MutationObserver(function () { paint(); }).observe(card, { childList: true, subtree: true });
   paint();
+})();
+
+/* Hover / tap tips: short explanations for grades, pills, arrows and column headings */
+(function () {
+  var bubble = document.createElement("div");
+  bubble.id = "yh-tip"; bubble.setAttribute("role", "tooltip"); bubble.hidden = true;
+  document.body.appendChild(bubble);
+  var cur = null, fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  function place(el) {
+    var r = el.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+    bubble.style.left = "0px"; bubble.style.top = "0px";
+    var bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+    var x = Math.max(8, Math.min(vw - bw - 8, r.left + r.width / 2 - bw / 2));
+    var y = r.top - bh - 8; if (y < 8) y = r.bottom + 8;
+    bubble.style.left = x + "px"; bubble.style.top = y + "px";
+  }
+  function show(el) { var t = el.getAttribute("data-tip"); if (!t) return; cur = el; bubble.textContent = t; bubble.hidden = false; place(el); }
+  function hide() { cur = null; bubble.hidden = true; }
+  document.addEventListener("mouseover", function (e) {
+    if (!fine.matches) return;
+    var el = e.target.closest && e.target.closest("[data-tip]");
+    if (el) { if (el !== cur) show(el); } else if (cur) hide();
+  });
+  document.addEventListener("focusin", function (e) { var el = e.target.closest && e.target.closest("[data-tip]"); if (el && el.tabIndex >= 0 && el.matches(":focus-visible")) show(el); });
+  document.addEventListener("focusout", function () { if (cur) hide(); });
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest && e.target.closest("[data-tip]");
+    if (el && !el.hasAttribute("data-tip-hover")) { if (cur === el) hide(); else show(el); e.stopPropagation(); e.preventDefault(); }
+    else if (cur) hide();
+  }, true);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cur) hide(); });
+  window.addEventListener("scroll", function () { if (cur) hide(); }, true);
+  window.addEventListener("resize", hide);
+
+  var TH = {
+    "Streak": "Current run of wins (W) or losses (L).",
+    "Move": "Places gained (up arrow) or lost (down arrow) since last week.",
+    "Edge": "Rounds saved: how much later than his market round you would pay to keep him. Green is a bargain, red is an overpay.",
+    "Market round": "The round he would normally be drafted in, from the preseason rankings.",
+    "Cost next year": "The round it costs to keep him next season.",
+    "Trend": "Recent change in how many Yahoo teams own him.",
+    "Owned": "Share of all Yahoo leagues that have him on a roster.",
+    "Gap": "Games ahead of (or behind) the last playoff spot.",
+    "Pts/G": "Average points scored per game.",
+    "Last 3": "Average points over the last three games.",
+    "This Week": "His NFL team's opponent and the weather for this week's game.",
+    "Cost": "The round it takes to keep him next season.",
+    "Kept": "A star means he is kept for this season; the number is the round he is kept in.",
+    "Make playoffsOdds": "Chance to reach the playoffs across 4,000 simulated finishes of the season.",
+    "Roster": "How strong the starting lineup is, graded against the rest of the league.",
+    "Season": "How the team has performed this season, graded against the rest of the league.",
+    "Overall": "Roster and season grades combined."
+  };
+  var PILL = {
+    "In": "Comfortably inside the playoff line.",
+    "Bubble": "Within about a game of the playoff cutoff.",
+    "Out": "Outside the playoff line but still in the hunt.",
+    "Eliminated": "Can no longer catch the last playoff spot."
+  };
+  var tipQ = 0;
+  function apply() {
+    document.querySelectorAll("th").forEach(function (th) {
+      if (th.hasAttribute("data-tip")) return;
+      var t = TH[(th.textContent || "").trim()];
+      if (t) { th.setAttribute("data-tip", t); }
+    });
+    document.querySelectorAll(".yh-pill").forEach(function (p) {
+      if (p.hasAttribute("data-tip")) return;
+      var t = PILL[(p.textContent || "").trim()]; if (t) { p.setAttribute("data-tip", t); p.tabIndex = 0; }
+    });
+    document.querySelectorAll(".draft-grade[title], .yh-mv[title], .fa-inj[title], .kept-yes[title], .cost-badge[title]").forEach(function (el) {
+      el.setAttribute("data-tip", el.getAttribute("title")); el.removeAttribute("title"); el.tabIndex = 0;
+    });
+    document.querySelectorAll("tr.draft-pick-best[title], tr.draft-pick-reach[title]").forEach(function (el) {
+      el.setAttribute("data-tip", el.getAttribute("title")); el.setAttribute("data-tip-hover", ""); el.removeAttribute("title");
+    });
+    document.querySelectorAll(".yh-sub").forEach(function (s) {
+      if (s.hasAttribute("data-tip") || !/to win/.test(s.textContent)) return;
+      s.setAttribute("data-tip", "Yahoo's chance to win, based on the score so far and the players each team still has left. Projections can lag behind live scores.");
+      s.setAttribute("data-tip-hover", "");
+    });
+    var tr = document.querySelector(".ta-scale-track");
+    if (tr && !tr.hasAttribute("data-tip")) { tr.setAttribute("data-tip", "The marker leans toward the team that comes out ahead."); tr.setAttribute("data-tip-hover", ""); }
+  }
+  new MutationObserver(function () { if (tipQ) return; tipQ = requestAnimationFrame(function () { tipQ = 0; apply(); }); }).observe(document.documentElement, { childList: true, subtree: true });
+  apply();
 })();
 
 </script>
