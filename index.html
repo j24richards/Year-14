@@ -5700,7 +5700,7 @@ function draftKeptStar(data, team, raw) {
   const sel = (data.keeperSelections || []).find(k => k.team === team);
   if (!sel || !(sel.players || []).length) return "";
   const nm = String(typeof parseDraftPlayerField === "function" ? parseDraftPlayerField(raw).name : raw).trim().toLowerCase();
-  return sel.players.some(x => String(x).trim().toLowerCase() === nm) ? " <span class=\"kept-star\" data-tip=\"Kept player: a keeper, not drafted in this round.\" tabindex=\"0\">*</span>" : "";
+  return sel.players.some(x => String(x).trim().toLowerCase() === nm) ? " <span class=\"kept-star\" data-tip=\"Kept Player\" tabindex=\"0\">*</span>" : "";
 }
 function renderDraftResults(data) {
   document.getElementById("draft-heading").textContent = data.currentSeason.year + " Draft Results";
