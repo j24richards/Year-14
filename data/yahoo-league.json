@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-02T01:56:28.238Z",
+  "updated": "2026-11-02T02:03:16.394Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1364,7 +1364,7 @@
               "Benjamin"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
-            "points": 132.8,
+            "points": 133.24,
             "projected": 128.2,
             "win_probability": 0.76
           }
@@ -1454,7 +1454,7 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 80.9,
+            "points": 82.2,
             "projected": 113.45,
             "win_probability": 0.99
           },
