@@ -12213,6 +12213,13 @@ fetchWeeklyMatchups();
     nav { justify-content: center; padding-left: 20px; padding-right: 20px; }
     .theme-toggle { right: var(--gx, 20px); }
   }
+
+  /* Team pictures in the older tables: logo or initials circle, with room before the name */
+  td.standings-team-cell { gap: 12px; }
+  td.standings-team-cell > .yh-av { margin-right: 12px; width: 28px; height: 28px; flex-basis: 28px; }
+  td.standings-team-cell > .team-badge { width: 28px; height: 28px; margin-right: 12px; vertical-align: middle; }
+  td.standings-team-cell > .team-badge-initials { font-size: 0.62rem; }
+  @media (max-width: 640px) { #power-rankings-table .yh-av { display: none; } }
 </style>
 <script>
 (function () {
@@ -13137,6 +13144,31 @@ fetchWeeklyMatchups();
   }
   window.YH_recapImage = recapImage;
 
+  // Team pictures in the older tables (Power Rankings, season standings, grades): swap the plain badge
+  // for the team's Yahoo logo, or a coloured initials circle when it has none.
+  function upgradeAvatars() {
+    if (!DATA || !DATA.standings) return;
+    var by = {};
+    DATA.standings.forEach(function (t) { by[String(t.name).trim()] = t; });
+    document.querySelectorAll("td.standings-team-cell > .team-badge, td.standings-team-cell > .wr-badge").forEach(function (b) {
+      var sp = b.nextElementSibling, nm = sp ? sp.textContent.trim() : "", t = by[nm];
+      if (!t) return;
+      var logo = t.logo, ok = logo && !/\/default|placeholder|avatar_default/i.test(logo) && /^https:\/\//.test(logo);
+      if (ok) {
+        var fb = b.classList.contains("team-badge-initials") ? b.outerHTML : "";
+        b.outerHTML = '<span class="yh-av"><img class="yh-logo" src="' + esc(logo) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-fb="' + esc(fb) + '"></span>';
+      } else if (!b.classList.contains("team-badge-initials") && typeof hashHue === "function") {
+        var ini = nm.split(/\s+/).filter(Boolean).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase();
+        b.outerHTML = '<span class="team-badge team-badge-initials" style="background: hsl(' + hashHue(nm) + ', 62%, 29%);" aria-hidden="true">' + esc(ini) + "</span>";
+      }
+    });
+  }
+  window.YH_upgradeAvatars = upgradeAvatars;
+  (function () {
+    var q = 0;
+    function later() { if (q) return; q = requestAnimationFrame(function () { q = 0; upgradeAvatars(); }); }
+    new MutationObserver(later).observe(document.documentElement, { childList: true, subtree: true });
+  })();
   function renderAll() {
     if (!DATA) return;
     M = build();
