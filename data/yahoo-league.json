@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-02T00:06:39.979Z",
+  "updated": "2026-11-02T00:14:48.158Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1386,9 +1386,9 @@
               "Stephen"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
-            "points": 94.7,
+            "points": 96.7,
             "projected": 119.13,
-            "win_probability": 0.01
+            "win_probability": 0.010000000000000009
           },
           {
             "team_key": "470.l.390478.t.3",
@@ -1398,7 +1398,7 @@
               "Joe Tardif"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-            "points": 96.2,
+            "points": 96.7,
             "projected": 125.78,
             "win_probability": 0.99
           }
@@ -1466,7 +1466,7 @@
               "MIke"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 52.84,
+            "points": 52.94,
             "projected": 95.16,
             "win_probability": 0.010000000000000009
           }
