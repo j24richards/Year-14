@@ -12885,7 +12885,7 @@ fetchWeeklyMatchups();
       var rows = (m.teams || []).map(function (t) {
         var win = m.winner_team_key && t.team_key === m.winner_team_key, sub = "";
         var lead = !final && m.status === "midevent" && m.teams.length === 2 && m.teams.every(function (x) { return x.points != null; }) && t.points > Math.max.apply(null, m.teams.filter(function (x) { return x !== t; }).map(function (x) { return x.points; }));
-        if (!final && t.projected != null) sub = '<span class="yh-sub">Proj ' + fmt(t.projected) + (showProb ? " · " + Math.round(t.win_probability * 100) + "%" : "") + "</span>";
+        if (!final && t.projected != null) sub = '<span class="yh-sub">Proj ' + fmt(m.status === "midevent" && t.points != null ? Math.max(t.projected, t.points) : t.projected) + (showProb ? " · " + Math.round(t.win_probability * 100) + "% to win" : "") + "</span>";
         return '<div class="yl-row' + (win ? " win" : "") + (lead ? " lead" : "") + '"><span class="yl-name">' + avatar(t.name, t.team_key) + '<span class="yh-nm">' + esc(t.name) + sub + '</span></span><span class="yl-pts">' + (t.points == null ? "–" : fmt(t.points)) + "</span></div>";
       }).join("");
       var bar = showProb ? '<div class="yh-prob" title="Win probability"><span style="width:' + Math.round(m.teams[0].win_probability * 100) + '%"></span></div>' : "";
