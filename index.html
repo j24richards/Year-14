@@ -6143,7 +6143,7 @@ function renderTradeAnalyzer(data) {
     const valueIn = outB.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
     const valueOut = outA.reduce((s, p) => s + tradeAnalyzerPlayerValue(data, p), 0);
     const netA = valueIn - valueOut;
-    const pos = Math.max(6, Math.min(94, 50 + 40 * Math.tanh(netA / 0.9)));
+    const pos = Math.max(6, Math.min(94, 50 - 40 * Math.tanh(netA / 0.9)));  // left = team A, so a net gain for A moves it left
     document.getElementById("ta-scale-marker").style.left = pos + "%";
     document.getElementById("ta-scale-fill").style.left = Math.min(50, pos) + "%";
     document.getElementById("ta-scale-fill").style.width = Math.abs(pos - 50) + "%";
