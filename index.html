@@ -13861,6 +13861,11 @@ fetchWeeklyMatchups();
       s.setAttribute("data-tip", "Yahoo's chance to win, based on the score so far and the players each team still has left. Projections can lag behind live scores.");
       s.setAttribute("data-tip-hover", "");
     });
+    document.querySelectorAll(".kept-star[data-tip]").forEach(function (st) {
+      var td = st.closest("td"), row = st.closest("tr");
+      if (td && !td.hasAttribute("data-tip")) { td.setAttribute("data-tip", st.getAttribute("data-tip")); }
+      if (row && !row.hasAttribute("data-tip")) { row.setAttribute("data-tip", st.getAttribute("data-tip")); row.setAttribute("data-tip-hover", ""); }
+    });
     var tr = document.querySelector(".ta-scale-track");
     if (tr && !tr.hasAttribute("data-tip")) { tr.setAttribute("data-tip", "The marker leans toward the team that comes out ahead."); tr.setAttribute("data-tip-hover", ""); }
   }
