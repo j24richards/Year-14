@@ -2109,7 +2109,7 @@
 
   <section id="keepers">
     <h2 id="keepers-heading">Keeper Selections</h2>
-    <p style="color: var(--muted); margin-top: -6px;">Each manager's keeper picks for the upcoming season, entered by the commissioner once choices are in.</p>
+    <p style="color: var(--muted); margin-top: -6px;">Each manager's keeper picks for 2026, with the round each one costs.</p>
     <div class="teams-grid" id="keepers-grid"></div>
   </section>
 
@@ -7415,7 +7415,7 @@ function srLockedGrades(data) {
 
 function srGradeChip(g, title) {
   if (!g) return "&ndash;";
-  return "<span class=\"draft-grade draft-grade-" + draftGradeClass(g.letter) + "\" title=\"" + srEsc(title) + " — better than " + g.pct + "% of the league\">" + g.letter + "</span>";
+  return "<span class=\"draft-grade draft-grade-" + draftGradeClass(g.letter) + "\" title=\"" + srEsc(title) + " — " + (g.pct >= 100 ? "best in the league" : g.pct <= 0 ? "lowest in the league" : "better than " + g.pct + "% of the league") + "\">" + g.letter + "</span>";
 }
 
 function srRenderGrades(data) {
@@ -13585,7 +13585,7 @@ fetchWeeklyMatchups();
   var iosVer = 0; var m = ua.match(/OS (\d+)_(\d+)/); if (m) iosVer = parseFloat(m[1] + "." + m[2]);
   var standalone = false;
   try { standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; } catch (e) {}
-  var deferred = null, sheet = null, KEY = "yhInstallHide";
+  var deferred = null, sheet = null, KEY = "yhInstallHide:" + (location.pathname.split("/")[1] || "root");  // per site: both sites share github.io, so a shared key would hide one site's prompt after dismissing the other's
   function store(get, v) { try { if (get) return localStorage.getItem(KEY); localStorage.setItem(KEY, v); } catch (e) {} return null; }
   function hiddenRecently() { var t = parseInt(store(true) || "0", 10); return t && Date.now() - t < 14 * 864e5; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
