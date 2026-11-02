@@ -2253,12 +2253,13 @@
 
   <section id="keeperplanner">
     <h2>Keeper Planner</h2>
-    <p style="color: var(--muted); margin-top: -6px;">What each player on a roster would cost to keep next year, based on this season's draft, plus a picker that applies the league's same-round rule. Tick the players you'd keep and the costs update. Nothing here is saved.</p>
+    <p style="color: var(--muted); margin-top: -6px;">What each player on a roster would cost to keep next year, based on this season's draft, plus a picker that applies the league's same-round rule. Costs for every player are shown below. Keeper picks are made by the commissioner for now, and nothing here is saved.</p>
     <div class="card">
       <div class="admin-field">
         <label for="kp-team">Team</label>
         <select id="kp-team"></select>
       </div>
+      <p id="kp-lock-note" style="color: var(--muted); font-size: 0.9rem; margin: 0 0 10px; display: none;">Only the commissioner can pick keepers for now. The commissioner login is at the bottom of the page.</p>
       <p id="kp-empty-note" style="color: var(--muted); font-style: italic; display: none;">Rosters haven't been loaded yet.</p>
       <div style="overflow-x: auto;"><table id="kp-table"></table></div>
       <div id="kp-summary" style="margin-top: 12px;"></div>
@@ -5987,6 +5988,7 @@ function keeperPlannerCost(ctx, teamName, entry) {
   return { base: base, note: note, askTrade: askTrade, isWaiver: isWaiver };
 }
 
+function kpCanEdit() { return !!(FIRESTORE_AUTH && FIRESTORE_AUTH.currentUser); }
 function renderKeeperPlanner(data) {
   KP_LAST_DATA = data;
   const sel = document.getElementById("kp-team");
@@ -6014,6 +6016,7 @@ function renderKeeperPlanner(data) {
     if (!team) return;
     const ctx = keeperPlannerContext(data);
     const picked = KP_PICKED[team.team] || (KP_PICKED[team.team] = new Set());
+    const lockNote = document.getElementById("kp-lock-note"); if (lockNote) lockNote.style.display = kpCanEdit() ? "none" : "";
     const rows = (team.roster || []).map(p => {
       const c = keeperPlannerCost(ctx, team.team, p);
       const ranked = !!tradeRankMap()[kpNorm(p.player)];
@@ -6036,6 +6039,8 @@ function renderKeeperPlanner(data) {
       const cb = document.createElement("input");
       cb.type = "checkbox";
       cb.checked = picked.has(r.key);
+      cb.disabled = !kpCanEdit();
+      cb.title = cb.disabled ? "Only the commissioner can pick keepers" : "";
       cb.addEventListener("change", () => { if (cb.checked) picked.add(r.key); else picked.delete(r.key); draw(); });
       tdPick.appendChild(cb);
       tr.appendChild(tdPick);
@@ -10414,6 +10419,7 @@ document.getElementById("admin-unlock-btn").addEventListener("click", async () =
   const val = document.getElementById("admin-password").value;
   try {
     await signInWithEmailAndPassword(FIRESTORE_AUTH, COMMISSIONER_EMAIL, val);
+    if (KP_LAST_DATA) renderKeeperPlanner(KP_LAST_DATA);
     document.getElementById("admin-locked").style.display = "none";
     document.getElementById("admin-panel").style.display = "block";
     document.getElementById("admin-error").style.display = "none";
@@ -11169,6 +11175,7 @@ function loadAndRender() {
       FIRESTORE_APP = initializeApp(firebaseConfig);
       FIRESTORE_DB = getFirestore(FIRESTORE_APP);
       FIRESTORE_AUTH = getAuth(FIRESTORE_APP);
+      if (FIRESTORE_AUTH.authStateReady) FIRESTORE_AUTH.authStateReady().then(() => { if (KP_LAST_DATA) renderKeeperPlanner(KP_LAST_DATA); }).catch(() => {});
       subscribeLive();
     }
     FIRESTORE_REF = doc(FIRESTORE_DB, "site", "leagueData");
@@ -12220,6 +12227,9 @@ fetchWeeklyMatchups();
   td.standings-team-cell > .team-badge { width: 28px; height: 28px; margin-right: 12px; vertical-align: middle; }
   td.standings-team-cell > .team-badge-initials { font-size: 0.62rem; }
   @media (max-width: 640px) { #power-rankings-table .yh-av { display: none; } }
+
+  /* Keeper Planner: locked tick boxes (commissioner-only for now) */
+  #kp-table input[type="checkbox"]:disabled { opacity: 0.3; cursor: not-allowed; }
 </style>
 <script>
 (function () {
