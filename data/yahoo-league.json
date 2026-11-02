@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-02T02:53:21.405Z",
+  "updated": "2026-11-02T02:57:25.522Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1488,7 +1488,7 @@
               "Eric"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
-            "points": 71.86,
+            "points": 72.16,
             "projected": 101.76,
             "win_probability": 0.01
           },
