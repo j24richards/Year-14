@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-06T18:57:09.992Z",
+  "updated": "2026-11-07T17:29:31.985Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1525,8 +1525,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 8.9,
-            "projected": 113.11,
-            "win_probability": 0.42999999999999994
+            "projected": 117.43,
+            "win_probability": 0.41000000000000003
           },
           {
             "team_key": "470.l.390478.t.3",
@@ -1537,8 +1537,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 0,
-            "projected": 118.7,
-            "win_probability": 0.5700000000000001
+            "projected": 124.98,
+            "win_probability": 0.59
           }
         ]
       },
@@ -1559,7 +1559,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 13.58,
-            "projected": 125.67,
+            "projected": 125.96,
             "win_probability": 0.41000000000000003
           },
           {
@@ -1571,7 +1571,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 13.1,
-            "projected": 131.45,
+            "projected": 131.1,
             "win_probability": 0.59
           }
         ]
@@ -1593,8 +1593,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 101.95,
-            "win_probability": 0.39
+            "projected": 115.5,
+            "win_probability": 0.51
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1605,8 +1605,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 3.2,
-            "projected": 118.56,
-            "win_probability": 0.61
+            "projected": 118.6,
+            "win_probability": 0.49
           }
         ]
       },
@@ -1627,7 +1627,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 0,
-            "projected": 124.73,
+            "projected": 124.2,
             "win_probability": 0.49
           },
           {
@@ -1639,7 +1639,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 16.58,
-            "projected": 128.89,
+            "projected": 129.12,
             "win_probability": 0.51
           }
         ]
@@ -1661,8 +1661,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 109.35,
-            "win_probability": 0.35
+            "projected": 103.47,
+            "win_probability": 0.31000000000000005
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1673,14 +1673,56 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 126.36,
-            "win_probability": 0.65
+            "projected": 126.03,
+            "win_probability": 0.69
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 242,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1793998488,
+      "date": "2026-11-06T20:54:48.000Z",
+      "players": [
+        {
+          "name": "Devin Singletary",
+          "team": "NYG",
+          "pos": "RB",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.4"
+        },
+        {
+          "name": "Tre Tucker",
+          "team": "LV",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.4",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 241,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1793994276,
+      "date": "2026-11-06T19:44:36.000Z",
+      "players": [
+        {
+          "name": "T.J. Hockenson",
+          "team": "Min",
+          "pos": "TE",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.3"
+        }
+      ]
+    },
     {
       "id": 240,
       "type": "add",
@@ -6200,12 +6242,6 @@
         "slot": "RB"
       },
       {
-        "name": "Garrett Wilson",
-        "team": "NYJ",
-        "pos": "WR",
-        "slot": "WR"
-      },
-      {
         "name": "Antonio Williams",
         "team": "Was",
         "pos": "WR",
@@ -6218,8 +6254,14 @@
         "slot": "WR"
       },
       {
-        "name": "Tucker Kraft",
-        "team": "GB",
+        "name": "Marvin Harrison Jr.",
+        "team": "Hou",
+        "pos": "WR",
+        "slot": "WR"
+      },
+      {
+        "name": "T.J. Hockenson",
+        "team": "Min",
         "pos": "TE",
         "slot": "TE"
       },
@@ -6228,6 +6270,12 @@
         "team": "Car",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Tucker Kraft",
+        "team": "GB",
+        "pos": "TE",
+        "slot": "BN"
       },
       {
         "name": "Patrick Mahomes",
@@ -6242,12 +6290,6 @@
         "slot": "BN"
       },
       {
-        "name": "Marvin Harrison Jr.",
-        "team": "Hou",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Zach Charbonnet",
         "team": "Sea",
         "pos": "RB",
@@ -6258,6 +6300,12 @@
         "team": "Phi",
         "pos": "WR",
         "slot": "BN"
+      },
+      {
+        "name": "Garrett Wilson",
+        "team": "NYJ",
+        "pos": "WR",
+        "slot": "IR"
       },
       {
         "name": "Jeremiyah Love",
@@ -6414,10 +6462,16 @@
         "slot": "TE"
       },
       {
+        "name": "Quinshon Judkins",
+        "team": "Cle",
+        "pos": "RB",
+        "slot": "W/R/T"
+      },
+      {
         "name": "Blake Corum",
         "team": "LAR",
         "pos": "RB",
-        "slot": "W/R/T"
+        "slot": "BN"
       },
       {
         "name": "Makai Lemon",
@@ -6429,12 +6483,6 @@
         "name": "Emeka Egbuka",
         "team": "TB",
         "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "Quinshon Judkins",
-        "team": "Cle",
-        "pos": "RB",
         "slot": "BN"
       },
       {
@@ -6678,8 +6726,8 @@
         "slot": "RB"
       },
       {
-        "name": "TreVeyon Henderson",
-        "team": "NE",
+        "name": "Devin Singletary",
+        "team": "NYG",
         "pos": "RB",
         "slot": "RB"
       },
@@ -6714,9 +6762,15 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Tre Tucker",
-        "team": "LV",
-        "pos": "WR",
+        "name": "Seth McGowan",
+        "team": "Ind",
+        "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "TreVeyon Henderson",
+        "team": "NE",
+        "pos": "RB",
         "slot": "BN"
       },
       {
@@ -6729,12 +6783,6 @@
         "name": "Tyreek Hill",
         "team": "Mia",
         "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "Seth McGowan",
-        "team": "Ind",
-        "pos": "RB",
         "slot": "BN"
       },
       {
