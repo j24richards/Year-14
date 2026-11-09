@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-08T23:57:03.975Z",
+  "updated": "2026-11-09T00:03:54.016Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1524,7 +1524,7 @@
               "Jimmie Legs"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
-            "points": 57.3,
+            "points": 59.3,
             "projected": 115.87,
             "win_probability": 0.06000000000000005
           },
@@ -1537,7 +1537,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 88.9,
-            "projected": 124.53,
+            "projected": 124.56,
             "win_probability": 0.94
           }
         ]
@@ -1571,7 +1571,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 112.62,
-            "projected": 130.56,
+            "projected": 130.58,
             "win_probability": 0.97
           }
         ]
@@ -1594,7 +1594,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 109.3,
             "projected": 114.79,
-            "win_probability": 0.9199999999999999
+            "win_probability": 0.9299999999999999
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1605,8 +1605,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 80.38,
-            "projected": 116.84,
-            "win_probability": 0.08000000000000007
+            "projected": 116.87,
+            "win_probability": 0.07000000000000006
           }
         ]
       },
@@ -1626,9 +1626,9 @@
               "Benjamin"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
-            "points": 117.36,
+            "points": 118.86,
             "projected": 126.46,
-            "win_probability": 0.22999999999999998
+            "win_probability": 0.21999999999999997
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -1638,9 +1638,9 @@
               "Rick"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 110.32,
-            "projected": 130.66,
-            "win_probability": 0.77
+            "points": 113.32,
+            "projected": 130.69,
+            "win_probability": 0.78
           }
         ]
       },
@@ -1661,8 +1661,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 74.6,
-            "projected": 109.41,
-            "win_probability": 0.09000000000000008
+            "projected": 109.4,
+            "win_probability": 0.06000000000000005
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1672,9 +1672,9 @@
               "Tom"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
-            "points": 103.18,
-            "projected": 126.53,
-            "win_probability": 0.9099999999999999
+            "points": 109.1,
+            "projected": 126.56,
+            "win_probability": 0.94
           }
         ]
       }
