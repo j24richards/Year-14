@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-09T02:53:47.860Z",
+  "updated": "2026-11-09T03:08:42.017Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1570,7 +1570,7 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 118.12,
+            "points": 118.62,
             "projected": 130.54,
             "win_probability": 0.99
           }
