@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-09T06:07:07.819Z",
+  "updated": "2026-11-09T21:58:52.538Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1525,7 +1525,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 83.3,
-            "projected": 122.55,
+            "projected": 122.66,
             "win_probability": 0.21999999999999997
           },
           {
@@ -1537,7 +1537,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 105.66,
-            "projected": 124.67,
+            "projected": 124.73,
             "win_probability": 0.78
           }
         ]
@@ -1559,7 +1559,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 88.78,
-            "projected": 125.38,
+            "projected": 125.15,
             "win_probability": 0.01
           },
           {
@@ -1571,7 +1571,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 139.12,
-            "projected": 130.54,
+            "projected": 130.64,
             "win_probability": 0.99
           }
         ]
@@ -1593,7 +1593,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 109.3,
-            "projected": 114.77,
+            "projected": 114.92,
             "win_probability": 0.99
           },
           {
@@ -1605,7 +1605,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 96.58,
-            "projected": 116.87,
+            "projected": 103.37,
             "win_probability": 0.010000000000000009
           }
         ]
@@ -1627,7 +1627,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 118.86,
-            "projected": 126.44,
+            "projected": 126.37,
             "win_probability": 0.28
           },
           {
@@ -1639,7 +1639,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 120.42,
-            "projected": 130.67,
+            "projected": 131.2,
             "win_probability": 0.72
           }
         ]
@@ -1661,7 +1661,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 82,
-            "projected": 109.33,
+            "projected": 109.24,
             "win_probability": 0.010000000000000009
           },
           {
@@ -1673,7 +1673,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 124.26,
-            "projected": 126.42,
+            "projected": 126.58,
             "win_probability": 0.99
           }
         ]
@@ -1681,6 +1681,65 @@
     ]
   },
   "transactions": [
+    {
+      "id": 245,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1794182908,
+      "date": "2026-11-09T00:08:28.000Z",
+      "players": [
+        {
+          "name": "Bears",
+          "team": "Chi",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        }
+      ]
+    },
+    {
+      "id": 244,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1794172571,
+      "date": "2026-11-08T21:16:11.000Z",
+      "players": [
+        {
+          "name": "Kaelon Black",
+          "team": "SF",
+          "pos": "RB",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        },
+        {
+          "name": "Emmett Johnson",
+          "team": "KC",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 243,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1794160283,
+      "date": "2026-11-08T17:51:23.000Z",
+      "players": [
+        {
+          "name": "DeMario Douglas",
+          "team": "NE",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 242,
       "type": "add/drop",
@@ -6156,8 +6215,8 @@
         "slot": "WR"
       },
       {
-        "name": "Malik Washington",
-        "team": "Mia",
+        "name": "Ryan Flournoy",
+        "team": "Dal",
         "pos": "WR",
         "slot": "WR"
       },
@@ -6172,6 +6231,12 @@
         "team": "Buf",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Malik Washington",
+        "team": "Mia",
+        "pos": "WR",
+        "slot": "BN"
       },
       {
         "name": "Khalil Shakir",
@@ -6195,12 +6260,6 @@
         "name": "Jordan Love",
         "team": "GB",
         "pos": "QB",
-        "slot": "BN"
-      },
-      {
-        "name": "Ryan Flournoy",
-        "team": "Dal",
-        "pos": "WR",
         "slot": "BN"
       },
       {
@@ -6444,8 +6503,8 @@
         "slot": "WR"
       },
       {
-        "name": "DeMario Douglas",
-        "team": "NE",
+        "name": "Makai Lemon",
+        "team": "Phi",
         "pos": "WR",
         "slot": "WR"
       },
@@ -6474,12 +6533,6 @@
         "slot": "BN"
       },
       {
-        "name": "Makai Lemon",
-        "team": "Phi",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Emeka Egbuka",
         "team": "TB",
         "pos": "WR",
@@ -6492,8 +6545,14 @@
         "slot": "BN"
       },
       {
-        "name": "Emmett Johnson",
-        "team": "KC",
+        "name": "Jordyn Tyson",
+        "team": "NO",
+        "pos": "WR",
+        "slot": "BN"
+      },
+      {
+        "name": "Kaelon Black",
+        "team": "SF",
         "pos": "RB",
         "slot": "BN"
       },
@@ -6501,7 +6560,7 @@
         "name": "Kyle Monangai",
         "team": "Chi",
         "pos": "RB",
-        "slot": "BN"
+        "slot": "IR"
       },
       {
         "name": "Carnell Tate",
@@ -6510,16 +6569,16 @@
         "slot": "IR"
       },
       {
-        "name": "Jordyn Tyson",
-        "team": "NO",
-        "pos": "WR",
-        "slot": "IR"
-      },
-      {
         "name": "Chase McLaughlin",
         "team": "TB",
         "pos": "K",
         "slot": "K"
+      },
+      {
+        "name": "Bears",
+        "team": "Chi",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.7": [
