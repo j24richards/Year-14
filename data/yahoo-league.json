@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-09T02:18:31.098Z",
+  "updated": "2026-11-09T02:29:21.361Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1536,7 +1536,7 @@
               "Joe Tardif"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-            "points": 102,
+            "points": 102.52,
             "projected": 124.66,
             "win_probability": 0.97
           }
@@ -1570,7 +1570,7 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 115.22,
+            "points": 115.72,
             "projected": 130.54,
             "win_probability": 0.98
           }
