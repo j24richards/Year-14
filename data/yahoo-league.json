@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-13T06:28:43.538Z",
+  "updated": "2026-11-13T19:16:15.073Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1697,8 +1697,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 111.04,
-            "win_probability": 0.42999999999999994
+            "projected": 108.23,
+            "win_probability": 0.41000000000000003
           },
           {
             "team_key": "470.l.390478.t.5",
@@ -1709,8 +1709,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 23,
-            "projected": 114.48,
-            "win_probability": 0.5700000000000001
+            "projected": 114.1,
+            "win_probability": 0.59
           }
         ]
       },
@@ -1731,7 +1731,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 124.59,
+            "projected": 124.5,
             "win_probability": 0.42000000000000004
           },
           {
@@ -1743,7 +1743,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 25.7,
-            "projected": 119.51,
+            "projected": 119.29,
             "win_probability": 0.58
           }
         ]
@@ -1765,7 +1765,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 11.2,
-            "projected": 125.13,
+            "projected": 126.16,
             "win_probability": 0.54
           },
           {
@@ -1777,7 +1777,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 124.85,
+            "projected": 125.18,
             "win_probability": 0.45999999999999996
           }
         ]
@@ -1799,7 +1799,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 28.1,
-            "projected": 112.18,
+            "projected": 112.02,
             "win_probability": 0.38
           },
           {
@@ -1811,7 +1811,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 131.52,
+            "projected": 131.37,
             "win_probability": 0.62
           }
         ]
@@ -1833,7 +1833,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 0,
-            "projected": 102.11,
+            "projected": 102.24,
             "win_probability": 0.33999999999999997
           },
           {
@@ -1845,7 +1845,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 22.76,
-            "projected": 114.43,
+            "projected": 114.83,
             "win_probability": 0.66
           }
         ]
@@ -1853,6 +1853,23 @@
     ]
   },
   "transactions": [
+    {
+      "id": 262,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1794543801,
+      "date": "2026-11-13T04:23:21.000Z",
+      "players": [
+        {
+          "name": "Devin Singletary",
+          "team": "NYG",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.4",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 261,
       "type": "add/drop",
@@ -6718,10 +6735,16 @@
         "slot": "TE"
       },
       {
+        "name": "Sam LaPorta",
+        "team": "Det",
+        "pos": "TE",
+        "slot": "W/R/T"
+      },
+      {
         "name": "Woody Marks",
         "team": "Hou",
         "pos": "RB",
-        "slot": "W/R/T"
+        "slot": "BN"
       },
       {
         "name": "D'Andre Swift",
@@ -6739,12 +6762,6 @@
         "name": "Khalil Shakir",
         "team": "Buf",
         "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "Sam LaPorta",
-        "team": "Det",
-        "pos": "TE",
         "slot": "BN"
       },
       {
@@ -6926,12 +6943,6 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Puka Nacua",
-        "team": "LAR",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Bucky Irving",
         "team": "TB",
         "pos": "RB",
@@ -6948,6 +6959,12 @@
         "team": "LAC",
         "pos": "RB",
         "slot": "BN"
+      },
+      {
+        "name": "Puka Nacua",
+        "team": "LAR",
+        "pos": "WR",
+        "slot": "IR"
       },
       {
         "name": "Lamar Jackson",
@@ -7116,12 +7133,6 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Devin Singletary",
-        "team": "NYG",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
         "name": "Seth McGowan",
         "team": "Ind",
         "pos": "RB",
@@ -7202,8 +7213,8 @@
         "slot": "WR"
       },
       {
-        "name": "Carnell Tate",
-        "team": "Ten",
+        "name": "Omar Cooper Jr.",
+        "team": "NYJ",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7218,12 +7229,6 @@
         "team": "Cin",
         "pos": "RB",
         "slot": "W/R/T"
-      },
-      {
-        "name": "Omar Cooper Jr.",
-        "team": "NYJ",
-        "pos": "WR",
-        "slot": "BN"
       },
       {
         "name": "Quinshon Judkins",
@@ -7260,6 +7265,12 @@
         "team": "KC",
         "pos": "RB",
         "slot": "BN"
+      },
+      {
+        "name": "Carnell Tate",
+        "team": "Ten",
+        "pos": "WR",
+        "slot": "IR"
       },
       {
         "name": "Kyle Monangai",
