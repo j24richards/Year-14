@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-13T19:16:15.073Z",
+  "updated": "2026-11-14T17:42:41.928Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1697,7 +1697,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 108.23,
+            "projected": 108.15,
             "win_probability": 0.41000000000000003
           },
           {
@@ -1709,7 +1709,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 23,
-            "projected": 114.1,
+            "projected": 114.24,
             "win_probability": 0.59
           }
         ]
@@ -1731,7 +1731,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 124.5,
+            "projected": 124.42,
             "win_probability": 0.42000000000000004
           },
           {
@@ -1743,7 +1743,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 25.7,
-            "projected": 119.29,
+            "projected": 119.43,
             "win_probability": 0.58
           }
         ]
@@ -1765,8 +1765,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 11.2,
-            "projected": 126.16,
-            "win_probability": 0.54
+            "projected": 108.9,
+            "win_probability": 0.4
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -1778,7 +1778,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
             "projected": 125.18,
-            "win_probability": 0.45999999999999996
+            "win_probability": 0.6
           }
         ]
       },
@@ -1799,7 +1799,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 28.1,
-            "projected": 112.02,
+            "projected": 113.42,
             "win_probability": 0.38
           },
           {
@@ -1811,7 +1811,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 131.37,
+            "projected": 131.99,
             "win_probability": 0.62
           }
         ]
@@ -1833,8 +1833,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 0,
-            "projected": 102.24,
-            "win_probability": 0.33999999999999997
+            "projected": 101.17,
+            "win_probability": 0.32999999999999996
           },
           {
             "team_key": "470.l.390478.t.7",
@@ -1845,14 +1845,65 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 22.76,
-            "projected": 114.83,
-            "win_probability": 0.66
+            "projected": 114.79,
+            "win_probability": 0.67
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 265,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1794667547,
+      "date": "2026-11-14T14:45:47.000Z",
+      "players": [
+        {
+          "name": "CJ Daniels",
+          "team": "LAR",
+          "pos": "WR",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.3"
+        }
+      ]
+    },
+    {
+      "id": 264,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1794667481,
+      "date": "2026-11-14T14:44:41.000Z",
+      "players": [
+        {
+          "name": "T.J. Hockenson",
+          "team": "Min",
+          "pos": "TE",
+          "action": "drop",
+          "from": "470.l.390478.t.3",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 263,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1794647824,
+      "date": "2026-11-14T09:17:04.000Z",
+      "players": [
+        {
+          "name": "Tucker Kraft",
+          "team": "GB",
+          "pos": "TE",
+          "action": "add",
+          "from": "waivers",
+          "to": "470.l.390478.t.6"
+        }
+      ]
+    },
     {
       "id": 262,
       "type": "drop",
@@ -6827,8 +6878,8 @@
         "slot": "WR"
       },
       {
-        "name": "T.J. Hockenson",
-        "team": "Min",
+        "name": "Dalton Kincaid",
+        "team": "Buf",
         "pos": "TE",
         "slot": "TE"
       },
@@ -6851,12 +6902,6 @@
         "slot": "BN"
       },
       {
-        "name": "Dalton Kincaid",
-        "team": "Buf",
-        "pos": "TE",
-        "slot": "BN"
-      },
-      {
         "name": "Zach Charbonnet",
         "team": "Sea",
         "pos": "RB",
@@ -6865,6 +6910,12 @@
       {
         "name": "Wan'Dale Robinson",
         "team": "Ten",
+        "pos": "WR",
+        "slot": "BN"
+      },
+      {
+        "name": "CJ Daniels",
+        "team": "LAR",
         "pos": "WR",
         "slot": "BN"
       },
@@ -7540,6 +7591,12 @@
         "name": "Braelon Allen",
         "team": "NYJ",
         "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "Tucker Kraft",
+        "team": "GB",
+        "pos": "TE",
         "slot": "BN"
       },
       {
