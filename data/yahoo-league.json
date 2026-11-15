@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-15T22:58:08.127Z",
+  "updated": "2026-11-15T23:06:12.673Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1696,7 +1696,7 @@
               "Jimmie Legs"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
-            "points": 127.94,
+            "points": 132.24,
             "projected": 127.07,
             "win_probability": 0.99
           },
@@ -1708,7 +1708,7 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 116.1,
+            "points": 116,
             "projected": 114.38,
             "win_probability": 0.010000000000000009
           }
@@ -1764,7 +1764,7 @@
               "Joe Tardif"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-            "points": 183.22,
+            "points": 185.22,
             "projected": 121.13,
             "win_probability": 0.99
           },
