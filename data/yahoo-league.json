@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-16T04:25:53.147Z",
+  "updated": "2026-11-16T21:41:39.966Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1697,7 +1697,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 144.94,
-            "projected": 127.04,
+            "projected": 126.95,
             "win_probability": 1
           },
           {
@@ -1709,7 +1709,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 117.2,
-            "projected": 114.38,
+            "projected": 114.32,
             "win_probability": 0
           }
         ]
@@ -1731,7 +1731,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 98.48,
-            "projected": 115.63,
+            "projected": 115.68,
             "win_probability": 0.01
           },
           {
@@ -1743,7 +1743,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 150.82,
-            "projected": 119.22,
+            "projected": 119.15,
             "win_probability": 0.99
           }
         ]
@@ -1765,7 +1765,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 190.92,
-            "projected": 121.13,
+            "projected": 120.94,
             "win_probability": 0.99
           },
           {
@@ -1777,7 +1777,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 113.86,
-            "projected": 128.12,
+            "projected": 128.21,
             "win_probability": 0.010000000000000009
           }
         ]
@@ -1799,7 +1799,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 109.22,
-            "projected": 109.1,
+            "projected": 109.11,
             "win_probability": 1
           },
           {
@@ -1811,7 +1811,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 78.82,
-            "projected": 133.43,
+            "projected": 133.35,
             "win_probability": 0
           }
         ]
@@ -1833,7 +1833,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 134.36,
-            "projected": 100.88,
+            "projected": 100.9,
             "win_probability": 1
           },
           {
@@ -1845,7 +1845,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 125.66,
-            "projected": 114.73,
+            "projected": 114.86,
             "win_probability": 0
           }
         ]
@@ -7255,12 +7255,6 @@
         "slot": "BN"
       },
       {
-        "name": "TreVeyon Henderson",
-        "team": "NE",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
         "name": "Tyreek Hill",
         "team": "Mia",
         "pos": "WR",
@@ -7273,14 +7267,20 @@
         "slot": "BN"
       },
       {
-        "name": "RJ Harvey",
-        "team": "Den",
+        "name": "Travis Etienne Jr.",
+        "team": "NO",
+        "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "TreVeyon Henderson",
+        "team": "NE",
         "pos": "RB",
         "slot": "IR"
       },
       {
-        "name": "Travis Etienne Jr.",
-        "team": "NO",
+        "name": "RJ Harvey",
+        "team": "Den",
         "pos": "RB",
         "slot": "IR"
       },
