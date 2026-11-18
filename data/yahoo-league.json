@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-17T20:30:35.830Z",
+  "updated": "2026-11-18T20:02:37.662Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1869,8 +1869,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 111.44,
-            "win_probability": 0.51
+            "projected": 118.89,
+            "win_probability": 0.5700000000000001
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1881,8 +1881,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 110.25,
-            "win_probability": 0.49
+            "projected": 110.86,
+            "win_probability": 0.42999999999999994
           }
         ]
       },
@@ -1903,8 +1903,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 105.57,
-            "win_probability": 0.5
+            "projected": 106.08,
+            "win_probability": 0.48
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1915,8 +1915,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 105.85,
-            "win_probability": 0.5
+            "projected": 108.02,
+            "win_probability": 0.52
           }
         ]
       },
@@ -1937,8 +1937,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 0,
-            "projected": 122.74,
-            "win_probability": 0.53
+            "projected": 129.94,
+            "win_probability": 0.58
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1949,8 +1949,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 0,
-            "projected": 118.94,
-            "win_probability": 0.47
+            "projected": 119.92,
+            "win_probability": 0.42000000000000004
           }
         ]
       },
@@ -1971,8 +1971,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 108.03,
-            "win_probability": 0.61
+            "projected": 108.65,
+            "win_probability": 0.48
           },
           {
             "team_key": "470.l.390478.t.7",
@@ -1983,8 +1983,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 0,
-            "projected": 96.42,
-            "win_probability": 0.39
+            "projected": 110.56,
+            "win_probability": 0.52
           }
         ]
       },
@@ -2005,7 +2005,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 115.44,
+            "projected": 115.74,
             "win_probability": 0.38
           },
           {
@@ -2017,7 +2017,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 129.05,
+            "projected": 129.47,
             "win_probability": 0.62
           }
         ]
@@ -2025,6 +2025,174 @@
     ]
   },
   "transactions": [
+    {
+      "id": 279,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795004166,
+      "date": "2026-11-18T12:16:06.000Z",
+      "players": [
+        {
+          "name": "Chiefs",
+          "team": "KC",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.3"
+        }
+      ]
+    },
+    {
+      "id": 278,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795004155,
+      "date": "2026-11-18T12:15:55.000Z",
+      "players": [
+        {
+          "name": "Emari Demercado",
+          "team": "Hou",
+          "pos": "RB",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.3"
+        }
+      ]
+    },
+    {
+      "id": 277,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795004138,
+      "date": "2026-11-18T12:15:38.000Z",
+      "players": [
+        {
+          "name": "CJ Daniels",
+          "team": "LAR",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.3",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 276,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795004132,
+      "date": "2026-11-18T12:15:32.000Z",
+      "players": [
+        {
+          "name": "Wan'Dale Robinson",
+          "team": "Ten",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.3",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 275,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1795000002,
+      "date": "2026-11-18T11:06:42.000Z",
+      "players": [
+        {
+          "name": "Courtland Sutton",
+          "team": "Den",
+          "pos": "WR",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.7"
+        },
+        {
+          "name": "Ladd McConkey",
+          "team": "LAC",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.7",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 274,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1794999952,
+      "date": "2026-11-18T11:05:52.000Z",
+      "players": [
+        {
+          "name": "Chig Okonkwo",
+          "team": "Was",
+          "pos": "TE",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.7"
+        },
+        {
+          "name": "DeMario Douglas",
+          "team": "NE",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.7",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 273,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1794999903,
+      "date": "2026-11-18T11:05:03.000Z",
+      "players": [
+        {
+          "name": "Broncos",
+          "team": "Den",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.7"
+        },
+        {
+          "name": "Patriots",
+          "team": "NE",
+          "pos": "DEF",
+          "action": "drop",
+          "from": "470.l.390478.t.7",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 272,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1794996840,
+      "date": "2026-11-18T10:14:00.000Z",
+      "players": [
+        {
+          "name": "Xavier Hutchinson",
+          "team": "Hou",
+          "pos": "WR",
+          "action": "add",
+          "from": "waivers",
+          "to": "470.l.390478.t.6"
+        },
+        {
+          "name": "Audric Estime",
+          "team": "NO",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.6",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 271,
       "type": "drop",
@@ -4775,7 +4943,7 @@
       "players": [
         {
           "name": "Harrison Mevis",
-          "team": "Bal",
+          "team": "LAR",
           "pos": "K",
           "action": "drop",
           "from": "470.l.390478.t.5",
@@ -7006,15 +7174,9 @@
         "slot": "BN"
       },
       {
-        "name": "Wan'Dale Robinson",
-        "team": "Ten",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "CJ Daniels",
-        "team": "LAR",
-        "pos": "WR",
+        "name": "Emari Demercado",
+        "team": "Hou",
+        "pos": "RB",
         "slot": "BN"
       },
       {
@@ -7028,6 +7190,12 @@
         "team": "Jax",
         "pos": "K",
         "slot": "K"
+      },
+      {
+        "name": "Chiefs",
+        "team": "KC",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.9": [
@@ -7638,14 +7806,14 @@
         "slot": "WR"
       },
       {
-        "name": "Ladd McConkey",
-        "team": "LAC",
+        "name": "Courtland Sutton",
+        "team": "Den",
         "pos": "WR",
         "slot": "WR"
       },
       {
-        "name": "Harold Fannin Jr.",
-        "team": "Cle",
+        "name": "Chig Okonkwo",
+        "team": "Was",
         "pos": "TE",
         "slot": "TE"
       },
@@ -7654,6 +7822,12 @@
         "team": "NO",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Harold Fannin Jr.",
+        "team": "Cle",
+        "pos": "TE",
+        "slot": "BN"
       },
       {
         "name": "Jayden Daniels",
@@ -7680,20 +7854,14 @@
         "slot": "BN"
       },
       {
-        "name": "DeMario Douglas",
-        "team": "NE",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Tyler Bass",
         "team": "Buf",
         "pos": "K",
         "slot": "K"
       },
       {
-        "name": "Patriots",
-        "team": "NE",
+        "name": "Broncos",
+        "team": "Den",
         "pos": "DEF",
         "slot": "DEF"
       }
@@ -7858,12 +8026,6 @@
         "slot": "BN"
       },
       {
-        "name": "Audric Estime",
-        "team": "NO",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
         "name": "Braelon Allen",
         "team": "NYJ",
         "pos": "RB",
@@ -7873,6 +8035,12 @@
         "name": "Tucker Kraft",
         "team": "GB",
         "pos": "TE",
+        "slot": "BN"
+      },
+      {
+        "name": "Xavier Hutchinson",
+        "team": "Hou",
+        "pos": "WR",
         "slot": "BN"
       },
       {
