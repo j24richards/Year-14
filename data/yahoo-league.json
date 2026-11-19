@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-18T20:02:37.662Z",
+  "updated": "2026-11-19T20:00:44.015Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1869,8 +1869,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 118.89,
-            "win_probability": 0.5700000000000001
+            "projected": 109.33,
+            "win_probability": 0.49
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1881,8 +1881,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 110.86,
-            "win_probability": 0.42999999999999994
+            "projected": 110.78,
+            "win_probability": 0.51
           }
         ]
       },
@@ -1903,8 +1903,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 106.08,
-            "win_probability": 0.48
+            "projected": 105.88,
+            "win_probability": 0.26
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1915,8 +1915,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 108.02,
-            "win_probability": 0.52
+            "projected": 136.17,
+            "win_probability": 0.74
           }
         ]
       },
@@ -1937,8 +1937,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 0,
-            "projected": 129.94,
-            "win_probability": 0.58
+            "projected": 127.97,
+            "win_probability": 0.5700000000000001
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1949,8 +1949,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 0,
-            "projected": 119.92,
-            "win_probability": 0.42000000000000004
+            "projected": 119.84,
+            "win_probability": 0.42999999999999994
           }
         ]
       },
@@ -1971,7 +1971,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 108.65,
+            "projected": 108.56,
             "win_probability": 0.48
           },
           {
@@ -1983,7 +1983,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 0,
-            "projected": 110.56,
+            "projected": 110.34,
             "win_probability": 0.52
           }
         ]
@@ -2005,8 +2005,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 115.74,
-            "win_probability": 0.38
+            "projected": 115.52,
+            "win_probability": 0.39
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2017,14 +2017,107 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 129.47,
-            "win_probability": 0.62
+            "projected": 128.98,
+            "win_probability": 0.61
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 284,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1795051170,
+      "date": "2026-11-19T01:19:30.000Z",
+      "players": [
+        {
+          "name": "Bears",
+          "team": "Chi",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.10"
+        },
+        {
+          "name": "Seahawks",
+          "team": "Sea",
+          "pos": "DEF",
+          "action": "drop",
+          "from": "470.l.390478.t.10",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 283,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795051040,
+      "date": "2026-11-19T01:17:20.000Z",
+      "players": [
+        {
+          "name": "Bo Nix",
+          "team": "Den",
+          "pos": "QB",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.10"
+        }
+      ]
+    },
+    {
+      "id": 282,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795035573,
+      "date": "2026-11-18T20:59:33.000Z",
+      "players": [
+        {
+          "name": "De'Zhaun Stribling",
+          "team": "SF",
+          "pos": "WR",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        }
+      ]
+    },
+    {
+      "id": 281,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795035553,
+      "date": "2026-11-18T20:59:13.000Z",
+      "players": [
+        {
+          "name": "Bills",
+          "team": "Buf",
+          "pos": "DEF",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 280,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795035547,
+      "date": "2026-11-18T20:59:07.000Z",
+      "players": [
+        {
+          "name": "Chris Boswell",
+          "team": "Pit",
+          "pos": "K",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 279,
       "type": "add",
@@ -7298,8 +7391,8 @@
     ],
     "470.l.390478.t.10": [
       {
-        "name": "Drake Maye",
-        "team": "NE",
+        "name": "Bo Nix",
+        "team": "Den",
         "pos": "QB",
         "slot": "QB"
       },
@@ -7328,8 +7421,8 @@
         "slot": "WR"
       },
       {
-        "name": "Jalen Coker",
-        "team": "Car",
+        "name": "Zay Flowers",
+        "team": "Bal",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7344,6 +7437,18 @@
         "team": "Ten",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Jalen Coker",
+        "team": "Car",
+        "pos": "WR",
+        "slot": "BN"
+      },
+      {
+        "name": "Drake Maye",
+        "team": "NE",
+        "pos": "QB",
+        "slot": "BN"
       },
       {
         "name": "Ashton Jeanty",
@@ -7364,12 +7469,6 @@
         "slot": "BN"
       },
       {
-        "name": "Zay Flowers",
-        "team": "Bal",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Roman Wilson",
         "team": "Pit",
         "pos": "WR",
@@ -7382,8 +7481,8 @@
         "slot": "K"
       },
       {
-        "name": "Seahawks",
-        "team": "Sea",
+        "name": "Bears",
+        "team": "Chi",
         "pos": "DEF",
         "slot": "DEF"
       }
@@ -7500,12 +7599,6 @@
         "slot": "RB"
       },
       {
-        "name": "Germie Bernard",
-        "team": "Pit",
-        "pos": "WR",
-        "slot": "WR"
-      },
-      {
         "name": "Jordyn Tyson",
         "team": "NO",
         "pos": "WR",
@@ -7514,6 +7607,12 @@
       {
         "name": "Emeka Egbuka",
         "team": "TB",
+        "pos": "WR",
+        "slot": "WR"
+      },
+      {
+        "name": "Carnell Tate",
+        "team": "Ten",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7528,6 +7627,12 @@
         "team": "Cin",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Germie Bernard",
+        "team": "Pit",
+        "pos": "WR",
+        "slot": "BN"
       },
       {
         "name": "Blake Corum",
@@ -7560,28 +7665,16 @@
         "slot": "BN"
       },
       {
-        "name": "Carnell Tate",
-        "team": "Ten",
-        "pos": "WR",
-        "slot": "IR"
-      },
-      {
         "name": "Kyle Monangai",
         "team": "Chi",
         "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "De'Zhaun Stribling",
+        "team": "SF",
+        "pos": "WR",
         "slot": "IR"
-      },
-      {
-        "name": "Chris Boswell",
-        "team": "Pit",
-        "pos": "K",
-        "slot": "K"
-      },
-      {
-        "name": "Bills",
-        "team": "Buf",
-        "pos": "DEF",
-        "slot": "DEF"
       }
     ],
     "470.l.390478.t.5": [
