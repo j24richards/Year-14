@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-20T19:39:56.382Z",
+  "updated": "2026-11-21T18:45:31.341Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1869,8 +1869,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 111.5,
-            "win_probability": 0.55
+            "projected": 123.3,
+            "win_probability": 0.65
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1881,8 +1881,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 3,
-            "projected": 111.5,
-            "win_probability": 0.44999999999999996
+            "projected": 111.42,
+            "win_probability": 0.35
           }
         ]
       },
@@ -1903,7 +1903,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 20.8,
-            "projected": 105.83,
+            "projected": 105.78,
             "win_probability": 0.16999999999999993
           },
           {
@@ -1915,7 +1915,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 136.44,
+            "projected": 136.51,
             "win_probability": 0.8300000000000001
           }
         ]
@@ -1937,8 +1937,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 3.9,
-            "projected": 116.88,
-            "win_probability": 0.39
+            "projected": 116.14,
+            "win_probability": 0.38
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1949,8 +1949,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 15,
-            "projected": 120.76,
-            "win_probability": 0.61
+            "projected": 121.33,
+            "win_probability": 0.62
           }
         ]
       },
@@ -1971,8 +1971,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 108.89,
-            "win_probability": 0.56
+            "projected": 117.66,
+            "win_probability": 0.64
           },
           {
             "team_key": "470.l.390478.t.7",
@@ -1983,8 +1983,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 26.16,
-            "projected": 110.25,
-            "win_probability": 0.43999999999999995
+            "projected": 110.13,
+            "win_probability": 0.36
           }
         ]
       },
@@ -2005,8 +2005,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 115.74,
-            "win_probability": 0.41000000000000003
+            "projected": 116.15,
+            "win_probability": 0.42000000000000004
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2017,14 +2017,73 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 19.3,
-            "projected": 129.97,
-            "win_probability": 0.59
+            "projected": 129.8,
+            "win_probability": 0.58
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 289,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795279470,
+      "date": "2026-11-21T16:44:30.000Z",
+      "players": [
+        {
+          "name": "Cairo Santos",
+          "team": "Chi",
+          "pos": "K",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        }
+      ]
+    },
+    {
+      "id": 287,
+      "type": "add",
+      "status": "successful",
+      "timestamp": 1795252058,
+      "date": "2026-11-21T09:07:38.000Z",
+      "players": [
+        {
+          "name": "Bills",
+          "team": "Buf",
+          "pos": "DEF",
+          "action": "add",
+          "from": "waivers",
+          "to": "470.l.390478.t.4"
+        }
+      ]
+    },
+    {
+      "id": 286,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1795252058,
+      "date": "2026-11-21T09:07:38.000Z",
+      "players": [
+        {
+          "name": "Ladd McConkey",
+          "team": "LAC",
+          "pos": "WR",
+          "action": "add",
+          "from": "waivers",
+          "to": "470.l.390478.t.8"
+        },
+        {
+          "name": "Mike Gesicki",
+          "team": "Cin",
+          "pos": "TE",
+          "action": "drop",
+          "from": "470.l.390478.t.8",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 285,
       "type": "add",
@@ -7462,12 +7521,6 @@
         "slot": "BN"
       },
       {
-        "name": "Drake Maye",
-        "team": "NE",
-        "pos": "QB",
-        "slot": "BN"
-      },
-      {
         "name": "Ashton Jeanty",
         "team": "LV",
         "pos": "RB",
@@ -7484,6 +7537,12 @@
         "team": "Cle",
         "pos": "WR",
         "slot": "BN"
+      },
+      {
+        "name": "Drake Maye",
+        "team": "NE",
+        "pos": "QB",
+        "slot": "IR"
       },
       {
         "name": "Roman Wilson",
@@ -7594,6 +7653,12 @@
         "team": "Min",
         "pos": "K",
         "slot": "K"
+      },
+      {
+        "name": "Bills",
+        "team": "Buf",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.1": [
@@ -7692,6 +7757,12 @@
         "team": "SF",
         "pos": "WR",
         "slot": "IR"
+      },
+      {
+        "name": "Cairo Santos",
+        "team": "Chi",
+        "pos": "K",
+        "slot": "K"
       }
     ],
     "470.l.390478.t.5": [
@@ -8032,12 +8103,6 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Mike Gesicki",
-        "team": "Cin",
-        "pos": "TE",
-        "slot": "BN"
-      },
-      {
         "name": "A.J. Brown",
         "team": "NE",
         "pos": "WR",
@@ -8059,6 +8124,12 @@
         "name": "Chris Rodriguez Jr.",
         "team": "Jax",
         "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "Ladd McConkey",
+        "team": "LAC",
+        "pos": "WR",
         "slot": "BN"
       },
       {
