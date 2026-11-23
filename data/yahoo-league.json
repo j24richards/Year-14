@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-23T03:24:07.409Z",
+  "updated": "2026-11-23T03:33:28.678Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1870,7 +1870,7 @@
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 93.66,
             "projected": 129.95,
-            "win_probability": 0.94
+            "win_probability": 0.96
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1882,7 +1882,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 75.06,
             "projected": 112.77,
-            "win_probability": 0.06000000000000005
+            "win_probability": 0.040000000000000036
           }
         ]
       },
@@ -1902,9 +1902,9 @@
               "Stephen"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
-            "points": 87.84,
+            "points": 88.94,
             "projected": 105.29,
-            "win_probability": 0.09000000000000008
+            "win_probability": 0.08000000000000007
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1914,9 +1914,9 @@
               "Tom"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
-            "points": 85,
+            "points": 87.1,
             "projected": 135.86,
-            "win_probability": 0.9099999999999999
+            "win_probability": 0.9199999999999999
           }
         ]
       },
@@ -2006,7 +2006,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 94.26,
             "projected": 117.41,
-            "win_probability": 0.13
+            "win_probability": 0.14
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2018,7 +2018,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 96.4,
             "projected": 130.69,
-            "win_probability": 0.87
+            "win_probability": 0.86
           }
         ]
       }
