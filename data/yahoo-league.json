@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-23T04:30:55.655Z",
+  "updated": "2026-11-23T23:27:23.091Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1869,7 +1869,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 93.66,
-            "projected": 129.92,
+            "projected": 129.76,
             "win_probability": 0.98
           },
           {
@@ -1881,7 +1881,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 83.76,
-            "projected": 112.77,
+            "projected": 112.48,
             "win_probability": 0.020000000000000018
           }
         ]
@@ -1903,7 +1903,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 89.34,
-            "projected": 105.29,
+            "projected": 105.2,
             "win_probability": 0.06000000000000005
           },
           {
@@ -1915,7 +1915,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 89.5,
-            "projected": 135.78,
+            "projected": 135.58,
             "win_probability": 0.94
           }
         ]
@@ -1937,7 +1937,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 121.16,
-            "projected": 123.46,
+            "projected": 123.47,
             "win_probability": 0.01
           },
           {
@@ -1949,7 +1949,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 147.1,
-            "projected": 121.08,
+            "projected": 121.34,
             "win_probability": 0.99
           }
         ]
@@ -1971,7 +1971,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 134.2,
-            "projected": 118.89,
+            "projected": 118.76,
             "win_probability": 0.8
           },
           {
@@ -1983,7 +1983,7 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 90.76,
-            "projected": 111.47,
+            "projected": 111.57,
             "win_probability": 0.19999999999999996
           }
         ]
@@ -2005,7 +2005,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 94.26,
-            "projected": 117.38,
+            "projected": 117.56,
             "win_probability": 0.15999999999999992
           },
           {
@@ -2017,7 +2017,7 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 97.8,
-            "projected": 130.58,
+            "projected": 130.6,
             "win_probability": 0.8400000000000001
           }
         ]
@@ -2025,6 +2025,31 @@
     ]
   },
   "transactions": [
+    {
+      "id": 293,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1795395642,
+      "date": "2026-11-23T01:00:42.000Z",
+      "players": [
+        {
+          "name": "49ers",
+          "team": "SF",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.1"
+        },
+        {
+          "name": "Germie Bernard",
+          "team": "Pit",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.1",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 292,
       "type": "add/drop",
@@ -7356,12 +7381,6 @@
         "slot": "RB"
       },
       {
-        "name": "Keenan Allen",
-        "team": "SF",
-        "pos": "WR",
-        "slot": "WR"
-      },
-      {
         "name": "Garrett Wilson",
         "team": "NYJ",
         "pos": "WR",
@@ -7370,6 +7389,12 @@
       {
         "name": "DeVonta Smith",
         "team": "Phi",
+        "pos": "WR",
+        "slot": "WR"
+      },
+      {
+        "name": "Antonio Williams",
+        "team": "Was",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7386,6 +7411,12 @@
         "slot": "W/R/T"
       },
       {
+        "name": "Keenan Allen",
+        "team": "SF",
+        "pos": "WR",
+        "slot": "BN"
+      },
+      {
         "name": "Dalton Kincaid",
         "team": "Buf",
         "pos": "TE",
@@ -7395,12 +7426,6 @@
         "name": "Kenneth Walker III",
         "team": "KC",
         "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Antonio Williams",
-        "team": "Was",
-        "pos": "WR",
         "slot": "BN"
       },
       {
@@ -7784,12 +7809,6 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Germie Bernard",
-        "team": "Pit",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Blake Corum",
         "team": "LAR",
         "pos": "RB",
@@ -7836,6 +7855,12 @@
         "team": "Chi",
         "pos": "K",
         "slot": "K"
+      },
+      {
+        "name": "49ers",
+        "team": "SF",
+        "pos": "DEF",
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.5": [
