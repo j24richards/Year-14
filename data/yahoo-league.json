@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-23T04:13:35.298Z",
+  "updated": "2026-11-23T04:21:35.930Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1902,9 +1902,9 @@
               "Stephen"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
-            "points": 88.04,
+            "points": 89.34,
             "projected": 105.29,
-            "win_probability": 0.050000000000000044
+            "win_probability": 0.06000000000000005
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1916,7 +1916,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 89.5,
             "projected": 135.79,
-            "win_probability": 0.95
+            "win_probability": 0.94
           }
         ]
       },
