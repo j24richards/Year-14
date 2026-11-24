@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-24T09:43:29.396Z",
+  "updated": "2026-11-24T19:53:53.353Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -1854,11 +1854,11 @@
     "11": [
       {
         "week": 11,
-        "status": "midevent",
+        "status": "postevent",
         "is_playoffs": false,
         "is_consolation": false,
         "is_tied": false,
-        "winner_team_key": null,
+        "winner_team_key": "470.l.390478.t.1",
         "teams": [
           {
             "team_key": "470.l.390478.t.1",
@@ -1868,9 +1868,9 @@
               "Jimmie Legs"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
-            "points": 93.66,
-            "projected": 129.76,
-            "win_probability": 0.98
+            "points": 99.76,
+            "projected": 129.77,
+            "win_probability": 1
           },
           {
             "team_key": "470.l.390478.t.8",
@@ -1882,17 +1882,17 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 83.76,
             "projected": 112.48,
-            "win_probability": 0.020000000000000018
+            "win_probability": 0
           }
         ]
       },
       {
         "week": 11,
-        "status": "midevent",
+        "status": "postevent",
         "is_playoffs": false,
         "is_consolation": false,
         "is_tied": false,
-        "winner_team_key": null,
+        "winner_team_key": "470.l.390478.t.10",
         "teams": [
           {
             "team_key": "470.l.390478.t.2",
@@ -1903,8 +1903,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 89.34,
-            "projected": 105.2,
-            "win_probability": 0.06000000000000005
+            "projected": 105.18,
+            "win_probability": 0
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -1914,19 +1914,19 @@
               "Tom"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
-            "points": 89.5,
-            "projected": 135.58,
-            "win_probability": 0.94
+            "points": 110.8,
+            "projected": 135.6,
+            "win_probability": 1
           }
         ]
       },
       {
         "week": 11,
-        "status": "midevent",
+        "status": "postevent",
         "is_playoffs": false,
         "is_consolation": false,
         "is_tied": false,
-        "winner_team_key": null,
+        "winner_team_key": "470.l.390478.t.6",
         "teams": [
           {
             "team_key": "470.l.390478.t.3",
@@ -1936,9 +1936,9 @@
               "Joe Tardif"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-            "points": 121.16,
-            "projected": 123.47,
-            "win_probability": 0.01
+            "points": 137.86,
+            "projected": 123.49,
+            "win_probability": 0
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -1949,18 +1949,18 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 147.1,
-            "projected": 121.34,
-            "win_probability": 0.99
+            "projected": 121.31,
+            "win_probability": 1
           }
         ]
       },
       {
         "week": 11,
-        "status": "midevent",
+        "status": "postevent",
         "is_playoffs": false,
         "is_consolation": false,
         "is_tied": false,
-        "winner_team_key": null,
+        "winner_team_key": "470.l.390478.t.4",
         "teams": [
           {
             "team_key": "470.l.390478.t.4",
@@ -1972,7 +1972,7 @@
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 134.2,
             "projected": 118.76,
-            "win_probability": 0.8
+            "win_probability": 1
           },
           {
             "team_key": "470.l.390478.t.7",
@@ -1982,19 +1982,19 @@
               "Benjamin"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
-            "points": 90.76,
-            "projected": 111.57,
-            "win_probability": 0.19999999999999996
+            "points": 104.96,
+            "projected": 111.55,
+            "win_probability": 0
           }
         ]
       },
       {
         "week": 11,
-        "status": "midevent",
+        "status": "postevent",
         "is_playoffs": false,
         "is_consolation": false,
         "is_tied": false,
-        "winner_team_key": null,
+        "winner_team_key": "470.l.390478.t.9",
         "teams": [
           {
             "team_key": "470.l.390478.t.5",
@@ -2004,9 +2004,9 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 94.26,
+            "points": 100.76,
             "projected": 117.56,
-            "win_probability": 0.15999999999999992
+            "win_probability": 0
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2016,9 +2016,9 @@
               "Rick"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 97.8,
+            "points": 117.7,
             "projected": 130.6,
-            "win_probability": 0.8400000000000001
+            "win_probability": 1
           }
         ]
       }
@@ -2041,8 +2041,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
             "points": 0,
-            "projected": 115.81,
-            "win_probability": 0.42999999999999994
+            "projected": 116.67,
+            "win_probability": 0.43999999999999995
           },
           {
             "team_key": "470.l.390478.t.2",
@@ -2053,8 +2053,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
             "points": 0,
-            "projected": 123.79,
-            "win_probability": 0.5700000000000001
+            "projected": 123.18,
+            "win_probability": 0.56
           }
         ]
       },
@@ -2075,8 +2075,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
             "points": 0,
-            "projected": 113.46,
-            "win_probability": 0.53
+            "projected": 129.62,
+            "win_probability": 0.64
           },
           {
             "team_key": "470.l.390478.t.4",
@@ -2087,8 +2087,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 110.5,
-            "win_probability": 0.47
+            "projected": 113.03,
+            "win_probability": 0.36
           }
         ]
       },
@@ -2109,8 +2109,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 117.13,
-            "win_probability": 0.52
+            "projected": 121.23,
+            "win_probability": 0.5700000000000001
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -2121,8 +2121,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
             "points": 0,
-            "projected": 114.3,
-            "win_probability": 0.48
+            "projected": 113.36,
+            "win_probability": 0.42999999999999994
           }
         ]
       },
@@ -2143,8 +2143,8 @@
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
             "points": 0,
-            "projected": 108.78,
-            "win_probability": 0.39
+            "projected": 116.88,
+            "win_probability": 0.47
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -2155,8 +2155,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 121.13,
-            "win_probability": 0.61
+            "projected": 120.19,
+            "win_probability": 0.53
           }
         ]
       },
@@ -2177,8 +2177,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 117.69,
-            "win_probability": 0.48
+            "projected": 113.21,
+            "win_probability": 0.39
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2189,14 +2189,48 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 119.83,
-            "win_probability": 0.52
+            "projected": 125.34,
+            "win_probability": 0.61
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 295,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795537599,
+      "date": "2026-11-24T16:26:39.000Z",
+      "players": [
+        {
+          "name": "Adonai Mitchell",
+          "team": "NYJ",
+          "pos": "WR",
+          "action": "drop",
+          "from": "470.l.390478.t.6",
+          "to": "waivers"
+        }
+      ]
+    },
+    {
+      "id": 294,
+      "type": "drop",
+      "status": "successful",
+      "timestamp": 1795522193,
+      "date": "2026-11-24T12:09:53.000Z",
+      "players": [
+        {
+          "name": "Emari Demercado",
+          "team": "Hou",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.3",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 293,
       "type": "add/drop",
@@ -7577,10 +7611,16 @@
         "slot": "TE"
       },
       {
-        "name": "Emari Demercado",
-        "team": "Hou",
+        "name": "Kenneth Walker III",
+        "team": "KC",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "Zach Charbonnet",
+        "team": "Sea",
+        "pos": "RB",
+        "slot": "BN"
       },
       {
         "name": "Keenan Allen",
@@ -7592,18 +7632,6 @@
         "name": "Dalton Kincaid",
         "team": "Buf",
         "pos": "TE",
-        "slot": "BN"
-      },
-      {
-        "name": "Kenneth Walker III",
-        "team": "KC",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Zach Charbonnet",
-        "team": "Sea",
-        "pos": "RB",
         "slot": "BN"
       },
       {
@@ -7663,14 +7691,14 @@
         "slot": "WR"
       },
       {
-        "name": "Khalil Shakir",
-        "team": "Buf",
+        "name": "Ryan Flournoy",
+        "team": "Dal",
         "pos": "WR",
         "slot": "WR"
       },
       {
-        "name": "Ryan Flournoy",
-        "team": "Dal",
+        "name": "Christian Watson",
+        "team": "GB",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7687,8 +7715,8 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Christian Watson",
-        "team": "GB",
+        "name": "Khalil Shakir",
+        "team": "Buf",
         "pos": "WR",
         "slot": "BN"
       },
@@ -7865,8 +7893,8 @@
         "slot": "WR"
       },
       {
-        "name": "Deebo Samuel Sr.",
-        "team": "SF",
+        "name": "Denzel Boston",
+        "team": "Cle",
         "pos": "WR",
         "slot": "WR"
       },
@@ -7883,8 +7911,8 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Denzel Boston",
-        "team": "Cle",
+        "name": "Deebo Samuel Sr.",
+        "team": "SF",
         "pos": "WR",
         "slot": "BN"
       },
@@ -8079,10 +8107,16 @@
         "slot": "TE"
       },
       {
+        "name": "Drake London",
+        "team": "Atl",
+        "pos": "WR",
+        "slot": "W/R/T"
+      },
+      {
         "name": "Elic Ayomanor",
         "team": "Ten",
         "pos": "WR",
-        "slot": "W/R/T"
+        "slot": "BN"
       },
       {
         "name": "Rachaad White",
@@ -8094,12 +8128,6 @@
         "name": "Tyler Allgeier",
         "team": "Ari",
         "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Drake London",
-        "team": "Atl",
-        "pos": "WR",
         "slot": "BN"
       },
       {
@@ -8147,14 +8175,14 @@
         "slot": "QB"
       },
       {
-        "name": "David Montgomery",
-        "team": "Hou",
+        "name": "Bijan Robinson",
+        "team": "Atl",
         "pos": "RB",
         "slot": "RB"
       },
       {
-        "name": "Jordan Mason",
-        "team": "Min",
+        "name": "Kyren Williams",
+        "team": "LAR",
         "pos": "RB",
         "slot": "RB"
       },
@@ -8171,8 +8199,8 @@
         "slot": "WR"
       },
       {
-        "name": "Jaylen Waddle",
-        "team": "Den",
+        "name": "Mike Evans",
+        "team": "SF",
         "pos": "WR",
         "slot": "WR"
       },
@@ -8183,32 +8211,32 @@
         "slot": "TE"
       },
       {
+        "name": "David Montgomery",
+        "team": "Hou",
+        "pos": "RB",
+        "slot": "W/R/T"
+      },
+      {
+        "name": "Jaylen Waddle",
+        "team": "Den",
+        "pos": "WR",
+        "slot": "BN"
+      },
+      {
+        "name": "Jordan Mason",
+        "team": "Min",
+        "pos": "RB",
+        "slot": "BN"
+      },
+      {
         "name": "Tank Dell",
         "team": "Hou",
         "pos": "WR",
-        "slot": "W/R/T"
+        "slot": "BN"
       },
       {
         "name": "Jordan Addison",
         "team": "Min",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
-        "name": "Kyren Williams",
-        "team": "LAR",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Bijan Robinson",
-        "team": "Atl",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Mike Evans",
-        "team": "SF",
         "pos": "WR",
         "slot": "BN"
       },
@@ -8263,14 +8291,14 @@
         "slot": "WR"
       },
       {
-        "name": "Courtland Sutton",
-        "team": "Den",
+        "name": "Matthew Golden",
+        "team": "GB",
         "pos": "WR",
         "slot": "WR"
       },
       {
-        "name": "Chig Okonkwo",
-        "team": "Was",
+        "name": "Harold Fannin Jr.",
+        "team": "Cle",
         "pos": "TE",
         "slot": "TE"
       },
@@ -8281,21 +8309,21 @@
         "slot": "W/R/T"
       },
       {
-        "name": "Harold Fannin Jr.",
-        "team": "Cle",
+        "name": "Chig Okonkwo",
+        "team": "Was",
         "pos": "TE",
+        "slot": "BN"
+      },
+      {
+        "name": "Courtland Sutton",
+        "team": "Den",
+        "pos": "WR",
         "slot": "BN"
       },
       {
         "name": "Jayden Daniels",
         "team": "Was",
         "pos": "QB",
-        "slot": "BN"
-      },
-      {
-        "name": "Matthew Golden",
-        "team": "GB",
-        "pos": "WR",
         "slot": "BN"
       },
       {
@@ -8477,12 +8505,6 @@
         "slot": "BN"
       },
       {
-        "name": "Adonai Mitchell",
-        "team": "NYJ",
-        "pos": "WR",
-        "slot": "BN"
-      },
-      {
         "name": "Braelon Allen",
         "team": "NYJ",
         "pos": "RB",
@@ -8504,7 +8526,7 @@
         "name": "Josh Jacobs",
         "team": "GB",
         "pos": "RB",
-        "slot": "IR"
+        "slot": "BN"
       },
       {
         "name": "Davante Adams",
@@ -8527,28 +8549,6 @@
     ]
   },
   "schedule": {
-    "12": [
-      [
-        "470.l.390478.t.1",
-        "470.l.390478.t.2"
-      ],
-      [
-        "470.l.390478.t.3",
-        "470.l.390478.t.4"
-      ],
-      [
-        "470.l.390478.t.5",
-        "470.l.390478.t.6"
-      ],
-      [
-        "470.l.390478.t.7",
-        "470.l.390478.t.10"
-      ],
-      [
-        "470.l.390478.t.8",
-        "470.l.390478.t.9"
-      ]
-    ],
     "13": [
       [
         "470.l.390478.t.1",
