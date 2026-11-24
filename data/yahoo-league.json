@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-23T23:27:23.091Z",
+  "updated": "2026-11-24T09:43:29.396Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -8,7 +8,7 @@
     "season": "2026",
     "num_teams": 10,
     "scoring_type": "head",
-    "current_week": 11,
+    "current_week": 12,
     "start_week": 1,
     "end_week": 17,
     "playoff_start_week": 15,
@@ -27,14 +27,14 @@
         "Joe Tardif"
       ],
       "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-      "points": 1331.36,
+      "points": 1469.22,
       "rank": 1,
       "wins": 7,
-      "losses": 3,
+      "losses": 4,
       "ties": 0,
-      "pct": 0.7,
-      "points_for": 1331.36,
-      "points_against": 1186.2200000000003
+      "pct": 0.636,
+      "points_for": 1469.22,
+      "points_against": 1333.3200000000002
     },
     {
       "team_key": "470.l.390478.t.9",
@@ -44,14 +44,14 @@
         "Rick"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-      "points": 1330.8,
+      "points": 1448.5,
       "rank": 2,
-      "wins": 6,
+      "wins": 7,
       "losses": 4,
       "ties": 0,
-      "pct": 0.6,
-      "points_for": 1330.8,
-      "points_against": 1277.4
+      "pct": 0.636,
+      "points_for": 1448.5,
+      "points_against": 1378.16
     },
     {
       "team_key": "470.l.390478.t.10",
@@ -61,14 +61,14 @@
         "Tom"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
-      "points": 1300.8,
+      "points": 1411.6,
       "rank": 3,
-      "wins": 6,
+      "wins": 7,
       "losses": 4,
       "ties": 0,
-      "pct": 0.6,
-      "points_for": 1300.8,
-      "points_against": 1140.48
+      "pct": 0.636,
+      "points_for": 1411.6,
+      "points_against": 1229.82
     },
     {
       "team_key": "470.l.390478.t.4",
@@ -78,14 +78,14 @@
         "nick"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-      "points": 1084.06,
+      "points": 1218.26,
       "rank": 4,
-      "wins": 6,
+      "wins": 7,
       "losses": 4,
       "ties": 0,
-      "pct": 0.6,
-      "points_for": 1084.06,
-      "points_against": 1216.8199999999997
+      "pct": 0.636,
+      "points_for": 1218.26,
+      "points_against": 1321.7799999999997
     },
     {
       "team_key": "470.l.390478.t.1",
@@ -95,14 +95,14 @@
         "Jimmie Legs"
       ],
       "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
-      "points": 1279,
+      "points": 1378.76,
       "rank": 5,
-      "wins": 5,
+      "wins": 6,
       "losses": 5,
       "ties": 0,
-      "pct": 0.5,
-      "points_for": 1279,
-      "points_against": 1263.72
+      "pct": 0.545,
+      "points_for": 1378.76,
+      "points_against": 1347.48
     },
     {
       "team_key": "470.l.390478.t.5",
@@ -112,14 +112,14 @@
         "CJD"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-      "points": 1204.62,
+      "points": 1305.38,
       "rank": 6,
       "wins": 5,
-      "losses": 5,
+      "losses": 6,
       "ties": 0,
-      "pct": 0.5,
-      "points_for": 1204.62,
-      "points_against": 1176.44
+      "pct": 0.455,
+      "points_for": 1305.38,
+      "points_against": 1294.14
     },
     {
       "team_key": "470.l.390478.t.2",
@@ -129,14 +129,14 @@
         "Stephen"
       ],
       "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
-      "points": 1179.48,
+      "points": 1268.82,
       "rank": 7,
       "wins": 5,
-      "losses": 5,
+      "losses": 6,
       "ties": 0,
-      "pct": 0.5,
-      "points_for": 1179.48,
-      "points_against": 1183.0399999999997
+      "pct": 0.455,
+      "points_for": 1268.82,
+      "points_against": 1293.8399999999997
     },
     {
       "team_key": "470.l.390478.t.7",
@@ -146,14 +146,14 @@
         "Benjamin"
       ],
       "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
-      "points": 1216.74,
+      "points": 1321.7,
       "rank": 8,
       "wins": 4,
-      "losses": 6,
+      "losses": 7,
       "ties": 0,
-      "pct": 0.4,
-      "points_for": 1216.74,
-      "points_against": 1253.8400000000001
+      "pct": 0.364,
+      "points_for": 1321.7,
+      "points_against": 1388.0400000000002
     },
     {
       "team_key": "470.l.390478.t.8",
@@ -163,14 +163,14 @@
         "MIke"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-      "points": 1046.2,
+      "points": 1129.96,
       "rank": 9,
       "wins": 4,
-      "losses": 6,
+      "losses": 7,
       "ties": 0,
-      "pct": 0.4,
-      "points_for": 1046.2,
-      "points_against": 1108.88
+      "pct": 0.364,
+      "points_for": 1129.96,
+      "points_against": 1208.64
     },
     {
       "team_key": "470.l.390478.t.6",
@@ -180,14 +180,14 @@
         "Eric"
       ],
       "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
-      "points": 998.64,
+      "points": 1145.74,
       "rank": 10,
-      "wins": 2,
+      "wins": 3,
       "losses": 8,
       "ties": 0,
-      "pct": 0.2,
-      "points_for": 998.64,
-      "points_against": 1164.8600000000001
+      "pct": 0.273,
+      "points_for": 1145.74,
+      "points_against": 1302.7200000000003
     }
   ],
   "scores": {
@@ -2019,6 +2019,178 @@
             "points": 97.8,
             "projected": 130.6,
             "win_probability": 0.8400000000000001
+          }
+        ]
+      }
+    ],
+    "12": [
+      {
+        "week": 12,
+        "status": "midevent",
+        "is_playoffs": false,
+        "is_consolation": false,
+        "is_tied": false,
+        "winner_team_key": null,
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.1",
+            "team_id": 1,
+            "name": "Leeroy Judkins",
+            "managers": [
+              "Jimmie Legs"
+            ],
+            "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
+            "points": 0,
+            "projected": 115.81,
+            "win_probability": 0.42999999999999994
+          },
+          {
+            "team_key": "470.l.390478.t.2",
+            "team_id": 2,
+            "name": "To Infinity And Bijan",
+            "managers": [
+              "Stephen"
+            ],
+            "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
+            "points": 0,
+            "projected": 123.79,
+            "win_probability": 0.5700000000000001
+          }
+        ]
+      },
+      {
+        "week": 12,
+        "status": "midevent",
+        "is_playoffs": false,
+        "is_consolation": false,
+        "is_tied": false,
+        "winner_team_key": null,
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.3",
+            "team_id": 3,
+            "name": "Tradition",
+            "managers": [
+              "Joe Tardif"
+            ],
+            "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
+            "points": 0,
+            "projected": 113.46,
+            "win_probability": 0.53
+          },
+          {
+            "team_key": "470.l.390478.t.4",
+            "team_id": 4,
+            "name": "Huge Ditka",
+            "managers": [
+              "nick"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
+            "points": 0,
+            "projected": 110.5,
+            "win_probability": 0.47
+          }
+        ]
+      },
+      {
+        "week": 12,
+        "status": "midevent",
+        "is_playoffs": false,
+        "is_consolation": false,
+        "is_tied": false,
+        "winner_team_key": null,
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.5",
+            "team_id": 5,
+            "name": "Jimmy Jones' Cutlets",
+            "managers": [
+              "CJD"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
+            "points": 0,
+            "projected": 117.13,
+            "win_probability": 0.52
+          },
+          {
+            "team_key": "470.l.390478.t.6",
+            "team_id": 6,
+            "name": "My Ball Zach Ertz",
+            "managers": [
+              "Eric"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
+            "points": 0,
+            "projected": 114.3,
+            "win_probability": 0.48
+          }
+        ]
+      },
+      {
+        "week": 12,
+        "status": "midevent",
+        "is_playoffs": false,
+        "is_consolation": false,
+        "is_tied": false,
+        "winner_team_key": null,
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.7",
+            "team_id": 7,
+            "name": "Prestige Worldwide",
+            "managers": [
+              "Benjamin"
+            ],
+            "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
+            "points": 0,
+            "projected": 108.78,
+            "win_probability": 0.39
+          },
+          {
+            "team_key": "470.l.390478.t.10",
+            "team_id": 10,
+            "name": "White Pool Covers",
+            "managers": [
+              "Tom"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
+            "points": 0,
+            "projected": 121.13,
+            "win_probability": 0.61
+          }
+        ]
+      },
+      {
+        "week": 12,
+        "status": "midevent",
+        "is_playoffs": false,
+        "is_consolation": false,
+        "is_tied": false,
+        "winner_team_key": null,
+        "teams": [
+          {
+            "team_key": "470.l.390478.t.8",
+            "team_id": 8,
+            "name": "Run CMC",
+            "managers": [
+              "MIke"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
+            "points": 0,
+            "projected": 117.69,
+            "win_probability": 0.48
+          },
+          {
+            "team_key": "470.l.390478.t.9",
+            "team_id": 9,
+            "name": "Terry Glenn",
+            "managers": [
+              "Rick"
+            ],
+            "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
+            "points": 0,
+            "projected": 119.83,
+            "win_probability": 0.52
           }
         ]
       }
