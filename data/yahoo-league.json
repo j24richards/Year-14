@@ -1,6 +1,6 @@
 {
   "attribution": "Fantasy data provided by Yahoo Fantasy",
-  "updated": "2026-11-25T21:08:47.519Z",
+  "updated": "2026-11-26T20:59:22.989Z",
   "league": {
     "id": "390478",
     "key": "nfl.l.390478",
@@ -2040,9 +2040,9 @@
               "Jimmie Legs"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9fdf07d09c8037a5a200eefa5fd0f5e0ebad2f66a3f84870a5b842142e619b92.png",
-            "points": 0,
-            "projected": 122.91,
-            "win_probability": 0.5
+            "points": 27.5,
+            "projected": 122.39,
+            "win_probability": 0.64
           },
           {
             "team_key": "470.l.390478.t.2",
@@ -2052,9 +2052,9 @@
               "Stephen"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d11af83255247059bad7fc43a0fa798193928d1e4a62dd8abe5d37b164780f7f.jpg",
-            "points": 0,
-            "projected": 123.21,
-            "win_probability": 0.5
+            "points": 23.4,
+            "projected": 122.9,
+            "win_probability": 0.36
           }
         ]
       },
@@ -2074,9 +2074,9 @@
               "Joe Tardif"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25185453132_cda7cf627a.jpg",
-            "points": 0,
-            "projected": 107.72,
-            "win_probability": 0.43999999999999995
+            "points": 60.06,
+            "projected": 127.05,
+            "win_probability": 0.79
           },
           {
             "team_key": "470.l.390478.t.4",
@@ -2087,8 +2087,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
             "points": 0,
-            "projected": 114.22,
-            "win_probability": 0.56
+            "projected": 114.48,
+            "win_probability": 0.20999999999999996
           }
         ]
       },
@@ -2108,9 +2108,9 @@
               "CJD"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 0,
-            "projected": 124.35,
-            "win_probability": 0.5700000000000001
+            "points": 23.9,
+            "projected": 125.88,
+            "win_probability": 0.65
           },
           {
             "team_key": "470.l.390478.t.6",
@@ -2120,9 +2120,9 @@
               "Eric"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8_e.png",
-            "points": 0,
-            "projected": 115.83,
-            "win_probability": 0.42999999999999994
+            "points": 6,
+            "projected": 115.7,
+            "win_probability": 0.35
           }
         ]
       },
@@ -2142,9 +2142,9 @@
               "Benjamin"
             ],
             "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35978639133_e214fc.jpg",
-            "points": 0,
-            "projected": 123.94,
-            "win_probability": 0.44999999999999996
+            "points": 4.4,
+            "projected": 124.77,
+            "win_probability": 0.38
           },
           {
             "team_key": "470.l.390478.t.10",
@@ -2155,8 +2155,8 @@
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
             "points": 0,
-            "projected": 130.07,
-            "win_probability": 0.55
+            "projected": 130.01,
+            "win_probability": 0.62
           }
         ]
       },
@@ -2176,9 +2176,9 @@
               "MIke"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 0,
-            "projected": 111.8,
-            "win_probability": 0.38
+            "points": 14.12,
+            "projected": 104.82,
+            "win_probability": 0.16999999999999993
           },
           {
             "team_key": "470.l.390478.t.9",
@@ -2188,15 +2188,40 @@
               "Rick"
             ],
             "logo": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
-            "points": 0,
-            "projected": 125.58,
-            "win_probability": 0.62
+            "points": 48,
+            "projected": 122.37,
+            "win_probability": 0.8300000000000001
           }
         ]
       }
     ]
   },
   "transactions": [
+    {
+      "id": 305,
+      "type": "add/drop",
+      "status": "successful",
+      "timestamp": 1795668409,
+      "date": "2026-11-26T04:46:49.000Z",
+      "players": [
+        {
+          "name": "Patriots",
+          "team": "NE",
+          "pos": "DEF",
+          "action": "add",
+          "from": "freeagents",
+          "to": "470.l.390478.t.5"
+        },
+        {
+          "name": "Rachaad White",
+          "team": "Was",
+          "pos": "RB",
+          "action": "drop",
+          "from": "470.l.390478.t.5",
+          "to": "waivers"
+        }
+      ]
+    },
     {
       "id": 304,
       "type": "add/drop",
@@ -7778,8 +7803,8 @@
   "rosters": {
     "470.l.390478.t.3": [
       {
-        "name": "Patrick Mahomes",
-        "team": "KC",
+        "name": "Caleb Williams",
+        "team": "Chi",
         "pos": "QB",
         "slot": "QB"
       },
@@ -7820,8 +7845,8 @@
         "slot": "TE"
       },
       {
-        "name": "Kenneth Walker III",
-        "team": "KC",
+        "name": "Jacory Croskey-Merritt",
+        "team": "Was",
         "pos": "RB",
         "slot": "W/R/T"
       },
@@ -7829,6 +7854,18 @@
         "name": "Zach Charbonnet",
         "team": "Sea",
         "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "Kenneth Walker III",
+        "team": "KC",
+        "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "Patrick Mahomes",
+        "team": "KC",
+        "pos": "QB",
         "slot": "BN"
       },
       {
@@ -7841,18 +7878,6 @@
         "name": "Dalton Kincaid",
         "team": "Buf",
         "pos": "TE",
-        "slot": "BN"
-      },
-      {
-        "name": "Caleb Williams",
-        "team": "Chi",
-        "pos": "QB",
-        "slot": "BN"
-      },
-      {
-        "name": "Jacory Croskey-Merritt",
-        "team": "Was",
-        "pos": "RB",
         "slot": "BN"
       },
       {
@@ -7877,7 +7902,7 @@
         "name": "Commanders",
         "team": "Was",
         "pos": "DEF",
-        "slot": "BN"
+        "slot": "DEF"
       }
     ],
     "470.l.390478.t.9": [
@@ -7888,14 +7913,14 @@
         "slot": "QB"
       },
       {
-        "name": "Derrick Henry",
-        "team": "Bal",
+        "name": "James Cook III",
+        "team": "Buf",
         "pos": "RB",
         "slot": "RB"
       },
       {
-        "name": "James Cook III",
-        "team": "Buf",
+        "name": "D'Andre Swift",
+        "team": "Chi",
         "pos": "RB",
         "slot": "RB"
       },
@@ -7924,16 +7949,10 @@
         "slot": "TE"
       },
       {
-        "name": "D'Andre Swift",
-        "team": "Chi",
-        "pos": "RB",
+        "name": "Sam LaPorta",
+        "team": "Det",
+        "pos": "TE",
         "slot": "W/R/T"
-      },
-      {
-        "name": "Ryan Flournoy",
-        "team": "Dal",
-        "pos": "WR",
-        "slot": "BN"
       },
       {
         "name": "Woody Marks",
@@ -7942,9 +7961,15 @@
         "slot": "BN"
       },
       {
-        "name": "Sam LaPorta",
-        "team": "Det",
-        "pos": "TE",
+        "name": "Derrick Henry",
+        "team": "Bal",
+        "pos": "RB",
+        "slot": "BN"
+      },
+      {
+        "name": "Ryan Flournoy",
+        "team": "Dal",
+        "pos": "WR",
         "slot": "BN"
       },
       {
@@ -8328,12 +8353,6 @@
         "slot": "BN"
       },
       {
-        "name": "Rachaad White",
-        "team": "Was",
-        "pos": "RB",
-        "slot": "BN"
-      },
-      {
         "name": "Tyler Allgeier",
         "team": "Ari",
         "pos": "RB",
@@ -8370,10 +8389,16 @@
         "slot": "K"
       },
       {
+        "name": "Patriots",
+        "team": "NE",
+        "pos": "DEF",
+        "slot": "DEF"
+      },
+      {
         "name": "Steelers",
         "team": "Pit",
         "pos": "DEF",
-        "slot": "DEF"
+        "slot": "BN"
       }
     ],
     "470.l.390478.t.2": [
@@ -8586,14 +8611,14 @@
         "slot": "WR"
       },
       {
-        "name": "DK Metcalf",
-        "team": "Pit",
+        "name": "Caleb Douglas",
+        "team": "Mia",
         "pos": "WR",
         "slot": "WR"
       },
       {
-        "name": "Caleb Douglas",
-        "team": "Mia",
+        "name": "Ladd McConkey",
+        "team": "LAC",
         "pos": "WR",
         "slot": "WR"
       },
@@ -8608,6 +8633,12 @@
         "team": "NYG",
         "pos": "RB",
         "slot": "W/R/T"
+      },
+      {
+        "name": "DK Metcalf",
+        "team": "Pit",
+        "pos": "WR",
+        "slot": "BN"
       },
       {
         "name": "A.J. Brown",
@@ -8631,12 +8662,6 @@
         "name": "Chris Rodriguez Jr.",
         "team": "Jax",
         "pos": "RB",
-        "slot": "BN"
-      },
-      {
-        "name": "Ladd McConkey",
-        "team": "LAC",
-        "pos": "WR",
         "slot": "BN"
       },
       {
